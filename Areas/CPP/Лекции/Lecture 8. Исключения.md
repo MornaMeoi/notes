@@ -917,8 +917,45 @@ struct DefaultCtor {};
 
 struct ThrowinCtor {
 	ThrowingCtor(){}; // =default will create noexcept one
-	ThrowingCtor(const Throwing){}
+	ThrowingCtor(const ThrowingCtor &) = default;
+	ThrowingCtor(ThrowingCtor &&) = default;
 };
+
+struct Inherited {
+	ThrowingCtor c;
+};
+
+void foo(int) noexcept;
+void foo(DefaultCtor) noexcept;
+void foo(ThrowingCtor) noexcept;
+
+int main() {
+	std::cout << std::boolalpha;
+	std::cout << "noexcept(null pointer deref): "
+						<< noexcept(*static_cast<int *>(nullptr)) << std::endl;
+	
+	std::cout << "foo(int): " << noexcept(foo(1)) << std::endl;
+	std::cout << "foo(Default): " << noexcept(foo(DefaultCtor{})) << std::endl;
+	std::cout << "foo(Throwing): " << noexcept(foo(ThrowingCtor{})) << std::endl;
+	
+	std::cout << "Default constr: "
+	          << std::is_nothrow_constructable<DefaultCtor>::value << std::endl;
+	std::cout << "Default copy constr: "
+	          << std::is_nothrow_copy_constructible<DefaultCtor>::value
+	          << std::endl;
+	std::cout << "Default move constr: "
+	          << std::is_nothrow_move_constructible<DefaultCtor>::value
+	          << std::endl;
+	
+	std::cout << "Inherited constr: "
+	          << std::is_nothrow_constructable<Inherited>::value << std::endl;
+	std::cout << "Inherited copy constr: "
+	          << std::is_nothrow_copy_constructible<Inherited>::value
+	          << std::endl;
+	std::cout << "Inherited move constr: "
+	          << std::is_nothrow_move_constructible<Inheritedr>::value
+	          << std::endl;
+}
 ```
 #### Литература
 1. ISO/IEC, "Information technology - Programming Laguages - C++", ISO/IEC 14882:2017
@@ -931,4 +968,56 @@ struct ThrowinCtor {
 8. Arne Mertz, Modern C++ features - keyword \`noexcept\`, blog post, Jan\`2016
 9. Niall Douglas, Mongrel Monads, ACCU\`2017
 10. Nico Brailovsky, Exception handling internals
-#### 
+#### Обсуждение: noexcept(false)
+• Любой деструктор по умолчанию noexcept.
+• Одним из способов позволить исключениям покидать деструктор является его пометка как noexcept(false).
+• Вы должны быть осторожны, помечая так деструкторы, потому что деструктор сам по себе используется в процессе размотки (см. пример).
+• Вы можете проверить внутри деструктора, идёт ли размотка посредством вызова std::uncaught_exceptions().
+Пример:
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// Demonstration of noexcept(false)
+//
+//---------------------------------------------------------------------------
+
+#include <iostream>
+#include <stdexcept>
+
+#ifdef BAD
+struct T {
+	~T() { throw std::runtime_error(""); }
+};
+
+void test0() {
+	try {
+		T t;
+	} catch(std::runtime_error &e) {
+		std::cerr << "Exception catched\n";
+	}
+	std::cout << "Success\n"
+}
+#endif
+
+struct S {
+	~S() noexcept(false) {
+		if(std::uncaught_exceptions())
+			std::cerr << "Dtor called in unwinding\n";
+		throw std::runtime_error("");
+	}
+};
+
+void test1() {
+	try {
+		S s;
+	} catch(std::runtime_error &e) {
+		std::cerr << "Exception catched\n";
+	}
+}
+```
