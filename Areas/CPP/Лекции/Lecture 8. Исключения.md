@@ -1212,3 +1212,93 @@ void *operator new[](std::size_t, const std::nothrow_t&) noexcept;
 ```
 • Пока что должно быть не слишком понятно, как их использовать.
 #### Небросающий new
+• Если для new-expression не передано аргументов, она раскрывается просто.
+```cpp
+p = new int{42};
+// p = (int *) ::operator new(sizeof(int)); *p = 42;
+```
+• Если аргументы переданы, они ставятся в конец глобального оператора.
+```cpp
+p = new (nothrow) int{42};
+// p = (int *) ::operator new(sizeof(int), nothrow); *p = 42;
+```
+• Специальный аргумент std::nothrow типа std::nothrow_t показывает, что мы не хотим бросать исключение.
+• Тогда нам надо возвращать нулевой указатель при неудаче.
+#### Размещающий new
+• Поскольку аллокация/деаллокация - это операторы, они могут быть переопределены.
+• Но есть непереопределяемый глобальный оператор.
+```cpp
+void* operator new(std::size_T size, void* ptr) noexcept;
+void* operator new[](std::size_T size, void* ptr) noexcept;
+```
+• Он называется размещающим new, и ему не соответствует никакого delete, потому что всё, что он делает - это размещает объект в сырой памяти.
+#### Работа с размещающим new
+• Работа с памятью отделена от работы с объектом в памяти.
+```cpp
+void *raw = ::operator new(sizeof(Widget), std::nothrow);
+if(!raw) { /* обработка */ }
+
+Widget *w = new (raw) Widget;
+// .... тут использование w ....
+
+w->~Widget();
+::operator delete(raw);
+```
+• Обсуждение: может ли это помочь проектированию безопасных контейнеров?
+#### Переопределение new и delete
+• Замечательным свойством new и delete является возможность переопределить их не глобально, а на уровне своего класса.
+```cpp
+struct Widget {
+	static void *operator new(std::size_t n);
+	static void operator delete(void *mem) noexcept;
+};
+```
+• Теперь для класса Widget будут использоваться его собственные операторы, а не глобальные.
+• При этом, в отличии от глобального, размещающий new тоже может быть переопределён.
+Пример:
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// operator new custom overload
+//
+//---------------------------------------------------------------------------
+
+#include <cstdlib>
+#include <iostream>
+#include <list>
+
+void *operator new(std::size_t n) {
+	void *p = malloc(n);
+	if(!p)
+		throw std::bad_alloc{};
+	printf("Alloc: %p, size is %zu\n", p, n);
+	return p;
+}
+
+void operator delete(void *mem) noexcept {
+	printf("Free: %p\n", mem);
+	free(mem);
+}
+
+struct Widget {
+	static void *operator new(std::size_t n);
+	static void operator delete(void *mem) noexcept;
+	int n[4];
+};
+
+void *Widget::operator new(std::size_t n) {
+	void *p = malloc(n);
+	if(!p)
+		throw std::bad_alloc{};
+	printf("Custom alloc: %p, size if %zu\n", p, n);
+	return p'
+}
+
+void Widget::operator delete(void *mem) noexcept 
+```
