@@ -653,4 +653,41 @@ public:
 // .... тут всё остальное ....
 };
 ```
-• Теперь вполне ясно, как эта ошибка вообще может быть обработана.
+• Теперь <span style="color: blue;">вполне</span> ясно, как эта ошибка вообще может быть обработана.
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+public:
+	explicit MyVector(size_t sz) : size_(sz) {
+		arr_ = static_cast<T*>(malloc(sizeof(T) * sz));
+		if(!arr_) {
+			throw std::bad_alloc();
+		}
+	}
+// .... тут всё остальное ....
+};
+```
+• Этот код можно упростить, так как по сути тут написан оператор new.
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+public:
+	// бросает bad_alloc
+	explicit MyVector(size_t sz) : arr_(new T[sz]), size_(sz) {}
+// .... тут всё остальное ....
+};
+```
+• Задача: написать копирующий конструктор.
+#### Пример Каргилла
+• Все ли понимают, что тут плохо?
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+	
+public:
+	MyVector(const MyVector)
+}
+```
