@@ -1704,48 +1704,31 @@ protected:
 	}
 	
 	MyVectorBuf(size_t sz = 0)
-			: arr_((sz == 0) ? NULL 
-			                 : static_cast<T *>(::operator new(sizeof(T)))
+			: arr_((sz == 0) ? nullptr 
+			                 : static_cast<T *>(::operator new(sizeof(T) *sz))),
+			  size_(sz) {}
+	
+	~MyVectorBuf() {
+		destroy(arr_, arr_ + used_);
+		::operator delete(arr_);
+	}
 };
 
-template <typename T>
-T *safe_copy(const T *src, size_t srcsize, size_t dstsize) {
-	assert(srcsize <= dstsize);
-	T *dest = new T[dstsize];
-	try {
-		for(size_t idx = 0; idx != srcsize; ++idx)
-			dest[idx] = src[idx];
-	} catch(...) {
-		delete[] dest;
-		throw;
-	}
-	return dest;
-}
-
-template <typename T> class MyVector {
-	T *arr_ = nullptr;
-	size_t size_, used_ = 0;
-
-public:
-	explicit MyVector(size_t sz = 0) : arr_(new T[sz]), size_(sz) {}
+template <typename T> struct MyVector : private MyVectorBuf<T> {
+	using MyVectorBuf<T>::used_;
+	using MyVectorBuf<T>::size_;
+	using MyVectorBuf<T>::arr_;
 	
-	MyVector(const MyVector &rhs) {
-		arr_ = safe_copy(rhs.arr_, rhs.size_, rhs.size_);
-		size_ = rhs.size_;
-		used_ = rhs.used_;
-	}
+	explicit MyVector(size_t sz = 0) : MyVectorBuf<T>(sz) {}
 	
-	MyVector(MyVector &&rhs) noexcept
-			: arr_(rhs.arr_), size_(rhs.size_), used_(rhs.used_) {
-		rhs.arr_ = nullptr;
-		rhs.size_ = 0;
-		rhs.used_ = 0;
-	}
+	MyVector(MyVector &&rhs) = default;
+	MyVector &operator=(MyVector &&rhs) = default;
 	
-	MyVector &operator=(MyVector &&rhs) noexcept {
-		std::swap(arr_, rhs.arr_);
-		std::swap(size_, rhs.size_);
-		std::swap(used_, rhs.used_);
+	MyVector(const MyVector &rhs) : MyVectorBuf<T>(rhs.used_) {
+		while(used_ < rhs.used_) {
+			construct(arr_ + used_, rhs.arr_[used_]);
+			used_ += 1;
+		}
 	}
 	
 	MyVector &operator=(const MyVector &rhs) {
@@ -1756,29 +1739,30 @@ public:
 	
 	T top() const {
 		if(used_ < 1)
-			throw std::out_of_range();
+			throw runtime_error("Vector is empty");
 		return arr_[used_ - 1];
 	}
 	
 	void pop() {
 		if(used_ < 1)
-			throw std::underflow_error();
+			throw runtime_error("Vector is empty");
 		used_ -= 1;
+		destroy(arr_ + used_);
 	}
 	
 	void push(const T &t) {
 		assert(used_ <= size_);
 		if(used_ == size_) {
 			std::cout << "Realloc\n";
-			size_t newsz = size_ * 2 + 1;
-			T *newarr = safe_copy(arr_, size_, newsz)
-			delete[] arr_;
-			arr_ = newarr;
-			size_ = newsz;
-			assert(used_ < size_);
+			MyVector tmp(size_ * 2 + 1);
+			while(tmp.size() < used_)
+				tmp.push(arr_[tmp.size()]);
+			tmp.push(t);
+			std::swap(*this, tmp);
+		} else {
+			construct(arr_ + used_, t);
+			used_ += 1;
 		}
-		arr_[used_] = t;
-		++used_;
 	}
 	
 	size_t size() const { return used_; }
@@ -1827,6 +1811,20 @@ int main() {
 	}
 }
 ```
+Вывод под valgrind:
+```
+Copying
+Realloc
+Copying
+Copying
+Copying
+Invoke copy ctor
+Copying
+Copying
+Exception catched
+...
+All heap blocks were freed -- no leaks are possible
+```
 #### Обсуждение
 • Что можно сказать о возможных исключениях в следующем коде, деконструирующем содержимое forward-итерируемого контейнера?
 ```cpp
@@ -1849,3 +1847,8 @@ void destroy(FwdIter first, FwdIter last) {
 		}
 }
 ```
+#### Правило для деструкторов
+• <span style="color: blue;">Исключения не должны покидать деструктор</span>.
+• По стандарту исключение, покинувшее деструктор, если при этом остались необработанные исключения, приводит к вызову std::terminate и завершению программы.
+#### Общий вывод и картинка
+• Проектирование с использованием исключений, в итоге, позволяет упростить и улучшить код, структурируя его с чётким распределением овтетственности.
