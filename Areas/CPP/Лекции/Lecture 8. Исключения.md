@@ -492,3 +492,50 @@ catch(MathErr& e) { /* обработка всех ошибок */ }
 ![[8.3.png]]
 #### Обсуждение
 • Какой интерфейс вы бы сделали у std::exception?
+```cpp
+struct exception {
+	exception() noexcept;
+	exception(const exception&) noexcept;
+	exception& operator=(const exception&) noexcept;
+	virtual ~exception();
+	virtual const char *what() const noexcept;
+};
+```
+• Аннотация noexcept означает обещание, что эта функция не выбросил исключений.
+• Она распространяется на определения виртуальных функций.
+#### Используем стандартные классы
+• Наследование от стандартного класса вводит расширение в иерархию
+```cpp
+class MathErr : public std::runtime_error { /* информация */ };
+class Overflow : public MathErr { /* расширение */ };
+
+// где-то дальше
+try {
+	// тут много опасного кода
+}
+catch (Overflow& o) { /* обработка переполнения */ }
+catch (MathErr& e) { /* обработка всех ошибок */ }
+```
+• Впрочем, у наследования есть и тёмные стороны...
+#### Множественное наследование
+```cpp
+struct my_exc1 : std::exception {
+	char const* what() const noexcept override;
+};
+
+struct my_exc2 : std::exception {
+	char const* what() const noexcept override;
+};
+
+struct your_exc3 : my_exc1, my_exc2 {};
+
+int main() {
+	try { throw your_exc3(); }
+	catch(std::exception const& e) { std::cout << e.what() << "\n"; }
+	catch(...) { std::cerr << "whoops!\n"; }
+}
+```
+Пример:
+```cpp
+
+```
