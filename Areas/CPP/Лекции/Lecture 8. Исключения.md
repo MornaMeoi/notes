@@ -1001,7 +1001,7 @@ void test0() {
 	} catch(std::runtime_error &e) {
 		std::cerr << "Exception catched\n";
 	}
-	std::cout << "Success\n"
+	std::cerr << "Success\n";
 }
 #endif
 
@@ -1019,5 +1019,45 @@ void test1() {
 	} catch(std::runtime_error &e) {
 		std::cerr << "Exception catched\n";
 	}
+	std::cerr << "Success\n";
 }
+
+void test2() {
+	try {
+		S s;
+		throw std::runtime_error("");
+	} catch(std::runtime_error &e) {
+		std::cerr << "Exception catched\n";
+	}
+	std::cerr << "Success\n";
+}
+
+int main() {
+#ifdef BAD
+	std::cerr << "test0: ";
+	test0();
+#endif
+	std::cerr << "test1: ";
+	test1();
+	std::cerr << "test2: ";
+	test2();
+}
+```
+Вывод:
+С -DBAD
+```bash
+warning: 'throw' will always call 'terminate' [-Wterminate]
+# ...
+test0: terminate called after throwing an instance of 'std::runtime_error'
+	what():
+Aborted (core dumped)
+```
+Без -DBAD
+```bash
+test1: Exception catched
+Success
+test2: Dtor called in unwinding
+terminate called after throwing an instance of 'std::runtime_error'
+	what():
+Aborted (core dumped)
 ```
