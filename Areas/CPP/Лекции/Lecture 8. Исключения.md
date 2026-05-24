@@ -957,17 +957,6 @@ int main() {
 	          << std::endl;
 }
 ```
-#### Литература
-1. ISO/IEC, "Information technology - Programming Laguages - C++", ISO/IEC 14882:2017
-2. The C++ Programming Language (4th Edition)
-3. Tom Cargill, Exception handling: a false sense of security, C++ Report\`1994
-4. David Abrahams, Exception-safety in generic components\`1998
-5. Herb Sutter, Exceptional C++: 47 engineering puzzles, programming problems, and solutions, Addison-Wesley, 2000
-6. Herb Sutter, More exceptional C++: 40 new engineering puzzles, programming problems, and solutions, Addison-Wesley, 2002
-7. Jon Kalb, Exception Safe code (3 parts), CppCon\`2014
-8. Arne Mertz, Modern C++ features - keyword \`noexcept\`, blog post, Jan\`2016
-9. Niall Douglas, Mongrel Monads, ACCU\`2017
-10. Nico Brailovsky, Exception handling internals
 #### Обсуждение: noexcept(false)
 • Любой деструктор по умолчанию noexcept.
 • Одним из способов позволить исключениям покидать деструктор является его пометка как noexcept(false).
@@ -1953,7 +1942,7 @@ swap(*this, tmp);
 //
 //---------------------------------------------------------------------------
 //
-// Third attempt: rather good implementation
+// Fourth attempt: move push
 // try: g++ myvec-4.cc -O0 -g
 // for both: valgrind ./a.out
 //
@@ -2117,3 +2106,18 @@ int main() {
 	}
 }
 ```
+#### Обсуждение
+• Исключения влияют на проектирование.
+• Использование перемещающих конструкторов влияет на проектирование.
+• Кажется, приходит время обсудить проектирование.
+#### Литература
+1. ISO/IEC, "Information technology - Programming Laguages - C++", ISO/IEC 14882:2017
+2. The C++ Programming Language (4th Edition)
+3. Tom Cargill, Exception handling: a false sense of security, C++ Report\`1994
+4. David Abrahams, Exception-safety in generic components\`1998
+5. Herb Sutter, Exceptional C++: 47 engineering puzzles, programming problems, and solutions, Addison-Wesley, 2000
+6. Herb Sutter, More exceptional C++: 40 new engineering puzzles, programming problems, and solutions, Addison-Wesley, 2002
+7. Jon Kalb, Exception Safe code (3 parts), CppCon\`2014
+8. Arne Mertz, Modern C++ features - keyword \`noexcept\`, blog post, Jan\`2016
+9. Niall Douglas, Mongrel Monads, ACCU\`2017
+10. Nico Brailovsky, Exception handling internals
