@@ -688,6 +688,12 @@ template <typename T> class MyVector {
 	size_t size_, used_ = 0;
 	
 public:
-	MyVector(const MyVector)
-}
+	MyVector(const MyVector &rhs) {
+		arr_ = new T[rhs.size_];
+		size_ = rhs.size_; used_ = rhs.used_;
+		for(size_t i = 0; i != rhs.size_; ++i) {
+			arr_[i] = rhs.arr_[i];
+		}
+	}
+};
 ```
