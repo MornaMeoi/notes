@@ -1300,5 +1300,75 @@ void *Widget::operator new(std::size_t n) {
 	return p'
 }
 
-void Widget::operator delete(void *mem) noexcept 
+void Widget::operator delete(void *mem) noexcept {
+	printf("Custom free: %p\n", mem);
+	free(mem);
+}
+
+int main() {
+	std::list<int> l;
+	l.push_back(42);
+	Widget *w = new Widget;
+	delete w;
+}
+```
+Вывод:
+```bash
+Alloc: 0x7ffff1166eb0, size is 24
+Custom alloc: 0x7ffff11670e0, size is 16
+Custom free: 0x7ffff11670e0
+Free: 0x7ffff1166eb0
+```
+#### Работа с пользовательским классом
+• new с исключением при исчерпании памяти
+```cpp
+Widget *w = new Widget; // возможно bad_alloc
+```
+• new с возвратом нулевого указателя
+```cpp
+Widget *w = new (std::nothrow) Widget;
+if(!w) { /* обработка */ }
+```
+• размещающий new
+```cpp
+void *raw = ::operator new(sizeof(Widget)); // возможно bad_alloc
+
+// только конструирование в готовой памяти
+Widget *w = new (raw) Widget;
+```
+#### Обсуждение (Stepanov assignment)
+• Что вы думаете о таком операторе присваивания?
+```cpp
+T& T::operator=(T const& x) {
+	if(this != &x) {
+		this->~T();
+		new (this) T(x); // исключение тут
+		                 // и дальше dtor при размотке
+	}
+	return *this;
+}
+```
+• Алекс Степанов написал его в одной из первых реализация std::vector и эта ошибка там <span style="color: red;">была незамеченной 6 лет</span>.
+## Проектирование с исключениями
+#### Отделённая реализация
+• Идея для проектирования ваших классов с учётом исключений - это разделить функциональность:
+	• Класс, работающий с сырой памятью.
+	• Использующий объекты этого класса внешний класс, работающий с типизированным содержимым.
+• Для этого часто используется управление памятью вручную через нестандартные формы new и delete.
+Пример:
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// First naive implementation: not exception safe
+// try: g++ myvec-1.cc -O0 -g -DEXTEND_CONTROL
+// try: g++ myvec-1.cc -O0 -g
+// for both: valgrind ./a.o
+//
+//---------------------------------------------------------------------------
 ```
