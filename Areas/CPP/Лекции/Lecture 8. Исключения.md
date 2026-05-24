@@ -728,9 +728,120 @@ template <typename T> class MyVector {
 	size_t size_, used_ = 0;
 	
 public:
-	MyVector(const MyVector &rhs) {
-		arr_ = (safe_copy(rhs.arr_, rhs.size_)),
-		size_(rhs.size), used_(rhs.used_)
+	MyVector(const MyVector &rhs) :
+		arr_(safe_copy(rhs.arr_, rhs.size_)),
+		size_(rhs.size), used_(rhs.used_) {}
+};
+```
+• Следующий шаг: оператор присваивания.
+• Вероятно теперь, когда у нас есть safe_copy, нам будет совсем просто?
+#### Оператор присваивания
+• Вы видите проблемы в этой реализации?
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+	
+public:
+	MyVector& operator= (const MyVector &rhs) {
+		if(this == &rhs) return *this;
+		delete [] arr_; // уже стёрли
+		arr_ = safe_copy(rhs.arr_, rhs.size_); // исключение
+		size_ = rhs.size_; used_ = rhs.used_;
+		return *this;
+	} // объект в неконсистентном состоянии
+};
+```
+#### Оператор присваивания v2
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+	
+public:
+	MyVector& operator= (const MyVector &rhs) {
+		if(this == &rhs) return *this;
+		T *narr = safe_copy(rhs.arr_. rhs.size_);
+		delete [] arr_;
+		arr_ = narr;
+		size_ = rhs.size_; used_ = rhs.used_;
+		return *this;
 	}
 };
+```
+• Теперь ok, но это как-то хрупко и подвержено случайным проблемам.
+#### Внезапно swap
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+	
+public:
+	void swap(MyVector& rhs) {
+		std::swap(arr_, rhs.arr_);
+		std::swap(size_, rhs.size_);
+		std::swap(used_, rhs.used_);
+	}
+};
+```
+• Вроде бы этот оператор не бросает исключений, и это хочется задокументировать.
+#### Интерлюдия: noexcept
+• Специальное слово noexcept документирует гарантию бессбойности для кода.
+```cpp
+void swap(MyVector& rhs) noexcept {
+	std::swap(arr_, rhs.arr_);
+	std::swap(size_, rhs.size_);
+	std::swap(used_, rhs.used_);
+}
+```
+• При оптимизациях, компилятор будет уверен, что исключений не будет.
+• Если они всё-таки вылетят, то это сразу std::terminate.
+• Вы не должны употреблять noexcept там, где исключения всё же возможны.
+#### Оператор присваивания: линия Калба
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+	
+public:
+	void swap(MyVector& rhs) noexcept;
+	
+	MyVector& operator= (const MyVector &rhs) {
+		MyVector tmp(rhs); // тут мы можем бросить исключение
+// ------------------------------------------------------ линия Калба
+		swap(tmp); // тут мы меняем состояние класса
+		return *this;
+	}
+};
+```
+• Это даёт строгую гарантию по присваиванию.
+#### Подумаем про push?
+• Подумайте про push.
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+	
+public:
+	void push(T new_elem);
+};
+```
+• Может потребоваться реаллокация, если size_ == used_.
+#### Kalb line
+• При проектировании очень полезно провести в уме эту линию.
+```cpp
+void push(const T& t) {
+	if(used_ == size_) {
+		MyVector tmp(size_*2 + 1);
+		while(tmp.size() < used_)
+			tmp.push(arr_[tmp.size()]);
+		tmp.push(t);
+// Выше этой линии инварианты класса неизменны
+//-------------------------------------------------------
+// Ниже этой линии операции не кидают исключений
+		swap(*this, tmp); // операция noexcept
+		return;
+	}
+// и так далее
+}
 ```
