@@ -1061,3 +1061,59 @@ terminate called after throwing an instance of 'std::runtime_error'
 	what():
 Aborted (core dumped)
 ```
+#### Извлечение из массива
+• Безопасен ли этот код относительно исключений?
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+
+public:
+	T pop() {
+		if(used_ <= 0) throw underflow{};
+		T result = arr_[used_ - 1];
+		used_ -= 1;
+		return result;
+	}
+};
+```
+#### Внезапная проблема
+• Кажется, что всё хорошо.
+• Но что произойдёт в точке использования?
+```cpp
+MyVector<SomeType> v;
+// тут много кода
+SomeType s = v.pop(); // исключение при копировании в s
+```
+• Тогда окажется, что объект уже удалён, но по месту назначения не пришёл и навсегда потерян.
+#### Извлечение из массива v2
+• Тут правильное проектирование страхует от проблем.
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+
+public:
+	T top() const {
+		if(used_ <= 0) throw outofbounds{};
+		return arr_[used_ - 1];
+	}
+	
+	void pop() {
+		if(used_ <= 1) throw underflow{}; used_ -= 1;
+	}
+};
+```
+#### Обсуждение
+• Оказывается, безопасность относительно исключений влияет на проектирование!
+• Если это так, то почему бы сразу не спроектировать нечто, что нам удобно будет делать безопасным?
+• Удивительно, но для этого нам надо будет посмотреть на тонкости работы с памятью.
+## Детали работы с памятью
+#### Глобальные операторы
+• В языке C для выделения памяти служат функции malloc и free.
+```c
+void *p = malloc(10);
+free(p);
+```
+• В языке C++ этим занимаются операторы new и delete.
+• При этом, в отлии
