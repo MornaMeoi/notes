@@ -581,5 +581,41 @@ int *critical = new int[10000]();
 try {
 	// тут много опасного кода
 }
-cat
+catch (...) {
+	delete [] critical;
+	throw;
+}
 ```
+• Кто-нибудь предложит лучше?
+#### Обсуждение
+• Кажется, есть одно место, где мы не можем поймать исключение.
+```cpp
+template <typename T> struct Foo {
+	T x_, y_;
+	Foo(int x, int y) : x_(x), y_(y) { // <-- exception in x_(x)
+		try {
+			// some actions
+		}
+		catch(std::exception& e) {
+			// some processing
+		}
+	}
+};
+```
+• С одной стороны, вроде и не нужно ловить. Или, может быть, нужно?
+#### Try-блоки уровня функций
+• Мы можем завернуть всю функцию в try-block.
+```cpp
+int foo() try { bar(); }
+catch(std::exception& e) { throw; }
+```
+• В том числе и конструктор.
+```cpp
+Foo::Foo(int x, int y) try : x_(x), y_(y) {
+	// some actions
+}
+catch(std::exception& e) {
+	// some processing
+}
+```
+• Техника скорее экзотическая, но лучше знать чем не знать.
