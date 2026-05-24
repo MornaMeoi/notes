@@ -518,24 +518,68 @@ catch (MathErr& e) { /* обработка всех ошибок */ }
 ```
 • Впрочем, у наследования есть и тёмные стороны...
 #### Множественное наследование
+Пример:
 ```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// Demonstration of problems with multiple inheritance
+//
+//---------------------------------------------------------------------------
+
+#include <iostream>
+#include <stdexcept>
+
 struct my_exc1 : std::exception {
-	char const* what() const noexcept override;
+	char const* what() const noexcept override { return "exc1"; }
 };
 
 struct my_exc2 : std::exception {
-	char const* what() const noexcept override;
+	char const* what() const noexcept override { return "exc2"; }
 };
 
 struct your_exc3 : my_exc1, my_exc2 {};
 
 int main() {
-	try { throw your_exc3(); }
-	catch(std::exception const& e) { std::cout << e.what() << "\n"; }
-	catch(...) { std::cerr << "whoops!\n"; }
+	try {
+		throw your_exc3();
+	} catch(std::exception const& e) {
+		std::cout << e.what() << "\n";
+	} catch(...) {
+		std::cerr << "whoops!\n";
+	}
 }
 ```
-Пример:
+Вывод:
+```bash
+whoops!
+```
+#### Перехват всех исключений
+• Используется троеточие (как в printf).
 ```cpp
-
+try {
+	// тут много опасного кода
+} catch (...) {
+	// тут обрабатываются все исключения
+}
+```
+• Сама идея, что можно как-то осмысленно обработать любое исключение очень сомнительна.
+#### Нейтральность
+• Функция называется нейтрально относительно исключений, если она не ловит чужих исключений.
+• Хорошо написанная функций в хорошо спроектированном коде как минимум нейтральна.
+![[../../../_Meta/attachments/8.4.png]]
+#### Перевыброс
+• Единственное разумное применение catch-all - это очистка критического ресурса и перевыброс исключения.
+• На самом деле, даже разумность этого варианта под сомнением.
+```cpp
+int *critical = new int[10000]();
+try {
+	// тут много опасного кода
+}
+cat
 ```
