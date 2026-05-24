@@ -1116,4 +1116,99 @@ void *p = malloc(10);
 free(p);
 ```
 • В языке C++ этим занимаются операторы new и delete.
-• При этом, в отлии
+• При этом в отличии, от, скажем, оператора +, у них есть **глобальные формы**.
+• Когда вы пишете new-expression для встроенного типа, он будет истолкован именно как вызов глобального оператора.
+```cpp
+int *n = new int(5); // выделение + конструирование
+n = (int *) ::operator new(sizeof(int)); // только выделение
+```
+• Вы можете переопределить глобальные операторы и изменить поведение всех классов, которые ими пользуются.
+```cpp
+void *operator new(std::size_t n) {
+	void *p = malloc(n); if(!p) throw std::bad_alloc();
+	printf("Alloc: %p, size if %zu\n", p, n);
+	return p;
+}
+```
+• Теперь что мы ожидаем увидеть на экране при создании списка из одного элемента?
+```cpp
+std::list<int> l;
+l.push_back(42);
+```
+Пример:
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// operator new overload
+//
+//---------------------------------------------------------------------------
+
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <list>
+#include <new>
+#include <stdexcept>
+
+void *operator new(std::size_t n) {
+	void *p = std::malloc(n);
+	if(!p)
+		throw std::bad_alloc{};
+		
+#ifdef USECOUT
+	// Probably bad idea. Why?
+	std::cout << "Alloc: " << p << ", size is " << n << "\n";
+#else
+	std::printf("Alloc: %p, size is %zi\n", p, n);
+#endif
+	return p
+}
+
+void operator delete(void *mem) noexcept {
+	std::printf("Free: %p\n", mem);
+	std::free(mem);
+}
+
+int main() {
+	std::list<int> l;
+	l.push_back(42);
+}
+```
+Вывод:
+Без -DUSECOUT:
+```bash
+Alloc: 0x7fffbda15eb0, size is 24
+Free: 0x7fffbda15eb0
+```
+#### Обсуждение
+• Мы отделяем вызов конструкторов от выделения памяти. Но что если конструктор выбросит исключение?
+```cpp
+struct S {
+	S(); // десятый конструктор кинет исключение
+	~S();
+};
+
+S *sarr = new S[20];
+```
+• Сколько тут будет конструкторов и деструкторов, если мы знаем, что new\[] даёт строгую гарантию?
+#### Формы глобальных операторов
+• Основные формы все в чём-то похожи на malloc.
+```cpp
+void *operator new(std::size_t);
+void operator delete(void*) noexcept;
+void *operator new[](std::size_t);
+void operator delete[](void*) noexcept;
+```
+• Предусмотрены также дополнительные варианты с семантикой noexcept.
+```cpp
+void *operator new(std::size_t, const std::nothrow_t&) noexcept;
+void *operator new[](std::size_t, const std::nothrow_t&) noexcept;
+```
+• Пока что должно быть не слишком понятно, как их использовать.
+#### Небросающий new
