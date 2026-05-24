@@ -853,6 +853,73 @@ T copy(T const& original) /* noexcept? */ {
 	return original;
 }
 ```
+• Эта функция noexcept для int, но не для vector.
+• Некоторые функции можно различить простыми определителями.
+```cpp
+template <class T>
+T copy(T const& orig) noexcept(is_fundamental<T>::value) {
+	return orig;
+}
+```
+• noexcept(true) - это всё равно, что просто noexcept.
+• noexcept(false) - это его отсутствие, а не обещани, что функция точно что-то бросит.
+• Решение рабочее, но недостаточно точное. Даже у типов, не являющихся фундаментальными, копирующий конструктор может не бросать исключений.
+#### Оператор noexcept
+• Для более тонкой настройки служит оператор noexcept.
+```cpp
+template <class T>
+T copy(T const& orig) noexcept(noexcept(T(orig))) {
+	return orig;
+}
+```
+• Оператор noexcept возвращает true или false в зависимости от вычисления выражения под ним на этапе компиляции.
+• Разумеется, выражение T(orig) выглядит так себе.
+#### Оператор noexcept: альтернативы
+```cpp
+template <class T>
+T copy(T const& orig) noexcept(std::is_nothrow_copy_constructible<T>::value) {
+	return orig;
+}
+```
+• Внутри этот определитель реализован через оператор noexcept  и настоящее место этого оператора именно там - в библиотечном коде.
+• Тем не менее, какие-то детали о нём знать полезно.
+#### Оператор noexcept: детали
+• Оценивает каждую функцию, задействованную в выражении, но не вычисляет выражение.
+```cpp
+struct ThrowingCtor { ThrowingCtor(){} };
+
+void foo(ThrowingCtor) noexcept;
+void foo(int) noexcept;
+
+assert(noexcept(foo(1)) == true);
+assert(noexcept(foo(ThrowingCtor{})) == false);
+```
+• Возвращает false для constant expressions.
+• Интересно, что разыменование nullptr - это вариант нормы для noexcept.
+Пример:
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// Some details of noexcept expressions
+//
+//---------------------------------------------------------------------------
+
+#include <iostream>
+#include <type_traits>
+
+struct DefaultCtor {};
+
+struct ThrowinCtor {
+	ThrowingCtor(){}; // =default will create noexcept one
+	ThrowingCtor(const Throwing){}
+};
+```
 #### Литература
 1. ISO/IEC, "Information technology - Programming Laguages - C++", ISO/IEC 14882:2017
 2. The C++ Programming Language (4th Edition)
@@ -864,3 +931,4 @@ T copy(T const& original) /* noexcept? */ {
 8. Arne Mertz, Modern C++ features - keyword \`noexcept\`, blog post, Jan\`2016
 9. Niall Douglas, Mongrel Monads, ACCU\`2017
 10. Nico Brailovsky, Exception handling internals
+#### 
