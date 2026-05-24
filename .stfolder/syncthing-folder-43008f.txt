@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: notes-vault
+created: 2026-05-24T16:56:51+03:00
