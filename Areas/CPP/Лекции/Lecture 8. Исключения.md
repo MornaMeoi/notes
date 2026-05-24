@@ -689,11 +689,48 @@ template <typename T> class MyVector {
 	
 public:
 	MyVector(const MyVector &rhs) {
-		arr_ = new T[rhs.size_];
+		arr_ = new T[rhs.size_]; // здесь утечка памяти
 		size_ = rhs.size_; used_ = rhs.used_;
 		for(size_t i = 0; i != rhs.size_; ++i) {
-			arr_[i] = rhs.arr_[i];
+			arr_[i] = rhs.arr_[i]; // если здесь исключение
 		}
+	}
+};
+```
+#### Безопасность относительно исключений
+• Код, в котором при исключении могут утечь ресурсы, оказаться в несогласованном состоянии объекты и прочее, называется <span style="color: blue;">небезопасным</span> относительно исключений.
+• Каргилл писал: "<span style="color: brown;">I suspect that most members of the C++ community vastly underestimate the skills needed to program with exceptions and therefore underestimate the true costs of their use.</span>" \[3]
+• И, в общем, это до сих пор так, хотя прекрасные книги Саттера \[5] и \[6] сильно улучшили общую грамотность.
+#### Гарантии безопасности
+• Базовая гарантия: исключение при выполнении операции может изменить состояние программы, но не вызывает утечек и оставляет все объекты в согласованном (<span style="color: blue;">но не обязательно предсказуемом</span>) состоянии.
+• Строгая гарантия: при исключении гарантируется <span style="color: blue;">неизменность состояния</span> программы относительно задействованных в операции объеков (commit/rollback).
+• Гарантия бессбойности: функция не генерирует исключений (noexcept).
+#### Безопасное копирование
+```cpp
+template <typename T>
+T *safe_copy(const T* src, size_t srcsize) {
+	T *dest = new T[srcsize];
+	try {
+		for(size_t idx = 0; idx != srcsize; ++idx)
+			dest[idx] = src[idx];
+	}
+	catch (...) {
+		delete [] dest;
+		throw;
+	}
+	return dest;
+}
+```
+#### Теперь конструктор копирования
+```cpp
+template <typename T> class MyVector {
+	T *arr_ = nullptr;
+	size_t size_, used_ = 0;
+	
+public:
+	MyVector(const MyVector &rhs) {
+		arr_ = (safe_copy(rhs.arr_, rhs.size_)),
+		size_(rhs.size), used_(rhs.used_)
 	}
 };
 ```
