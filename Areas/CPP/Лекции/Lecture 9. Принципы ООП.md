@@ -90,11 +90,10 @@ public:
 • UML поддерживает также тонны других атрибутов, например, шаблонные параметры.
 ```mermaid
 classDiagram
-	class Matrix~T~ {
-		<<template>>
-		+contents: T*
-		+x: size_t
-		+y: size_t
-		+operator=(rhs: const Matrix&)
+	class Matrix~typename T~ {
+		+T* contents
+		+size_t x
+		+size_t y
+		+Matrix& operator=(rhs: const Matrix&)
 	}
 ```
