@@ -88,23 +88,27 @@ public:
 • По традиции имя идёт в первом квадрате, поля во втором, а методы в третьем.
 • Формат полей "поле: тип" (несколько контринтуитивно для C++).
 • UML поддерживает также тонны других атрибутов, например, шаблонные параметры.
-```mermaid
-classDiagram
-	class Matrix~typename T~ {
-		+T* contents
-		+size_t x
-		+size_t y
-		+Matrix& operator=(rhs: const Matrix&)
-	}
+```plantuml
+@startuml
+hide circle
+class Matrix {
+	+T* contents
+	+size_t x
+	+size_t y
+	+Matrix& operator=(rhs: const Matrix&)
+}
+@enduml
 ```
 • Ассоциация: сущности каким-то образом связаны друг с другом.
 • Например, появляются вместе внутри одной функции.
-```mermaid
-classDiagram
-	class Professor {
-	}
-	class Book {
-	}
-	Professor "+author\n1..*" -- "+textbook\n0..*" Book
+```plantuml
+@startuml
+hide circle
+left to right direction
+class Professor
+class Book
+Professor "+author 1..*" ---- "+textbook 0..*" Book
+@enduml
 ```
-• Здесь также видно
+• Здесь также видно, что у каждой связи можно указать роли и множественность.
+• Генерализация: отношение частное/общее (для C++ это открытое наследование).
