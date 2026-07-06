@@ -244,8 +244,51 @@ public:
 		for(auto& v : vs_)
 			v += t;
 	}
-	void draw(Screen& s) const {
-		for(auto v : v)
+	void rotate(const Quaternion& q) {
+		// for(auto& p : vs_)
+		//   p = inverse(q) * p * q;
 	}
+	void draw(Screen& s) const {
+		for(auto v : vs_) {
+			::draw(s, w);
+			std::cout << "\n";
+		}
+	}
+	void serialize(ByteStream &bs) const { draw(bs); }
 };
+
+int main() {
+	Polygon3D p = {{2, 1, 6}, {-3, 7, 4}};
+	p.draw(std::cout);
+}
 ```
+#### Принцип единственной ответственности
+```plantuml
+@startuml
+hide circle
+left to right direction
+class Polygon3D {
+	-vs_: std::vector<Vector3D>
+	+translate(t:const Vector3D&): void
+	+rotate(q:const Quaternion&): void
+	+begin(): It
+	+end(): It
+}
+class Quaternion {
+	+v: Vector3D
+	+w: int
+}
+class Vector3D {
+	+x: int
+	+y: int
+	+z: int
+}
+Polygon3D -- Quaternion
+Quaternion o-- Vector3D
+Vector3D --o Polygon3D
+@enduml
+```
+• Теперь единственная обязанность - это геометрия.
+• Для вывода есть итераторы.
+• В итоге, внешние функции могут обращаться к элементам, но не к состоянию полигона.
+• "We want to design components that are self-"
