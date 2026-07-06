@@ -166,10 +166,86 @@ Triangle "*" o-- "3" Segment
 ```plantuml
 @startuml
 hide circle
+left to right direction
 class Screen
 class Polygon3D {
 	-vs_: std::vector<Vector3D>
-	+translate(t:)
+	+translate(t:const Vector3D&): void
+	+rotate(q:const Quaternion&): void
+	+draw(s:Screen&): void
+	+serialize(bs: ByteStream&): void
 }
+class ByteStream
+class Vector3D {
+	+x: int
+	+y: int
+	+z: int
+}
+class Quaternion {
+	+v: Vector3D
+	+w: int
+}
+
+Screen -- Polygon3D
+Polygon3D -- ByteStream
+Polygon3D o-- Vector3D
+Polygon3D --- Quaternion
+Vector3D --o Quaternion
 @enduml
+```
+• В каком случае мы тут должны будем изменять полигон?
+• Что в этом плохого?
+• Есть ли нечто плохое в зависимости от вектора и от кватернионов?
+• <span style="color: red;">"A class should have only one reason to change"</span> (Robert C. Martin)
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// Bad code violating SRP: polygon does too much
+//
+//---------------------------------------------------------------------------
+
+#include <iostream>
+#include <vector>
+
+using Screen = std::ostream;
+using ByteStream = std::ostream;
+
+struct Vector3D {
+	int x, y, z;
+	Vector3D& operator+=(const Vector3D& lhs) {
+		x += lhs.x;
+		y += lhs.y;
+		z += lhs.z;
+		return *this;
+	}
+};
+
+struct Quaternion {
+	Vector3D v;
+	int w;
+};
+
+void draw(Screen& s, Vector3D v) {
+	s << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+}
+
+class Polygon3D {
+	std::vector<Vector3D> vs_;
+	
+public:
+	Polygon3D(std::initializer_list<Vector3D> il) : vs_(il) {}
+	void translate(const Vector3D& t) {
+		for(auto& v : vs_)
+			v += t;
+	}
+	void draw(Screen& s) const {
+		for(auto v : v)
+	}
+};
 ```
