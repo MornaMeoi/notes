@@ -91,11 +91,12 @@ public:
 ```plantuml
 @startuml
 hide circle
-class Matrix {
-	+T* contents
-	+size_t x
-	+size_t y
-	+Matrix& operator=(rhs: const Matrix&)
+skinparam classAttributeIconSize 0
+class Matrix<typename T> {
+	+contents: T*
+	+x: size_t
+	+y: size_t
+	+operator=(rhs: const Matrix&)
 }
 @enduml
 ```
@@ -107,8 +108,40 @@ hide circle
 left to right direction
 class Professor
 class Book
-Professor "+author 1..*" ---- "+textbook 0..*" Book
+Professor "+author\n1..*" ---- "+textbook\n0..*" Book
 @enduml
 ```
 • Здесь также видно, что у каждой связи можно указать роли и множественность.
 • Генерализация: отношение частное/общее (для C++ это открытое наследование).
+```plantuml
+@startuml
+hide circle
+skinparam classAttributeIconSize 0
+abstract class IMatrix {
+	+virtual ~IMatrix()
+}
+IMatrix <|-- Matrix
+IMatrix <|-- LazyMatrix
+@enduml
+```
+• Композиция означает, что сущность B является частью сущности A.
+```plantuml
+@startuml
+hide circle
+left to right direction
+class Folder
+class File
+Folder "1" *--- "+entry\n*" File
+@enduml
+```
+• Здесь файл принадлежит только одной папке и связан с ней временем жизни.
+• Агрегация: сущность A владеет сущностью B, но кроме A у B может быть много владельцев.
+```plantuml
+@startuml
+hide circle
+left to right direction
+class Triangle
+class Segment
+Triangle "*" <-- "3" Segment
+@enduml
+```
