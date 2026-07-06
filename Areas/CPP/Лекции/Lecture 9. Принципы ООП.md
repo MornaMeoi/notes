@@ -97,3 +97,14 @@ classDiagram
 		+Matrix& operator=(rhs: const Matrix&)
 	}
 ```
+• Ассоциация: сущности каким-то образом связаны друг с другом.
+• Например, появляются вместе внутри одной функции.
+```mermaid
+classDiagram
+	class Professor {
+	}
+	class Book {
+	}
+	Professor "+author\n1..*" -- "+textbook\n0..*" Book
+```
+• Здесь также видно
