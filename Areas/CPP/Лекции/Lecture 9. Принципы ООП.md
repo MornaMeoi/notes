@@ -142,6 +142,34 @@ hide circle
 left to right direction
 class Triangle
 class Segment
-Triangle "*" <-- "3" Segment
+Triangle "*" o-- "3" Segment
+@enduml
+```
+• Здесь треугольник состоит из отрезков, но каждый из отрезков может участвовать во многих треугольниках.
+#### Обсуждение
+• UML - это средство описания, которым можно описать любую систему, в том числе сколь угодно плохую.
+• Software имеет английский корень soft, означающий нечто, что легко изменять.
+• Но часто вместо куска пластилина у нас под руками оказывается странная засохшая субстанция с обломками гвоздей и лезвий внутри.
+• Первый шаг к хорошему коду - это <span style="color: blue;">легко изменяемый</span> код.
+## Принципы SOLID
+• <span style="color: red;">S</span>RP - single responsibility principle
+	• каждый контекст должен иметь одну ответственность
+• <span style="color: red;">O</span>CP - open-close principle
+	• каждый контекст должен быть закрыт для изменения и открыт для расширения
+• <span style="color: red;">L</span>SP - Liskov substitution principle
+	• частный класс должен иметь возможность свободно заменять общий
+• <span style="color: red;">I</span>SP - interface separation principle
+	• тип не должен зависеть от тех интерфейсов, которые он не использует
+• <span style="color: red;">D</span>IP - dependency inversion principle
+	• высокоуровневые классы не должны зависеть от низкоуровневых
+#### Пример плохого проектирования (SRP)
+```plantuml
+@startuml
+hide circle
+class Screen
+class Polygon3D {
+	-vs_: std::vector<Vector3D>
+	+translate(t:)
+}
 @enduml
 ```
