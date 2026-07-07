@@ -196,7 +196,7 @@ Vector3D --o Quaternion
 • В каком случае мы тут должны будем изменять полигон?
 • Что в этом плохого?
 • Есть ли нечто плохое в зависимости от вектора и от кватернионов?
-• <span style="color: red;">"A class should have only one reason to change"</span> (Robert C. Martin)
+• <span style="color: brown;">"A class should have only one reason to change"</span> (Robert C. Martin)
 ```cpp
 //---------------------------------------------------------------------------
 //
@@ -291,4 +291,79 @@ Vector3D --o Polygon3D
 • Теперь единственная обязанность - это геометрия.
 • Для вывода есть итераторы.
 • В итоге, внешние функции могут обращаться к элементам, но не к состоянию полигона.
-• "We want to design components that are self-"
+• <span style="color: brown;">"We want to design components that are self-contained: independent and with single well-defined purpose"</span> (Andrew Hunt, David Thomas)
+Пример хорошей реализации:
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// Good code satisfying SRP
+//
+//---------------------------------------------------------------------------
+
+#include <iostream>
+#include <vector>
+
+using Screen = std::ostream;
+using ByteStream = std::ostream;
+
+struct Vector3D {
+	int x, y, z;
+	Vector3D& operator+=(const Vector3D& lhs) {
+		x += lhs.x;
+		y += lhs.y;
+		z += lhs.z;
+		return *this;
+	}
+};
+
+struct Quaternion {
+	Vector3D v;
+	int w;
+};
+
+void draw(Screen& s, Vector3D v) {
+	s << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+}
+
+class Polygon3D {
+	std::vector<Vector3D> vs_;
+	using CItt = typename std::vector<Vector3D>::const_iterator;
+	
+public:
+	Polygon3D(std::initializer_list<Vector3D> il) : vs_(il) {}
+	void translate(const Vector3D& t) {
+		for(auto& v : vs_)
+			v += t;
+	}
+	void rotate(const Quaternion& q) {
+		// for(auto& p : vs_)
+		//   p = inverse(q) * p * q;
+	}
+	CItt begin() const { return vs_.cbegin(); }
+	CItt end() const { return vs_.cend(); }
+};
+
+void draw(Screen& s, const Polygon3D &p) {
+	for(auto v : p) {
+		::draw(s, v);
+		std::cout << "\n";
+	}
+}
+
+void serialize(ByteStream& bs, const Polygon3D& p) { draw(bs, p); }
+
+int main() {
+	Polygon3D p = {{2, 1, 6}, {-3, 7, 4}};
+	draw(std::cout, p);
+}
+```
+#### Гайдлайн: связность
+• Ваши сущности должны быть внутренне связаны (cohesive) и внешне разделены.
+• Разделяйте всё, что может быть разделено без создания жёстких внешних связей. Пример: отделение алгоритмов от контейнеров.
+• <span style="color: brown;">"Cohesion is a measure of the strength of association of the elements inside a module. A highly cohesive module is a collection of statements and data items that should be treated as a whole because they are so closely related."</span> (Tom DeMarco)
