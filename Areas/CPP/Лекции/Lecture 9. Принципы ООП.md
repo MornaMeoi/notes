@@ -432,5 +432,11 @@ struct IScreen {
 };
 
 using ByteStream = IScreen;
-void serialize(ByteStream &bs, const IF)
+void serialize(ByteStream &bs, const IFigure &p) { bs.draw(p); }
+
+struct Vector3D : public IFigure {
+	int x_, y_, z_;
+	Vector3D(int x = 0, int y = 0, int z = 0) : x_(x), y_(y), z_(z) {}
+	
+};
 ```
