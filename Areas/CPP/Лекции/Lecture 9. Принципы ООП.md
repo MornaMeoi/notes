@@ -370,9 +370,11 @@ int main() {
 #### Пример плохого проектирования (OCP)
 ```plantuml
 @startuml
-hide circle
 
-enum class Shape {
+hide circle
+left to right direction
+
+enum Shape {
 	VECTOR,
 	POLYGON,
 	...
@@ -393,10 +395,42 @@ class Screen {
 	+render(): void
 }
 
-IFigure <-- Vector3D
-IFigure <-- Polygon3D
+IFigure <|-- Vector3D
+IFigure <|-- Polygon3D
 Vector3D --* Polygon3D
-IFigure --o IScreen
-IScreen <-- Screen
+IFigure "*" --o "1" IScreen
+IScreen <|-- Screen
 @enduml
+```
+Пример с гита:
+```cpp
+//---------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//---------------------------------------------------------------------------
+//
+// Bad code violating OCP: switch too ugly
+//
+//---------------------------------------------------------------------------
+
+#include <iostream>
+#include <vector>
+
+struct IFigure {
+	enum class Shape { VECTOR, POLYGON, CIRCLE };
+	virtual Shape shape() const = 0;
+	virtual ~IFigure() = default;
+};
+
+struct IScreen {
+	virtual void draw(const IFigure &f) = 0;
+	virtual void render() const = 0;
+	virtual ~IScreen() = default;
+};
+
+using ByteStream = IScreen;
+void serialize(ByteStream &bs, const IF)
 ```
