@@ -367,3 +367,36 @@ int main() {
 • Ваши сущности должны быть внутренне связаны (cohesive) и внешне разделены.
 • Разделяйте всё, что может быть разделено без создания жёстких внешних связей. Пример: отделение алгоритмов от контейнеров.
 • <span style="color: brown;">"Cohesion is a measure of the strength of association of the elements inside a module. A highly cohesive module is a collection of statements and data items that should be treated as a whole because they are so closely related."</span> (Tom DeMarco)
+#### Пример плохого проектирования (OCP)
+```plantuml
+@startuml
+hide circle
+
+enum class Shape {
+	VECTOR,
+	POLYGON,
+	...
+}
+class IFigure {
++shape(): Shape
+}
+class Vector3D
+class Polygon3D
+class IScreen {
+	+draw(f: const IFigure&)
+}
+class Screen {
+	+figures_: std::vector<IFigure*>
+	-drawVector(v: const Vector3D &): void
+	-drawPolygon(p: const Polygon3D &): void
+	+draw(f: const IFigure &): void
+	+render(): void
+}
+
+IFigure <-- Vector3D
+IFigure <-- Polygon3D
+Vector3D --* Polygon3D
+IFigure --o IScreen
+IScreen <-- Screen
+@enduml
+```
