@@ -1042,3 +1042,30 @@ void draw(Shape* shapes, size_t size);
 Rectangle rects[5];
 draw(rects, 5); // ok, Rectangle* is Shape*
 ``` 
+#### Инвариантность
+• Мы говорим, что изменение типа ковариантно к генерализации, если выполняется условие:
+```
+если A обобщает B, то A' обобщает B'
+```
+• При этом, шаблоны вообще-то <span style="color: blue;">инвариантны к генерализации</span>.
+```cpp
+class Rectangle : public Shape { /* ... */ };
+
+void draw(std::vector<Shape> shapes);
+
+std::vector<Rectangle> rects(5);
+draw(rects); // fail, vector<Rectangle> is not vector<Shape>
+```
+#### Обсуждение
+• Можно поставить обратный вопрос: а почему, собственно, указатели не инвариантны?
+```cpp
+template<typename T> using Pointer = T*; // казалось бы
+
+void draw(Pointer<Shape> shapes, size_t size);
+
+Pointer<Rectangle> rects = new Rectangle[5];
+draw(rects, 5); // ok, но чем Pointer<Rectangle>
+								// лучше чем std::vector<Rectangle>?
+```
+• Подсказка: ковариантны только одинарные указатели.
+• Таким образом, ковариантность указателей и ссылок к обобщению - это приятное исключение для LSP, а не правило.
