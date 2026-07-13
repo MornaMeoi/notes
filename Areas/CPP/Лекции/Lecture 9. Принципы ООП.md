@@ -489,11 +489,24 @@ class Screen : public IScreen {
 public:
 	void draw(const IFigure& f) override { figures_.push_back(&f); }
 	
-	void render() const ove 
+	void render() const override {
+		for(auto f : figures_) {
+			switch(t->shape()) {
+				case IFigure::Shape::POLYGON:
+					drawPolygon(*static_cast<const Polygon3D*>(f));
+					break;
+				case IFigure::Shape::VECTOR:
+					drawVector(*static_cast<const Vector3D*>(f));
+					break;
+			}
+		}
+	} 
 };
 
 int main() {
 	Polygon3D p = {{2, 1, 6}, {-3, 7, 4}};
-	draw(std::cout, p);
+	Screen n;
+	s.draw(p);
+	s.render();
 }
 ```
