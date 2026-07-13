@@ -575,12 +575,13 @@ struct IScreen {
 
 struct IDrawable {
 	virtual void draw(const IScreen& s) const = 0;
+	virtual ~IDrawable() = default;
 };
 
 using ByteStream = IScreen;
-void serialize(ByteStream &bs, const IFigure &p) { bs.draw(p); }
+void serialize(ByteStream &bs, std::shared_ptr<IDrawable> p) { bs.draw(p); }
 
-struct Vector3D : public IFigure {
+struct Vector3D : public IDrawable {
 	int x_, y_, z_;
 	Vector3D(int x = 0, int y = 0, int z = 0) : x_(x), y_(y), z_(z) {}
 	Vector3D& operator+=(const Vector3D &lhs) {
@@ -590,7 +591,9 @@ struct Vector3D : public IFigure {
 		return *this;
 	}
 	
-	Shape shape() const override { return IFigure::Shape::VECTOR; }
+	void draw(const IScreen& s) const override {
+		s.stream() << "(" << x_ << ", " << y_ << ", " << z_ << ")";
+	}
 };
 
 struct Quaternion {
@@ -598,7 +601,7 @@ struct Quaternion {
 	int w;
 };
 
-class Polygon3D: public IFigure {
+class Polygon3D: public IDrawable {
 	std::vector<Vector3D> vs_;
 	using CItt = typename std::vector<Vector3D>::const_interator;
 	
@@ -612,47 +615,52 @@ public:
 		// for(auto& p : vs_)
 		//   p = inverse(q) * p * q;
 	}
-	Shape shape() const override { return IFigure::Shape::POLYGON; }
+	void draw(const IScreen &s) const override {
+		for(auto v : vs_) {
+			v.draw(s);
+			s.stream() << "\n";
+		}
+	}
 
 	CItt begin() const { return vs_.cbegin(); }
 	CItt end() const { return vs_.cend(); }
 };
 
 class Screen : public IScreen {
-	std::vector<const IFigure*> figures_;
-	
-	void drawVector(const Vector3D& v) const {
-		std::cout << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-	}
-	
-	void drawPolygon(const Polygon3D& p) const {
-		for(auto v : p) {
-			drawVector(v);
-			std::cout << "\n";
-		}
-	}
-	
+	std::vector<std::shared_ptr<IDrawable>> figures_;
+
 public:
-	void draw(const IFigure& f) override { figures_.push_back(&f); }
+	void draw(std::shared_ptr<IDrawable> f) override { figures_.push_back(f); }
 	
 	void render() const override {
-		for(auto f : figures_) {
-			switch(t->shape()) {
-				case IFigure::Shape::POLYGON:
-					drawPolygon(*static_cast<const Polygon3D*>(f));
-					break;
-				case IFigure::Shape::VECTOR:
-					drawVector(*static_cast<const Vector3D*>(f));
-					break;
-			}
-		}
+		for(auto f: figures_)
+			f->draw(*this);
 	} 
 };
 
 int main() {
-	Polygon3D p = {{2, 1, 6}, {-3, 7, 4}};
+	std::initializer_list<Vector3d> il{{2, 1, 6}, {-3, 7, 4}};
+	auto p = std::make_shared<Polygon3D>(il);
 	Screen n;
 	s.draw(p);
 	s.render();
 }
 ```
+#### Обсуждение
+• Такое чувство, что OCP в таком наивном виде противоречит SRP.
+• Мы добавили виртуальную функцию draw в полигон, но мы несколькими слайдами раньше договорились этого <span style="color: blue;">не</span> делать.
+• <span style="color: brown;">"Inheritance is the base class of Evil"</span> (Sean Parent)
+• Посмотрите на код справа (в данном конспекте снизу).
+```cpp
+using document_t = std::vector<int>;
+
+// документ хранит объекты
+// семантика значения
+// no incidental data structures
+document.push_back(1);
+document.push_back(2);
+document.push_back(3);
+
+draw(document, std::cout);
+```
+• Чего мы хотели бы?
