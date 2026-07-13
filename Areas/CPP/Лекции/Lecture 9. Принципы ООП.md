@@ -1121,12 +1121,72 @@ class Robot : public Workable {
 @startuml
 
 hide circle
+left to right direction
 
 class Scheduler {
 	+schedule(d: DAG&)
 }
 
-class DAG {}
+class DAG {
+	+BBIterator begin()
+	+BBIterator end()
+	+bool reorder(b1: BB, b2: BB)
+}
+
+class BBIterator
+class BB
+
+Scheduler --> DAG
+DAG -- BBIterator
+DAG *-- BB
 
 @enduml
 ```
+<span style="color: brown;">"Dependency is the key problem in software development at all scales"</span> (Kent Beck)
+#### Принцип инверсии зависимостей
+```plantuml
+@startuml
+
+hide circle
+left to right direction
+
+class Scheduler {
+	+schedule(d: IDAG&)
+}
+
+class IDAG {
+	+IBBIterator begin()
+	+IBBIterator end()
+	+bool reorder(b1: IBB. b2: IBB)
+}
+
+class DAG {
+	+BBIterator begin()
+	+BBIterator end()
+	+bool reorder(b1: BB, b2: BB)
+}
+
+class IBBIterator
+class IBB
+class BB
+
+Scheduler --> IDAG
+IDAG -- IBBIterator
+IDAG <|-- DAG
+DAG -- IBBIterator
+DAG "1" *-- "1..*" IBB
+IDAG -- IBB
+IBB <|-- BB
+
+@enduml
+```
+• Высокоуровневые классы не зависят от низкоуровневых.
+• Вместо этого и те, и другие зависят от абстракций.
+• Scheduler знает только об интерфейсе, следовательно то, что за эти интерфейсом легко заменить.
+## Правила хорошего кода
+#### Гуманитарная составляющая
+• Де Марко и Листер писали, что программист в среднем занимается не научной или технической деятельность, а деятельностью социальной.
+• Это на сто процентов верно для бухгалтерии, веб-программирования и т.п.
+• Но даже для компиляторостроения, высоконагруженных систем и всего такого интересного соотношение ~80/20 в пользу гуманитарных задач.
+• Программный код больше похож на чертёж здания, чем на доказательство теоремы. Поэтому говорят о "качестве", "архитектуре", "проекте"...
+• Поговорим о качестве. Что такое хороший код?
