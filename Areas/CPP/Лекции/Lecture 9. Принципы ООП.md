@@ -679,3 +679,49 @@ draw(document, std::cout);
 // мы хотели бы хранить и полиморфно
 // отображать разнородные объекты
 ```
+#### Модель и концепция
+```plantuml
+@startuml
+
+hide circle
+left to right direction
+
+class Screen
+
+class Drawable {
+	+self: std::unique_ptr<IDrawable>
+	+Drawable(v: Vector3D)
+	+Drawble(x: int)
+}
+
+class Vector3D {
+	+x: int
+	+y: int
+	+z: int
+}
+
+class IDrawable {
+	+draw(f: Screen&): void
+}
+
+class DrawableVector3D {
+	+data: Vector3D
+}
+
+class DrawableInt {
+	+data: int
+}
+note as DrawFunctions
+	void draw(int x, Screen &out);
+	void draw(Vector3D, Screen &out);
+end note
+
+Screen "1" -- "*" Drawable
+Drawable *-- IDrawable
+Vector3D --* DrawableVector3D
+IDrawable <|-- DrawableVector3D
+IDrawable <|-- DrawableInt
+Screen -- DrawFunctions
+
+@enduml
+```
