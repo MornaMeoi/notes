@@ -533,8 +533,8 @@ class IScreen {
 	+draw(f: std::shared_ptr<IDrawable>)
 }
 class Screen {
-	+figures_: std::vector<IFigure*>
-	+draw(f: const IDrawable&): void
+	+figures_: std::vector<shared_ptr<IDrawable>>
+	+draw(f: std::shared_ptr<IDrawable>): void
 	+render(): void
 }
 
@@ -724,4 +724,8 @@ IDrawable <|-- DrawableInt
 Screen -- DrawFunctions
 
 @enduml
+```
+Очередной пример с гита:
+```cpp
+
 ```
