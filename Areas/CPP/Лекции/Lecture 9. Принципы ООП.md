@@ -901,6 +901,11 @@ struct Vector3D {
 	int x, y, z;
 };
 
+struct Polygon3D {
+	std::vector<Vector3D> vs;
+	Polygon3D(std::initializer_list<Vector3D> il : vs(il)) {}
+};
+
 void draw(int x, Screen& out, size_t position) {
 	out << std::string(position, ' ') << x << "\n";
 }
@@ -924,12 +929,20 @@ class Drawable {
 		virtual void draw_(Screen&, size_t) const = 0;
 	};
 	
-	template <typename T> struct Drawa
+	template<typename T> struct DrawableObject final : IDrawable {
+		T data_;
+		DrawableObject(T x) : data_(std::move(x)) {}
+		std::unique_ptr<IDrawable> copy_() const override {
+			return std::make_unique<DrawableObject>(*this);
+		}
+		void draw_(Screen &out, size_t position) const override;
+	};
 	
 	std::unique_ptr<IDrawable> self_;
 	
 public:
-	Drawable(int x) : self_(std::make_unique<DrawableInt>(std::move(x))) {}
+	template<typename T>
+	Drawable(int x) : self_(std::make_unique<DrawableObject<T>>(std::move(x))) {}
 	
 	// copy ctor, move ctor and assignment
 public:
@@ -955,12 +968,54 @@ void draw(const Model& x, Screen& out, size_t position) {
 	out << std::string(position, ' ') << "</world>" << std::endl;
 }
 
+template<typename T>
+void Drawable::DrawableObject<T>::draw_(Screen& out, size_t position) const {
+	::draw(data_, out, position);
+}
+
 int main() {
 	Model document;
 	document.push_back(0);
 	document.push_back(Vector3D{2, 1, 6});
+	document.push_back(document);
 	document.push_back(Vector3D{-1, 7, 4});
-	document.push_back(3);
 	draw(document, std::cout, 0);
 }
+```
+После этих небольших манипуляций получаем такой вот вывод, а код становится более абстрактным:
+```
+<world>
+	0
+	<polygon>
+		(2, 1, 6)
+		(-3, 7, 4)
+	</polygon>
+	<world>
+		0
+		<polygon>
+			(2, 1, 6)
+			(-3, 7, 4)
+		</polygon>
+	</world>
+	(-3, 7, 4)
+</world>
+```
+#### Обсуждение
+• Техники наподобие Parent Reversal позволяют помирить OCP и SRP
+• Теперь мы расширяем, добавляя свободные функции, полиморфные, как множество перегрузки.
+• Динамический полиморфизм, при этом, остаётся деталью реализации.
+• Шаблонный полиморфизм используется, чтобы позволить обобщённое программирование.
+#### Пример плохого проектирования (LSP)
+• Все ли видят, в чём тут основная проблема?
+```cpp
+bool intersect(Polygon2D& l, Polygon2D& r); // 2D intersection
+
+class Polygon2D {
+	std::vector<double> xcoord, ycoord;
+	// .... everything else ....
+};
+class Polygon3D : public Polygon2D {
+	std::vector<double> zcoord;
+	// .... everything else ....
+};
 ```
