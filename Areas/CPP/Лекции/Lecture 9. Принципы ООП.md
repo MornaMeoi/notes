@@ -664,3 +664,18 @@ document.push_back(3);
 draw(document, std::cout);
 ```
 • Чего мы хотели бы?
+Меняет код, подразумевает, что хотели бы так:
+```cpp
+using document_t = std::vector<???>;
+
+// документ хранит объекты
+// семантика значения
+// no incidental data structures
+document.push_back(circle);
+document.push_back(polygon);
+document.push_back(vector);
+
+draw(document, std::cout);
+// мы хотели бы хранить и полиморфно
+// отображать разнородные объекты
+```
