@@ -124,5 +124,17 @@ int main() try {
 	auto Cleanup = [](GLFWwindow*) { glfwTerminate(); };
 	using UWnd = std::unique_ptr<GLFWwindow, decltype(Cleanup)>;
 	UWnd Wnd(initialize_window(), Cleanup);
+	
+	while(!glfwWindowShouldClose(Wnd.get())) {
+		do_render();
+		glfwSwapBuffers(Wnd.get());
+		glfwPollEvents();
+	}
+} catch(glfw_error& E) {
+	std::cout << "GLFW error: " << E.what() << std::endl;
+} catch(std::exception& E) {
+	std::cout << "Standard error: " << E.what() << std::endl;
+} catch(...) {
+	std::cout << "Unknown error\n";
 }
 ```
