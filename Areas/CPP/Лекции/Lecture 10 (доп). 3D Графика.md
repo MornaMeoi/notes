@@ -318,4 +318,42 @@ int main() try {
 https://www.khronos.org/registry/OpenGL/extensions
 • Существуют автоматизированные системы такие как glad, запрашивающие вам расширения и генерирующие хедер с доступными функциями.
 • Для более тонкого контроля есть библиотека GLEW (The OpenGL Extension Wrangler Library), позволяющая проверять доступность расширений и многое другое.
+#### Нефиксированный конвейер
+• Первой идеей, появившейся достаточно рано была идея шейдера, т.е. небольшой программы для видеокарты, которая позволяет гибко управлять светом и тенью на каждой вершине.
+• Так в 2001 году в OpenGL 2.0 появился язык GLSL.
+• В программировании GPU есть своя специфика.
+```mermaid
+flowchart TD
+	API["API"]
+	PP["Primitive<br>processing"]
+	VS{{"Vertex<br>shader"}}
+	CC["Clipping<br>Culling"]
+	PA["Primitive<br>assembly"]
+	FS{{"Fragment<br>shader"}}
+	DS["Depth<br>Stencil"]
+	DB["Dithering<br>Blending"]
+	FB["Frame buffer"]
 
+	API -->|geometry| PP
+	PP -->|vertices| VS
+	VS --> CC
+	CC --> PA
+	PP -->|triangles, lines| PA
+	PA -->|rasterization, interpolation| FS
+	API -->|textures| FS
+	FS --> DS
+	DS --> DB
+	DB --> FB
+	FB -->|pixel read| API
+
+	classDef yellow fill:#fdfd96,stroke:#333,stroke-width:1px
+	classDef pink fill:#ffb3ba,stroke:#333,stroke-width:1px
+	classDef cyan fill:#bfefff,stroke:#333,stroke-width:1px
+	classDef green fill:#c9f2c9,stroke:#333,stroke-width:1px
+
+	class PP,CC,PA yellow
+	class VS yellow
+	class API pink
+	class FS,DS,DB cyan
+	class FB green
+```
