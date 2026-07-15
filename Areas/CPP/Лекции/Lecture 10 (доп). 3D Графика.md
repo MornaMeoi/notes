@@ -564,41 +564,32 @@ GLuint installShader(std::string ShaderCode, GLenum ShaderType) {
 }
 
 // compile vertex and fragment shaders then link program
-
-
-// render routine
-void do_render() {
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_QUADS, 0, 4);
-}
-
-// entry point
-int main() try {
-	auto Cleanup = [](GLFWwindow*) { glfwTerminate(); };
-	using UWnd = std::unique_ptr<GLFWwindow, decltype(Cleanup)>;
-	UWnd Wnd(initialize_window(), Cleanup);
-	
-	GLuint VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	
-	glBindVertexArray(VAO);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-	
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-	glEnableVertexAttribArray(0);
-	// color attribute
-	// ...
-} catch(glfw_error& E) {
-	std::cout << "GLFW error: " << E.what() << std::endl;
-} catch(std::exception& E) {
-	std::cout << "Standard error: " << E.what() << std::endl;
-} catch(...) {
-	std::cout << "Unknown error\n";
-}
+// и т.д.
 ```
+#### Binding points: glBindBuffer
+• C++:
+
+GLfloat Vertices[] {
+	<span style="color: red;">0.5f,  0.5f, 0.0f,</span> <span style="color: blue;">0.0f, 1.0f, 0.0f,</span>
+	<span style="color: red;">-0.5f, 0.5f, 0.0f,</span> <span style="color: blue;">0.0f, 0.0f, 0.0f,</span>
+}
+
+glBinfBuffer(GL_ARRAY_BUFFER, VBO);
+
+glVertexAttribPointer(<span style="color: red;">0</span>, 3, GL_FLOAT, GL_FALSE, 6 \* sizeof(GLfloat), <span style="color: red;">0 * sizeof(GLfloat)</span>);
+glVertexAttribPointer(<span style="color: blue;">1</span>, 3, GL_FLOAT, GL_FALSE, 6 \* sizeof(GLfloat), <span style="color: blue;">3 * sizeof(GLfloat)</span>);
+
+• GLSL:
+
+<span style="color: red;">layout (location = 0)</span>
+<span style="color: red;">in vec3 aPos;</span>
+
+<span style="color: blue;">layout (location = 1)</span>
+<span style="color: blue;">in vec3 aColor;</span>
+
+out vec3 vColor;
+
+void main() {
+	gl_Position = vec4(<span style="color: red;">aPos</span>, 1.0);
+	vColor = <span style="color: blue;">aColor</span>;
+}
