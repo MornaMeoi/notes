@@ -575,7 +575,71 @@ GLuint linkShaders() {
 	GLint Success;
 	glGetShaderiv(ProgID, GL_LINK_STATUS, &Success);
 	if(!Success)
-		throw glsl_link_error("Fi)
+		throw glsl_link_error("Failed to link program", ProgID);
+	return ProgID;
+}
+
+// set uniform value: 1 float
+void setFloat(GLuint ProgID, const char* Name, float Val) {
+	GLint Loc = glGetUniformLocation(ProgID, Name);
+	glUniform1f(Loc, Val);
+}
+
+// render routine
+void do_render(GLuint VAO, GLuint ProgID) {
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(ProgID);
+	setFloat(ProgID, "time", glfwGetTime());
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+// entry point
+int main() try {
+	auto Cleanup = [](GLFWwindow*) { glfwTerminate(); };
+	using UWnd = std::unique_ptr<GLFWwindow, decltype(Cleanup)>;
+	UWnd Wnd(initialize_window(), Cleanup);
+	
+	GLuint VBO, VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+	
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+												reinterpret_cast<void*>(0 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);
+	// color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+												reinterpret_cast<void*>(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+	
+	// create/install shaders
+	GLuint ProgID = linkShaders();
+	
+	while(!glfwWindowShouldClose(Wnd.get())) {
+		do_render(VAO, ProgID);
+		glfwSwapBuffers(Wnd.get());
+		glfwPollEvents();
+	}
+	
+	// NOTE: non-exception safe here. Will be fixed in following example
+	//       how will you fix it, BTW?
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+} catch(glsl_error& E) {
+	std::cout << "GLSL error: " << E.what() << std::endl;
+	std::cout << E.ShaderLog << std::endl;
+} catch(glfw_error& E) {
+	std::cout << "GLFW error: " << E.what() << std::endl;
+} catch(std::exception& E) {
+	std::cout << "Standard error: " << E.what() << std::endl;
+} catch(...) {
+	std::cout << "Unknown error" << std::endl;
 }
 ```
 #### Binding points: glBindBuffer
