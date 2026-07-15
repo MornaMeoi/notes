@@ -565,7 +565,18 @@ GLuint installShader(std::string ShaderCode, GLenum ShaderType) {
 }
 
 // compile vertex and fragment shaders then link program
-// и т.д.
+GLuint linkShaders() {
+	GLuint ProgID = glCreateProgram();
+	GLuint VertexID = installShader(readFile(VERTNAME), GL_VERTEX_SHADER);
+	GLuint FragmentID = installShader(readFile(FRAGNAME), GL_FRAGMENT_SHADER);
+	glAttachShader(ProgID, VertexID);
+	glAttachShader(ProgID, FragmentID);
+	glLinkProgram(ProdID);
+	GLint Success;
+	glGetShaderiv(ProgID, GL_LINK_STATUS, &Success);
+	if(!Success)
+		throw glsl_link_error("Fi)
+}
 ```
 #### Binding points: glBindBuffer
 • C++:
@@ -640,6 +651,11 @@ void main() {
 #### Uniform и varying переменные
 • Шейдер работает сверхпараллельно и независимо: для каждого объекта.
 • Переменная, варьирующаяся от объекта называется varying. Общая на всех называется uniform (например, время).
-in vec3 vColor; // varying (приходит от растеризатора)
+in vec3 <span style="color: brown;">vColor</span>; <span style="color: gray;">// varying (приходит от растеризатора)</span>
 
-uniform float time; // uniform
+uniform float <span style="color: blue;">time</span>; <span style="color: gray;">// uniform</span>
+
+void main() {
+	<span style="color: gray;">for(f : all fragments)</span>
+		gl_FragColor<span style="color: gray;">[f]</span> = vec4(<span style="color: brown;">vColor</span><span style="color: gray;">[f]</span>.xy, <span style="color: brown;">vColor</span><span style="color: gray;">[f]</span>.z + abs(sin(<span style="color: blue;">time</span>)), 1.0);
+}
