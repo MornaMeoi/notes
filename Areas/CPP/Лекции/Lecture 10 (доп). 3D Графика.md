@@ -148,3 +148,158 @@ glEnable(GL_CULL_FACE);
 glClear(GL_COLOR_BUFFER_BIT);
 ```
 • Это тонна API функций и enums.
+```mermaid
+flowchart TD
+	API["API"]
+	PP["Primitive<br>processing"]
+	TLCC["Transform<br>Lighting<br>Clipping<br>Culling"]
+	PA["Primitive<br>assembly"]
+	TP["Texture<br>processing"]
+	CSAF["Color sum<br>Alpha channel<br>Fog"]
+	DS["Depth<br>Stencil"]
+	DB["Dithering<br>Blending"]
+	FB["Frame buffer"]
+
+	API -->|geometry| PP
+	PP -->|vertices| TLCC
+	TLCC --> PA
+	PA -->|triangles, lines| PP
+	PA -->|rasterization, interpolation| TP
+	API -->|textures| TP
+	TP --> CSAF
+	CSAF --> DS
+	DS --> DB
+	DB --> FB
+	FB -->|pixel read| API
+
+	classDef pink fill:#ffb3ba,stroke:#333,stroke-width:1px
+	classDef yellow fill:#fdfd96,stroke:#333,stroke-width:1px
+	classDef cyan fill:#bfefff,stroke:#333,stroke-width:1px
+	classDef green fill:#c9f2c9,stroke:#333,stroke-width:1px
+
+	class API pink
+	class PP,TLCC,PA yellow
+	class CSAF,TP,DS,DB cyan
+	class FB green
+```
+#### Общение с рантаймом
+• Каждый раз, когда вы дёргаете API функцию, вы дёргаете рантайм, который должен в какой-то момент послать информацию драйверу.
+```cpp
+for(auto Coord : Vertices)
+	glVertex3fv(Coord); // это вызов OpenGL runtime
+```
+• Проблема в том, что каждый такой API вызов предполагает накладные расходы, на которые вы идёте каждый фрейм. И которые сложно кешировать.
+• Нам наоборот хочется максимум отдать в память GPU и минимально с ней взаимодействовать.
+• Во многом это компенсируется тем, что в OpenGL возможны **расширения**.
+#### Расширения OpenGL: буферы вершин
+• Отрендерим тот же квадрат по другому: подготовим буферы вершин.
+```cpp
+glGenVertexArrays(1, &VAO);
+glGenBuffers(1, &VBO);
+glBindVertexArray(VAO);
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices)), Vertices, GL_STATIC_DRAW);
+```
+• В цикле рендеринга теперь всё стало куда приятней.
+```cpp
+glClear(GL_COLOR_BUFFER_BIT);
+glBindVertexArray(VAO);
+glDrawArrays(GL_QUADS, 0, 4);
+```
+Пример с гита:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Extensions simplest example: blank square on the screen
+// This example extends ogl_simplest
+// glad required for using extensions like GL_ARRAY_BUFFER of GL_STATIC_DRAW
+//
+// cl /EHsc ogl-extensions.cc /link glad.lib glfw3dll.lib opengl32.lib
+//
+//-------------------------------------------------------------------------------
+
+#include <cassert>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
+// clang-format off
+// this headers shall be in this position
+#include <glad/glad.h>
+// clang format on
+
+#include <GLFW/glfw3.h>
+
+// initial window sizes
+constexpr int SZX = 600;
+constexpr int SZY = 600;
+
+// custom error handler class
+struct glfw_error : public std::runtime_error {
+	glfw_error(const char* s) : std::runtime_error(s) {}
+};
+
+// throw on errors
+void error_callback(int, const char* err_str) { throw glfw_error(err_str); }
+
+// make sure the viewport matches the new window dimensions
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+}
+
+// initialization routine
+GLFWwindow* initialize_window() {
+	GLFWwindow* Window;
+	glfwSetErrorCallback(error_callback);
+	glfwInit();
+	Window = glfwCreateWindow(SZX, SZY, "Hello World", NULL, NULL);
+	assert(Window); // error callback shall throw otherwise
+	glfwMakeContextCurrent(Window);
+	glfwSetFrameBufferSizeCallback(Window, framebuffer_size_callback);
+	return Window;
+}
+
+// vertices to render
+GLfloat Vertices[4][3] = {
+	{-0.5f, 0.5f, 0.0f}, // top left
+	{0.5f, 0.5f, 0.0f}, // top right
+	{0.5f, -0.5f, 0.0f}, // bottom right
+	{-0.5f, -0.5f, 0.0f}, // bottom left
+};
+
+// render routine
+void do_render() {
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBegin(GL_QUADS);
+	glColor3f(1.0, 1.0, 1.0);
+	for(auto Coord : Vertices)
+		glVertex3fv(Coord);
+	glEnd();
+}
+
+// entry point
+int main() try {
+	auto Cleanup = [](GLFWwindow*) { glfwTerminate(); };
+	using UWnd = std::unique_ptr<GLFWwindow, decltype(Cleanup)>;
+	UWnd Wnd(initialize_window(), Cleanup);
+	
+	while(!glfwWindowShouldClose(Wnd.get())) {
+		do_render();
+		glfwSwapBuffers(Wnd.get());
+		glfwPollEvents();
+	}
+} catch(glfw_error& E) {
+	std::cout << "GLFW error: " << E.what() << std::endl;
+} catch(std::exception& E) {
+	std::cout << "Standard error: " << E.what() << std::endl;
+} catch(...) {
+	std::cout << "Unknown error\n";
+}
+```
