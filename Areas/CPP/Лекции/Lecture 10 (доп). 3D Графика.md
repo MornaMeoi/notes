@@ -723,3 +723,44 @@ void main() {
 	<span style="color: gray;">for(f : all fragments)</span>
 		gl_FragColor<span style="color: gray;">[f]</span> = vec4(<span style="color: brown;">vColor</span><span style="color: gray;">[f]</span>.xy, <span style="color: brown;">vColor</span><span style="color: gray;">[f]</span>.z + abs(sin(<span style="color: blue;">time</span>)), 1.0);
 }
+#### Компиляция и исполнение шейдеров
+• Необходимость компиляции делает графический драйвер гораздо сложнее: там появляется компилятор.
+• Вызовы glCompileShader, glLinkProgram - это вызовы, возвращающие (возможно) ошибку и лог компиляции.
+• Компилятор OpenGL для графики Intel является LLVM-based и содержит более 150 оптимизационных фаз.
+• При исполнении, шейдер можно включить через glUseProgram и можно переключить на другой.
+```mermaid
+flowchart TD
+	SS["Shader source"]
+	API["API"]
+	RT["OpenGL<br>runtime"]
+	FE["GLSL FE"]
+	GC["Graphics<br>compiler"]
+	PL["Program<br>linker"]
+	GP["GPU<br>program"]
+	KMD["Kernel mode driver and GPU HW"]
+
+	SS --> API
+	API --> RT
+	FE --> GC
+	GC --> PL
+	PL --> GP
+	RT <--> GP
+	RT <--> KMD
+	RT --> FE
+	GP <--> KMD
+
+	classDef green fill:#c9f2c9,stroke:#333,stroke-width:1px
+	classDef pink fill:#ffb3ba,stroke:#333,stroke-width:1px
+	classDef cyan fill:#bfefff,stroke:#333,stroke-width:1px
+	classDef yellow fill:#fdfd96,stroke:#333,stroke-width:1px
+
+	class SS,KMD green
+	class API pink
+	class FE,GC,PL cyan
+	class RT,GP yellow
+```
+#### Обсуждение: а где же 3D?
+• Пока что от обещанной трёхмерной графики мы видим только двумерный квадрат.
+## Логическая модель
+#### Обсуждение: сцена и отображение
+• У нас есть мировые координаты сцены. Внутри сцены расположена модель
