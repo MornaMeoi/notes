@@ -1184,28 +1184,34 @@ struct Buffer {
 • Но параметры шейдера могут потребовать установки uniform переменных в таком же зависимом от сцены ключе.
 • Следует ли завести для них отдельный интерфейс и где?
 #### Uniform buffer objects
-GLSL:
+**GLSL**:
 
-in vec3 aPos;
-in vec3 aColor;
+<span style="color: blue;">in vec3 aPos;</span>
+<span style="color: blue;">in vec3 aColor;</span>
 
-out vec3 vColor;
+<span style="color: red;">out vec3 vColor;</span>
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+<span style="color: purple;">uniform mat4 model;</span>
+<span style="color: purple;">uniform mat4 view;</span>
+<span style="color: purple;">uniform mat4 projection;</span>
 
 void main() {
-	// используем
+	<span style="color: gray;">  // используем</span>
 }
 
-GLSL:
+**GLSL**:
 
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
+<span style="color: blue;">layout (location = 0) in vec3 aPos;</span>
+<span style="color: blue;">layout (location = 1) in vec3 aColor;</span>
 
-layout (location = 0) out vec3 vColor;
+<span style="color: red;">layout (location = 0) out vec3 vColor;</span>
 
-layout (std140) uniform Matrices {
-	mat4
+<span style="color: purple;">layout (std140) uniform Matrices {</span>
+	<span style="color: purple;">  mat4 model;</span>
+	<span style="color: purple;">  mat4 view;</span>
+	<span style="color: purple;">  mat4 projection;</span>
+<span style="color: purple;">};</span>
+
+void main() {
+	<span style="color: gray;">  // тут всё это используем</span>
 }
