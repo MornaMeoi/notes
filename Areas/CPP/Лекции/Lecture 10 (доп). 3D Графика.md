@@ -1037,4 +1037,91 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 • Приложение формирует геометрию, шейдеры и прочее и кормит OpenGL API.
 • Кроме того, приложение взаимодействует с оконным интерфейсом.
 • Который сам по себе может взаимодействовать с API, например, для перерисовки.
+```mermaid
+flowchart LR
+	AL["Application<br>logic"]
+	V["Vertices"]
+	IDX["Indices"]
+	SH["Shaders"]
+	UP["Uniform<br>parameters"]
+	API["OpenGL<br>API"]
+	WI["Window<br>interface"]
+
+	AL -->|controls state machine| API
+	AL --> V
+	AL --> IDX
+	AL --> SH
+	AL --> UP
+	V --> API
+	IDX --> API
+	SH --> API
+	UP --> API
+	AL --> WI
+	WI -->|swaps buffers| API
+
+	classDef cyan fill:#bfefff,stroke:#333,stroke-width:1px
+	classDef yellow fill:#fdfd96,stroke:#333,stroke-width:1px
+	classDef pink fill:#ffb3ba,stroke:#333,stroke-width:1px
+	classDef green fill:#c9f2c9,stroke:#333,stroke-width:1px
+
+	class AL cyan
+	class V,IDX,SH,UP yellow
+	class API pink
+	class WI green
+```
 • Где тут место для рендерера?
+#### Обсуждение: что такое вершина?
+• Атрибутами вершины могут быть
+	• Координаты
+	• Цвет
+	• Нормали (для правильного освещения)
+	• Что угодно ещё (у нас же программируемый конвейер)
+• Значит, рендерер должен как-то принимать обобщённый буфер вершин.
+```plantuml
+@startuml
+
+hide circle
+skinparam classAttributeIconSize 0
+
+class GLFWWindow
+
+class Window {
+	+callbacks
+	+width()
+	+height()
+}
+
+class Renderer {
+	+bindVertexBuffer()
+	+bindIndexBuffer()
+	+draw()
+	+drawIndexed()
+	+attachWindow()
+	+installShader()
+}
+
+class OpenGLRenderer
+class Shader
+
+circle "?" as Unknown #line:orangered;line.bold
+class VertexBuffer<type: VT>
+class IndexBuffer
+
+class Application
+
+note as ApplicationDescription
+	Application creates renderer
+	and window, creates buffers,
+	installs shaders, triggers run
+end note
+
+GLFWWindow --|> Window
+Window -- Renderer
+OpenGLRenderer --|> Renderer
+Renderer -- Unknown
+Unknown -- VertexBuffer
+
+Application .. ApplicationDescription
+
+@enduml
+```
