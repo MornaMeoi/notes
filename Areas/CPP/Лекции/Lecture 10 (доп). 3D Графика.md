@@ -570,19 +570,19 @@ GLuint installShader(std::string ShaderCode, GLenum ShaderType) {
 • C++:
 
 GLfloat Vertices[] {
-	<span style="color: red;">0.5f,  0.5f, 0.0f,</span> <span style="color: blue;">0.0f, 1.0f, 0.0f,</span>
-	<span style="color: red;">-0.5f, 0.5f, 0.0f,</span> <span style="color: blue;">0.0f, 0.0f, 0.0f,</span>
+	<span style="color: brown;">0.5f,  0.5f, 0.0f,</span> <span style="color: blue;">0.0f, 1.0f, 0.0f,</span>
+	<span style="color: brown;">-0.5f, 0.5f, 0.0f,</span> <span style="color: blue;">0.0f, 0.0f, 0.0f,</span>
 }
 
 glBinfBuffer(GL_ARRAY_BUFFER, VBO);
 
-glVertexAttribPointer(<span style="color: red;">0</span>, 3, GL_FLOAT, GL_FALSE, 6 \* sizeof(GLfloat), <span style="color: red;">0 * sizeof(GLfloat)</span>);
-glVertexAttribPointer(<span style="color: blue;">1</span>, 3, GL_FLOAT, GL_FALSE, 6 \* sizeof(GLfloat), <span style="color: blue;">3 * sizeof(GLfloat)</span>);
+glVertexAttribPointer(<span style="color: brown;">0</span>, 3, GL_FLOAT, GL_FALSE, 6 \* sizeof(GLfloat), <span style="color: brown;">0 * sizeof(GLfloat)</span>);
+glVertexAttribPointer(<span style="color: brown;">1</span>, 3, GL_FLOAT, GL_FALSE, 6 \* sizeof(GLfloat), <span style="color: blue;">3 * sizeof(GLfloat)</span>);
 
 • GLSL:
 
-<span style="color: red;">layout (location = 0)</span>
-<span style="color: red;">in vec3 aPos;</span>
+<span style="color: brown;">layout (location = 0)</span>
+<span style="color: brown;">in vec3 aPos;</span>
 
 <span style="color: blue;">layout (location = 1)</span>
 <span style="color: blue;">in vec3 aColor;</span>
@@ -590,6 +590,6 @@ glVertexAttribPointer(<span style="color: blue;">1</span>, 3, GL_FLOAT, GL_FALSE
 out vec3 vColor;
 
 void main() {
-	gl_Position = vec4(<span style="color: red;">aPos</span>, 1.0);
+	gl_Position = vec4(<span style="color: brown;">aPos</span>, 1.0);
 	vColor = <span style="color: blue;">aColor</span>;
 }
