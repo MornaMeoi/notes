@@ -138,3 +138,13 @@ int main() try {
 	std::cout << "Unknown error\n";
 }
 ```
+#### Фиксированный конвейер
+• Фиксированные блоки.
+• Управляют отдельными функциями
+```cpp
+glEnable(GL_DEPTH_TEST);
+glDepthFunc(GL_LESS);
+glEnable(GL_CULL_FACE);
+glClear(GL_COLOR_BUFFER_BIT);
+```
+• Это тонна API функций и enums.
