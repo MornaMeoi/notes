@@ -262,26 +262,26 @@ GLFWwindow* initialize_window() {
 	assert(Window); // error callback shall throw otherwise
 	glfwMakeContextCurrent(Window);
 	glfwSetFrameBufferSizeCallback(Window, framebuffer_size_callback);
+	if(!gladLoadGLLoader(reinterpret_cast<GLADLoadproc>(glfwGetProcAddress)))
+		throw glfw_error("Failed to initialize GLAD");
 	return Window;
 }
 
 // vertices to render
-GLfloat Vertices[4][3] = {
-	{-0.5f, 0.5f, 0.0f}, // top left
-	{0.5f, 0.5f, 0.0f}, // top right
-	{0.5f, -0.5f, 0.0f}, // bottom right
-	{-0.5f, -0.5f, 0.0f}, // bottom left
+GLfloat Vertices[] = {
+	// positions        // colors (not used in this example)
+	-0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 0.0f, // top left
+	0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, // top right
+	0.5f,  -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom right
+	-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom left
 };
 
 // render routine
 void do_render() {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glBegin(GL_QUADS);
-	glColor3f(1.0, 1.0, 1.0);
-	for(auto Coord : Vertices)
-		glVertex3fv(Coord);
-	glEnd();
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_QUADS, 0, 4);
 }
 
 // entry point
@@ -290,11 +290,20 @@ int main() try {
 	using UWnd = std::unique_ptr<GLFWwindow, decltype(Cleanup)>;
 	UWnd Wnd(initialize_window(), Cleanup);
 	
-	while(!glfwWindowShouldClose(Wnd.get())) {
-		do_render();
-		glfwSwapBuffers(Wnd.get());
-		glfwPollEvents();
-	}
+	GLuint VBO, VAO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	
+	glBindVertexArray(VAO);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+	
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	glEnableVertexAttribArray(0);
+	// color attribute
+	// ...
 } catch(glfw_error& E) {
 	std::cout << "GLFW error: " << E.what() << std::endl;
 } catch(std::exception& E) {
@@ -303,3 +312,10 @@ int main() try {
 	std::cout << "Unknown error\n";
 }
 ```
+#### Расширения и версии
+• Буфера вершин были введены расширением ARB_vertex_array_object в OpenGL 2.1 и закреплены в стандарте OpenGL 3.0.
+• Расширения предлагаются участниками консорциума и их реально десятки.
+https://www.khronos.org/registry/OpenGL/extensions
+• Существуют автоматизированные системы такие как glad, запрашивающие вам расширения и генерирующие хедер с доступными функциями.
+• Для более тонкого контроля есть библиотека GLEW (The OpenGL Extension Wrangler Library), позволяющая проверять доступность расширений и многое другое.
+
