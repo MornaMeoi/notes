@@ -946,9 +946,95 @@ class Renderer {
 	// Sceleton mode toggle support
 	bool LineMode = false;
 	
-pu
+public:
+	Renderer(GLFWwindow* Wnd);
+	Renderer(const Renderer&) = delete;
+	Renderer(Renderer&&) = delete;
+	Renderer& operator=(const Renderer&) = delete;
+	Renderer& operator=(Renderer&&) = delete;
+	~Renderer() {
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &VBO);
+		glDeleteBuffers(1, &IBO);
+	}
+	void display() const;
+	void notifyKey(int key, int scancode, int action, int mode);
+	void notifyMouseMove(double xpos, double ypos);
+	void notifyMouseButton(int button, int action, int mods);
+	void notifyAspect(float w, float h) { Aspect = w / h; }
 };
+
+// global renderer here to redirect handlers
+std::unique_ptr<Renderer> TheRenderer;
+
+// custom error handler class: GLFW
+struct glfw_error: public std::runtime_error {
+	glfw_error(const char* s) : std::runtime_error(s) {}
+};
+
+// custom error handler class: GLSL
+struct glsl_error : public std::runtime_error {
+	std::string ShaderLog;
+	glsl_error(const char* s) : std::runtime_error(s) {}
+};
+
+// custom error handler class: GLSL compilation
+struct glsl_compile_error : public glsl_error {
+	glsl_compile_error(const char* s, GLuint ShaderID) : glsl_error(s) {
+		GLint Length;
+		glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, &Length);
+		std::vector<char> ShaderLogV(Length);
+		glGetShaderInfoLog(ShaderID, Length, NULL, ShaderLogV.data());
+		ShaderLog.assign(ShaderLogV.begin(), ShaderLogV.end());
+	}
+};
+
+// custom error handler class: GLSL link
+struct glsl_link_error : public glsl_error {
+	glsl_link_error(const char* s, GLuint ProgID) : glsl_error(s) {
+		GLint Length;
+		glGetProgramiv(ProgID, GL_INFO_LOG_LENGTH, &Length);
+		std::vector<char> ShaderLogV(Length);
+		glGetShaderInfoLog(ProgID, Length, NULL, ShaderLogV.data());
+		ShaderLog.assign(ShaderLogV.begin(), ShaderLogV.end());
+	}
+};
+
+// { differenct trivial callbacks
+
+static void error_callback(int, const char* err_str) {
+	throw glfw_error(err_str);
+}
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action,
+												 int mods) {
+	TheRenderer->notifyKey(key, scancode, action, mods);
+}
+
+static void cursor_position_callback(GLFWwindow* window, double xpos,
+																		 double ypos) {
+	TheRenderer->notifyMouseMove(xpos, ypos);
+}
+
+static void mouse_button_callback(GLFWwindow* window, int button, int action
+																	int mods) {
+	TheRenderer->notifyMouseButton(button, action, mods);
+}
+
+// }
+
+// make sure the viewport matches the new window dimensions
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+}
+
+// и так далее...
 ```
 #### Обсуждение: архитектура
 • Покритикуйте код поворота кубика, выложенный на гитхабе по ссылке (выше в данном конспекте).
 • С чего бы вы начали проектирование?
+#### Что происходит в программе?
+• Приложение формирует геометрию, шейдеры и прочее и кормит OpenGL API.
+• Кроме того, приложение взаимодействует с оконным интерфейсом.
+• Который сам по себе может взаимодействовать с API, например, для перерисовки.
+• Где тут место для рендерера?
