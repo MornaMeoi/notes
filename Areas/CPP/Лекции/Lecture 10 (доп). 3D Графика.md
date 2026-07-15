@@ -804,5 +804,61 @@ void main() {
 • Второй вариант: 2 * 4 вершин, 6 * 4 индексов.
 ```cpp
 glBindBuffer(GL_ARRAY_BUFFER, VBO);
-glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices))
+glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 ```
+• Это несколько меньше данных для посылки на видеокарту (48 байт против 72), и это показывает ещё одну binding point.
+#### Первая проблема: culling
+• Небольшая ошибка с буферами индексов:
+```cpp
+GLubyte Indices[] {
+	// quads
+	0, 3, 2, 1,
+	0, 3, 7, 4,
+	1, 2, 6, 5,
+	5, 1, 0, 4,
+	3, 7, 6, 2,
+	5, 6, 7, 4,
+};
+```
+![[../../../_Meta/attachments/10.7.png]]
+• Демонстрирует face culling.
+![[../../../_Meta/attachments/10.8.png]]
+#### Вторая проблема: depth
+• Даже если правильно угадать с буферами, но забыть depth и culling checks, всё ещё могут быть артефакты.
+```cpp
+glEnable(GL_DEPTH_TEST);
+glDepthFunc(GL_LESS);
+
+glEnable(GL_DEPTH_CLAMP);
+
+glEnable(GL_CULL_FACE);
+```
+![[../../../_Meta/attachments/10.9.png]]
+• Конвейер OpenGL плохо понимает, что человек имел в виду. Для него важен режим геометрии.
+#### Режимы геометрии: QUADS vs LINES
+![[../../../_Meta/attachments/10.10.png]]
+Пример с гита:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Motion simple example: utilizing GLM and view / projection in vertex shader
+// This example extends ogl-frag-shader
+// Show how vertex lists are indexed in VBO's
+// Shows camera motion and zoom with mouse and keyboard GLFW
+//
+// cl /EHsc ogl-motion.cc /link glad.lib glfw3dll.l
+//
+//-------------------------------------------------------------------------------
+```
+#### Обсуждение: архитектура
+• Покритикуйте код поворота кубика, выложенный на гитхабе по ссылке (выше в данном конспекте).
+• С чего бы вы начали проектирование?
