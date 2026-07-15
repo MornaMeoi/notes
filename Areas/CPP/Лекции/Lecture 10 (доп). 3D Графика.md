@@ -357,3 +357,134 @@ flowchart TD
 	class FS,DS,DB cyan
 	class FB green
 ```
+#### Вершинные шейдеры
+• В примере с каждой вершиной связан цвет.
+```cpp
+// positions      // colors
+0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+```
+• Этот цвет как атрибут вершины передаётся в вершинный шейдер
+```glsl
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 vColor;
+
+...
+
+vColor = aColor; // выход во фрагменты
+```
+Пример с гита для вершинного шейдера:
+```glsl
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Simple vertex shader: output varying color passed to fragment
+//
+//-------------------------------------------------------------------------------
+
+#version 460
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 vColor;
+
+void main() {
+	gl_Position = vec4(aPos, 1.0);
+	vColor = aColor;
+}
+```
+Пример с гита для фрагментного шейдера:
+```glsl
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Simple fragment shader: varying color passed from vertex, interpolated
+//
+//-------------------------------------------------------------------------------
+
+#version 460
+
+// from vertex shader
+in vec3 vColor;
+
+// time in seconds with fractional part
+uniform float time;
+
+void main() {
+	gl_FragColor = vec4(vColor, 1.0);
+}
+```
+Сама программа с шейдерами:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Extensions simplest example: blank square on the screen
+// This example extends ogl_extensions
+// Show how vertex attributes starts playing in coloring
+// Show simplest fragment shader and uniform variable
+//
+// cl /EHsc ogl-frag-shader.cc /link glad.lib glfw3dll.lib opengl32.lib
+//
+//-------------------------------------------------------------------------------
+
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <vector>
+
+// clang-format off
+// this headers shall be in this position
+#include <glad/glad.h>
+// clang format on
+
+#include <GLFW/glfw3.h>
+
+// initial window sizes
+constexpr int SZX = 600;
+constexpr int SZY = 600;
+
+constexpr const char* VERTNAME = "shaders/simplest.vert";
+#ifdef SINCOLOR
+constexpr const char* FRAGNAME = "shaders/sincolor.frag";
+#else
+constexpr const char* FRAGNAME = "shaders/simplest.frag";
+#endif
+
+// custom error handler class: GLFW
+struct glfw_error : public std::runtime_error {
+	glfw_error(const char* s) : std::runtime_error(s) {}
+};
+
+// custom error handler class: GLSL
+struct glsl_error : public std::runtime_error {
+	std::string ShaderLog;
+	glsl_error(const char* s) : std::runtime_error(s) {}
+};
+
+// custom error handler class: GLSL ci
+struct glsl_error : public std::runtime_error {
+	std::string ShaderLog;
+	glsl_error(const char* s) : std::runtime_error(s) {}
+};
+```
