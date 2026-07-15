@@ -855,9 +855,99 @@ glEnable(GL_CULL_FACE);
 // Show how vertex lists are indexed in VBO's
 // Shows camera motion and zoom with mouse and keyboard GLFW
 //
-// cl /EHsc ogl-motion.cc /link glad.lib glfw3dll.l
+// cl /EHsc ogl-motion.cc /link glad.lib glfw3dll.lib opengl32.lib
 //
 //-------------------------------------------------------------------------------
+
+#include <algorithm>
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <vector>
+
+// clang-format off
+// this headers shall be in this position
+#include <glad/glad.h>
+// clang-format on
+
+#include <glm/glm.hpp
+#include <glm/cxt.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <GLFW/glfw3.h>
+
+//initial window sizes
+constexpr int SZX = 600;
+constexpr int SZY = 600;
+
+constexpr const char* VERTNAME = "shaders/models.vert";
+constexpr const char* FRAGNAME = "shaders/sincolor.frag";
+
+constexpr glm::vec3 STARTPOS = {0.0f, 0.0f, 3.0f};
+constexpr glm::vec3 STARTFRONT = {0.0f, 0.0f, 0.0f};
+constexpr glm::vec3 STARTUP = {0.0f, 1.0f, 0.0f};
+
+constexpr float Sensitivity = 0.2f;
+constexpr float RadiusDelta = 0.02f;
+
+// vertices to render
+GLfloat Vertices[] = {
+	// positions        // colors
+	// for +Z (cube front)
+	-0.5f, 0.5f,  0.5f, 0.0f, 0.0f, 0.0f, // top left (-X, +Y)
+	0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top right (+X, +Y)
+	0.5f,  -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, // bottom right (+X, -Y)
+	-0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f, // bottom left (-X, -Y)
+	
+	// for -Z (cube back)
+	-0.5f, 0.5f,  -0.5f, 1.0f, 1.0f, 0.0f, // top left (-X, +Y)
+	0.5f,  0.5f,  -0.5f, 1.0f, 0.0f, 0.0f, // top right (+X, +Y)
+	0.5f,  -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right (+X, -Y)
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left (-X, -Y)
+};
+
+// cubes sides to render
+GLubyte Indices[] = {
+		// clang-format off
+		// those indices better to be in cube order
+		// quads
+		0, 3, 2, 1,
+		4, 7, 3, 0,
+		1, 2, 6, 5,
+		4, 0, 1, 5,
+		3, 7, 6, 2,
+		5, 6, 7, 4,
+		// clang-format on
+};
+
+// simplest approach: do you already see problems?
+class Renderer {
+	GLFWwindow* Wnd_;
+	GLuint ProgID;
+	GLuint VAO, VBO, IBO;
+	
+	// camera params: vertical angle, horizontal angle, radius
+	float HorizontalAngle = 0.0f;
+	float VerticalAngle = 0.0f;
+	float Radius = 3.0f;
+	
+	// projection params: Field of view, Aspect, etc...
+	float FoV = 45.0f;
+	float Aspect = static_cast<float>(SZX) / SZY;
+	float Near = 0.1f;
+	float Far = 100.0f;
+	
+	// Mouse button params to make control easier
+	bool LeftPress = false;
+	double OldX, OldY;
+	
+	// Sceleton mode toggle support
+	bool LineMode = false;
+	
+pu
+};
 ```
 #### Обсуждение: архитектура
 • Покритикуйте код поворота кубика, выложенный на гитхабе по ссылке (выше в данном конспекте).
