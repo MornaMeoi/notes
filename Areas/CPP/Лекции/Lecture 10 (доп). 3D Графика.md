@@ -763,4 +763,46 @@ flowchart TD
 • Пока что от обещанной трёхмерной графики мы видим только двумерный квадрат.
 ## Логическая модель
 #### Обсуждение: сцена и отображение
-• У нас есть мировые координаты сцены. Внутри сцены расположена модель
+• У нас есть мировые координаты сцены. Внутри сцены расположена модель.
+• Как перейти от координат сцены к кординатам модели?
+• Каким образом перейти от координат модели к координатам мира?
+• Можно ли дополнительно учесть проекцию?
+![[../../../_Meta/attachments/10.5.png]]
+## Шейдер для трансформации
+**C++**:
+
+glm::vec3 Position;
+glm::vec3 Up;
+
+<span style="color: gray;">// ....</span>
+
+<span style="color: purple;">glm::mat4 Model</span>(1.0f);
+
+<span style="color: purple;">glm::mat4 View</span> = glm::lookAt(Position, LookTo, Up);
+
+<span style="color: purple;">Projection</span> = glm::perspective\(glm::radians(FoV), Aspect, Near, Far\);
+
+**GLSL**:
+
+<span style="color: blue;">in vec3 aPos;</span>
+<span style="color: blue;">in vec3 aColor;</span>
+
+<span style="color: brown;">out vec3 vColor;</span>
+
+<span style="color: purple;">uniform mat4 model;</span>
+<span style="color: purple;">uniform mat4 view;</span>
+<span style="color: purple;">uniform mat4 projection;</span>
+
+void main() {
+	<span style="color: brown;">gl_Position</span> = <span style="color: purple;">projection</span> \* <span style="color: purple;">view</span> \* <span style="color: purple;">model</span> \* vec4(<span style="color: blue;">aPos</span>, 1.0);
+	<span style="color: brown;">vColor</span> = <span style="color: blue;">aColor</span>;
+}
+Пример работы программы:
+![[../../../_Meta/attachments/10.6.gif]]
+#### Давайте отрендерим куб
+• Первый вариант: послать в режиме QUADS 6 * 4 вершин.
+• Второй вариант: 2 * 4 вершин, 6 * 4 индексов.
+```cpp
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices))
+```
