@@ -1125,3 +1125,87 @@ Application .. ApplicationDescription
 
 @enduml
 ```
+#### Идея сцены и простые вершины
+• Класс сцены хранит всю информацию о вершинах и геометрии.
+• Его взаимодействие с рендерером можно сделать низкоуровневым.
+• Рендерер предоставляет обёртку Index/Vertex Buffer Object над любыми данными.
+• Любые данные передаются туда как сырая память.
+```plantuml
+@startuml
+
+hide circle
+
+class Vertex {
+	+Coord: array<float, 3>
+	+Color: float
+	+Normal: float
+}
+
+class Scene {
+	+vertices: std::vector<Vertex>
+	+VerticesView(): Buffer
+}
+
+class Memory {
+	+data: char*
+	+size: unsigned
+	+<<delete>> Memory()
+}
+
+class Buffer {
+	+M: Memory
+}
+
+class VertexBuffer {
+	+VBO: GLuint
+}
+
+class Renderer {
+	+bindVertexBuffer(b: VertexBuffer)
+}
+
+Vertex .. Scene
+Scene --> Buffer
+Memory ..> Buffer
+Buffer <|-- VertexBuffer
+VertexBuffer .. Renderer
+
+@enduml
+```
+#### Ассиметрия в параметрах шейдера
+• Vertex/index buffers можно трактовать как наследники одной структуры.
+```cpp
+struct Buffer {
+	virtual size_t size() const = 0;
+	virtual void push(Memory) = 0;
+	virtual ~Buffer() = default;
+};
+```
+• Но параметры шейдера могут потребовать установки uniform переменных в таком же зависимом от сцены ключе.
+• Следует ли завести для них отдельный интерфейс и где?
+#### Uniform buffer objects
+GLSL:
+
+in vec3 aPos;
+in vec3 aColor;
+
+out vec3 vColor;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main() {
+	// используем
+}
+
+GLSL:
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+layout (location = 0) out vec3 vColor;
+
+layout (std140) uniform Matrices {
+	mat4
+}
