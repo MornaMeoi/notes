@@ -2639,3 +2639,34 @@ build2> Release\uniform_buffer.exe -ogl
 • Что бы вы там улучшили или перепроектировали и как?
 ## Физическая и объектная модель
 #### Что происходит в программе на Vulkan?
+```plantuml
+@startuml
+skinparam rectangle {
+  BorderColor #555555
+}
+skinparam ArrowColor #222222
+
+rectangle "Application\nlogic" as APP #bfefff
+rectangle "Command\nbuffer" as CB1 #bfefff
+rectangle "Command\nbuffer" as CB2 #bfefff
+rectangle "Queue" as Q1 #bfefff
+rectangle "Queue" as Q2 #bfefff
+rectangle "Device" as DEV #bfefff
+rectangle "Swap chain" as SC #c9f2c9
+rectangle "Window\ninterface" as WIN #c9f2c9
+rectangle "Vulkan\nAPI" as VK #f4b6c2
+
+APP <-right-> VK : creates vulkan objects
+APP .. Q1
+APP -down-> WIN : requests swap chain
+CB1 -right-> Q1
+CB2 -right-> Q1
+Q1 -right-> DEV
+Q2 -right-> DEV
+DEV <-right-> VK
+Q1 --> SC
+Q2 --> SC
+SC -left-> WIN
+WIN -right-> VK : requests extensions
+@enduml
+```
