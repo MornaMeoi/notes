@@ -2480,3 +2480,46 @@ glslc simplest-v.vert -o simplest-v.vert.spv
 ```
 • SPIRV - это единое представление для Vulkan, OpenGL и OpenCL (со своими расширениями).
 • Бинарный формат можно дизассемблировать в нечто, напоминающее LLVM IR.
+```mermaid
+flowchart TD
+	API["API"]
+	SPIRV["SPIRV"]
+	GCL["Graphics<br>compiler"]
+	FE["GLSL FE"]
+	SS["Shader<br>source"]
+	GCR["Graphics<br>compiler"]
+	PL["Program<br>linker"]
+	GPU["GPU<br>program"]
+	VR["Vulkan<br>runtime"]
+	KMD["Kernel mode driver and GPU HW"]
+
+	SS --> FE
+	FE --> GCL
+	GCL --> SPIRV
+	SPIRV --> API
+	API --> GCR
+	GCR --> PL
+	PL --> GPU
+	API --> VR
+	VR <--> GPU
+	VR <--> KMD
+	GPU <--> KMD
+
+	classDef pink fill:#ffb3ba,stroke:#333
+	classDef white fill:#ffffff,stroke:#333
+	classDef cyan fill:#bfefff,stroke:#333
+	classDef yellow fill:#fdfd96,stroke:#333
+	classDef green fill:#c9f2c9,stroke:#333
+	class API pink
+	class SPIRV,SS white
+	class GCL,FE,GCR,PL cyan
+	class GPU,VR yellow
+	class KMD green
+```
+#### Буфер команд
+• Буфер команд включает в себя описание конвейера, рендер пасс и всё, над чем они будут работать.
+• Именно сюда биндятся все ресурсы (буферы вершин, буферы индексов и т.п.).
+• Также именно тут настраиваются viewport/scissors, чтобы не приходилось пересоздавать pipeline ради их настройки.
+• И далее буфера команд отправляются на очередь.
+![[../../../_Meta/attachments/10.12.svg]]
+
