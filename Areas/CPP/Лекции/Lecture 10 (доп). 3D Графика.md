@@ -2640,3 +2640,54 @@ build2> Release\uniform_buffer.exe -ogl
 ## Физическая и объектная модель
 #### Что происходит в программе на Vulkan?
 ![[../../../_Meta/attachments/10.16.png]]
+#### Vulkan - это объектная модель
+```cpp
+// объект
+VkDevice Device;
+// конструктор
+vkCreateDevice(PhysDevice, &createInfo, nullptr, &Device);
+// методы
+vkGetDeviceQueue(Device, GraphicsFamily, 0, &GraphicsQueue);
+vkCreateImageView(Device, &createInfo, nullptr, &ImageView);
+vkCreateRenderPass(Device, &renderPassInfo, nullptr, &Pass);
+// деструктор
+vkDestroyDevice(Device, nullptr);
+```
+#### Но она немного C-style
+VkBufferCreateInfo bufferInfo{};
+bufferInfo.<span style="color: brown;">sType</span> = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+bufferInfo.size = size;
+bufferInfo.usage = usage;
+bufferInfo.sharingMode = VK_SHARING_MODE_EXECUTIVE;
+• В таком подходе может быть такое, что
+	• sType не совпал с настоящим типом
+	• Инициализированы не все нужные поля
+	• Константа в sharingMode не имеет отношения к sharing mode
+	• И т.д.
+• Мы хотели бы сделать всё иначе.
+#### Vulkan-Hpp: C++ API
+```cpp
+struct BufferCreateInfo {
+	BufferCreateInfo(BufferCreateFlags flags_ = {}),
+		DeviceSize       size_ = {},
+		BufferUsageFlags usage_ = {},
+		SharingMode      sharingMode_ = SharingMode::eExclusive,
+		uint32_t         queueFamilyIndexCount_ = {},
+		const uint32_t*  pQueueFamilyIndices_ = {});
+	// .....
+	};
+	
+BufferCreateInfo bufferInfo(size, usage);
+```
+#### Безопасные флаги
+• Мы хотели бы, чтобы работало нечто вроде
+enum class QueueFlagBits : VkQueueFlags {
+	eGraphics           = VK_QUEUE_GRAPHICS_BIT,
+	eCompute          = VK_QUEUE_COMPUTE_BIT,
+	eTransfer            = VK_QUEUE_TRANSFER_BIT,
+	eSparseBinding = VK_QUEUE_SPARSE_BINDING_BIT,
+	eProtected          = VK_QUEUE_PROTECTED_BIT,
+...
+};
+
+vk::Queue
