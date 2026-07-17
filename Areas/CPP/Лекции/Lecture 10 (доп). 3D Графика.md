@@ -1263,3 +1263,30 @@ flowchart LR
 	class Q1,Q2,Dev cyan
 	class HM,DM green
 ```
+#### Основы: Instance, Device, Queue
+• vkCreateInstance (в одном приложении м.б. несколько)
+• vkEnumeratePhysicalDevices
+	• API поддерживает работу с несколькими физическими устройствами для каждого Instance.
+• vkGetPhysicalDeviceQueueFamilyProperties
+	• Очереди могут быть разных типов.
+• vkCreateDevice
+	• Логическое устройство может содержать много очередей.
+• vkGetDeviceQueue
+	• Дескриптор очереди далее нужен для использования в API.
+```mermaid
+flowchart BT
+	Instance["Instance"]
+	PD["Physical<br>device"]
+	Dev["Device"]
+	QF["Queue<br>family"]
+	Q["Queue"]
+
+	Dev --> PD
+	PD --> Instance
+	Q --> QF
+	PD --- QF
+	Dev --- Q
+
+	classDef cyan fill:#cbf1f7,stroke:#333,stroke-width:1px
+	class Instance,PD,Dev,QF,Q cyan
+```
