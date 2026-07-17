@@ -1275,12 +1275,17 @@ flowchart LR
 	• Дескриптор очереди далее нужен для использования в API.
 ```plantuml
 @startuml
+
 hide circle
+hide empty members
+left to right direction
+
 skinparam class {
 	BackgroundColor #cbf1f7
 	BorderColor #2b3a42
 	ArrowColor #2b3a42
 }
+
 class Instance
 class "Physical device" as PD
 class Device
@@ -1292,5 +1297,46 @@ Device -up-> PD
 Queue -up-> QF
 PD .. QF
 Device .. Queue
+
 @enduml
 ```
+#### Рендеринг: swap chain, images, pipeline
+```plantuml
+@startuml
+
+skinparam rectangle {
+	BorderColor #2b3a42
+}
+
+rectangle Surface #c9f2c9
+rectangle Device #bfefff
+rectangle "Swap chain" as SwapChain #c9f2c9
+rectangle Queue #bfefff
+rectangle Image #c9f2c9
+rectangle CommandBuffer #bfefff
+rectangle ImageView #c9f2c9
+rectangle Pipeline #bfefff
+rectangle RenderPass #bfefff
+rectangle FrameBuffer #c9f2c9
+
+Surface --> SwapChain
+SwapChain --> Image
+Image --> ImageView
+ImageView --> FrameBuffer
+FrameBuffer -left-> RenderPass
+RenderPass -up-> CommandBuffer
+Pipeline -up-> CommandBuffer
+CommandBuffer -up-> Queue
+Queue --* Device
+Device .. SwapChain
+Pipeline .. RenderPass
+
+@enduml
+```
+• Image здесь это то, что пойдёт на экран. Программа сама делает двойную (тройную и т.п.) буферизацию.
+• Три новых важных термина:
+	• Render pass
+	• Pipeline
+	• Command buffer
+• Казалось бы хм... pipeline? Для OpenGL он один и глобальный.
+#### Пасс рендеринга
