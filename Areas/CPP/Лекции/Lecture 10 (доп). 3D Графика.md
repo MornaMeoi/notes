@@ -1342,20 +1342,47 @@ Pipeline .. RenderPass
 #### Пасс рендеринга
 ![[../../../_Meta/attachments/10.11.svg]]
 #### Фиксированный конвейер
-<table style="border-collapse:collapse;text-align:center;font-weight:bold">
+<table style="border-collapse:collapse;text-align:center;font-weight:bold;color:#111">
 <tr>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">VI</td>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">IA</td>
-<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">VS</td>
-<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">CS</td>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">TS</td>
-<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">ES</td>
-<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">GS</td>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">VP</td>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">RS</td>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">MS</td>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">DS</td>
-<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">FS</td>
-<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">CB</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">VI</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">IA</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999;color:#111">VS</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999;color:#111">CS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">TS</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999;color:#111">ES</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999;color:#111">GS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">VP</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">RS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">MS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">DS</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999;color:#111">FS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999;color:#111">CB</td>
 </tr>
 </table>
+Взял на себя смелость отформатировать легенду читаемей, нежели в оригинале.
+<table style="border-collapse:collapse">
+<tr>
+<td style="vertical-align:top;padding-right:40px">
+<b style="color:#bfefff">Fixed-function</b><br>
+<b style="color:#bfefff">VI</b> = vertex input<br>
+<b style="color:#bfefff">IA</b> = input assembly<br>
+<b style="color:#bfefff">TS</b> = tesselation<br>
+<b style="color:#bfefff">VP</b> = viewport<br>
+<b style="color:#bfefff">RS</b> = raster<br>
+<b style="color:#bfefff">MS</b> = multisample<br>
+<b style="color:#bfefff">DS</b> = depth / stencil<br>
+<b style="color:#bfefff">CB</b> = color blend
+</td>
+<td style="vertical-align:top">
+<b style="color:#fdfd96">Shaders</b><br>
+<b style="color:#fdfd96">VS</b> = vertex shader<br>
+<b style="color:#fdfd96">CS</b> = tessellation control<br>
+<b style="color:#fdfd96">ES</b> = tessellation evaluation<br>
+<b style="color:#fdfd96">GS</b> = geometry shader<br>
+<b style="color:#fdfd96">FS</b> = fragment shader
+</td>
+</tr>
+</table>
+• К конвейеру обязательно привязывает renderpass.
+• Единожды созданный конвейер не изменяется. Его можно только пересоздать.
+• Программа может оперировать любым количеством конвейеров.
