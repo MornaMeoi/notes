@@ -2528,3 +2528,20 @@ flowchart TD
 • Далее эта картинка отправляется в презентационную очередь на swapchain.
 • Разумеется, это не обязательная схема.
 ![[../../../_Meta/attachments/10.13.svg]]
+#### Проблема синхронизации
+<span style="color: blue;">vkAcquireNextImageKHR</span>(...., &imageIndex); <span style="color: gray;">// non-blocking</span>
+
+VkSubmitInfo submitInfo;
+submitInfo.pCommandBuffers = &CommandBuffers\[imageIndex\];
+
+<span style="color: blue;">vkQueueSubmit</span>(GraphicsQueue, ...., submitInfo); <span style="color: gray;">// same</span>
+
+VkPresentInfoKHR presentInfo;
+presentInfo.pImageIndices = &imageIndex;
+
+<span style="color: blue;">vkQueuePresentKHR</span>(PresentQueue, &presentInfo); <span style="color: gray;">// same</span>
+• Хорошая ли идея дождаться готовности кадра, т.е. сделать все эти вызовы блокирующими?
+#### Семафоры для синхронизации
+• Некоторые API берут специальный объекты "семафоры".
+• Эти объекты не допускают начала реального исполнения, пока не просигналены.
+• vkQueueSubmit берёт два семафора: один она ждёт, второй ставит для vkQueuePresentKHR.
