@@ -2550,3 +2550,14 @@ presentInfo.pImageIndices = &imageIndex;
 • Семафор используется внутри GPU runtime.
 • В отличие от него, фенс позволяет синхронизировать CPU и GPU.
 • Со стороны CPU мы вызываем vkWaitForFences
+```cpp
+vkWaitForFences(...., InFlight[CurrentFrame]); // wait
+vkAcquireNextImageKHR(....);
+vkResetFences(...., InFlight[CurrentFrame]); // reset
+vkQueueSubmit(...., InFlight[CurrentFrame]); // set
+```
+#### Управление памятью
+• Каждое физическое устройство возвращает массив VkMemoryType.
+• Логическое устройство создаёт буффер с отдельными create/usage flags.
+• Например, USAGE_TRANSFER и HOST_COHERENT.
+• Далее нужно связать логический тип буфера с физическим типом памяти для него и выделить память.
