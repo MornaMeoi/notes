@@ -2557,7 +2557,66 @@ vkResetFences(...., InFlight[CurrentFrame]); // reset
 vkQueueSubmit(...., InFlight[CurrentFrame]); // set
 ```
 #### Управление памятью
+```plantuml
+@startuml
+skinparam rectangle {
+  BorderColor #555555
+}
+skinparam ArrowColor #222222
+
+rectangle Device #bfefff
+rectangle "Physical Device" as PD #bfefff
+rectangle vkCreateBuffer as CB #ffffff
+rectangle vkGetBufferMemoryRequirements as GMR #ffffff
+rectangle vkAllocateMemory as AM #ffffff
+rectangle Buffer #bfefff
+rectangle DeviceMemory as DM #bfefff
+
+rectangle "Memory types" as MT {
+  rectangle "Device local" as ML #fdfd96
+  rectangle "Host visible" as HV #fdfd96
+  rectangle "..." as ETC #fdfd96
+  ML -[hidden]- HV
+  HV -[hidden]- ETC
+}
+
+Device .. PD
+PD --> ML : get physical device\nmemory properties
+Device --> CB
+Device --> GMR
+Device -left-> Buffer
+GMR --> ML
+HV --> AM
+AM --> DM
+Buffer --> DM : vkBindBufferMemory
+@enduml
+```
 • Каждое физическое устройство возвращает массив VkMemoryType.
 • Логическое устройство создаёт буффер с отдельными create/usage flags.
 • Например, USAGE_TRANSFER и HOST_COHERENT.
 • Далее нужно связать логический тип буфера с физическим типом памяти для него и выделить память.
+#### Отображение памяти
+• Допустим, мы создали на устройстве staging buffer.
+```cpp
+VkBuffer stagingBuffer; // usage = transfer_src
+VkDeviceMemory stagingBufferMemory; // property = host_visible
+```
+• Теперь хочется заполнить его с хоста (например, вершинами).
+• Для этого память (если она host visible) можно просто отобразить на устройство.
+```cpp
+void* data;
+
+vkMapMemory(Device, stagingBufferMemory, 0, bufferSize, 0, &data);
+std::copy(Vertices.begin(), Vertices.end(), cast<Vertex*>(data));
+vkUnmapMemory(Device, stagingBufferMemory);
+```
+#### Обсуждение
+• Достаточно ли вы поняли идею Вулкана, чтобы догадаться, как скопировать память из буфера в буфер **внутри** устройства?
+• Или как скопировать в буфер, если он не host-visible?
+• И вообще, как сделать операцию с памятью в общем случае?
+#### Command buffer спешит на помощь
+• Команда, которую можно положить в очередь, это, в частности, команда записи памяти.
+```cpp
+vkBeginCommandBuffer(commandBuffer, &beginInfo);
+vkCmdCopyBuffer(commandBuffer, srcBuffer,)
+```
