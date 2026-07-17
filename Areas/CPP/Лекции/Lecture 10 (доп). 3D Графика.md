@@ -1273,20 +1273,24 @@ flowchart LR
 	• Логическое устройство может содержать много очередей.
 • vkGetDeviceQueue
 	• Дескриптор очереди далее нужен для использования в API.
-```mermaid
-flowchart BT
-	Instance["Instance"]
-	PD["Physical<br>device"]
-	Dev["Device"]
-	QF["Queue<br>family"]
-	Q["Queue"]
+```plantuml
+@startuml
+hide circle
+skinparam class {
+	BackgroundColor #cbf1f7
+	BorderColor #2b3a42
+	ArrowColor #2b3a42
+}
+class Instance
+class "Physical device" as PD
+class Device
+class "Queue family" as QF
+class Queue
 
-	Dev --> PD
-	PD --> Instance
-	Q --> QF
-	PD --- QF
-	Dev --- Q
-
-	classDef cyan fill:#cbf1f7,stroke:#333,stroke-width:1px
-	class Instance,PD,Dev,QF,Q cyan
+Instance *-- PD
+Device -up-> PD
+Queue -up-> QF
+PD .. QF
+Device .. Queue
+@enduml
 ```
