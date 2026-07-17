@@ -1231,3 +1231,35 @@ glEnable(GL_CULL_FACE);
 • Из-за этого OpenGL мало пригоден как к производству игр, так и к мобильным приложениям.
 • Необходимость нового графического API была осознана к 2016-му.
 • В отличии от OpenGL, Vulkan пока не идёт в стандартной поставке OS, и его SDK приходится скачивать отдельно.
+#### Концпептуальаня модель Вулкана
+• Основные отличия от OpenGL: возможность записать несколько буферов команд и использовать несколько очередей устройства.
+• Добавлено явное управление памятью и разные типы памяти.
+• Кроме того, API отвязано от условного "экрана", swap chain для Вулкана - это расширение, рендеринг может идти куда угодно.
+```mermaid
+flowchart LR
+	App["Application"]
+	CB1["Command<br>buffer"]
+	CB2["Command<br>buffer"]
+	Q1["Queue"]
+	Q2["Queue"]
+	Dev["Device"]
+	HM["Host<br>memory"]
+	DM["Device<br>memory"]
+
+	App --> CB1
+	App --> CB2
+	CB1 --> Q1
+	CB2 --> Q1
+	Q1 --> Dev
+	Q2 --> Dev
+	App --> HM
+	HM <--> DM
+
+	classDef yellow fill:#fdfd96,stroke:#333,stroke-width:1px
+	classDef cyan fill:#bfefff,stroke:#333,stroke-width:1px
+	classDef green fill:#c9f2c9,stroke:#333,stroke-width:1px
+
+	class App,CB1,CB2 yellow
+	class Q1,Q2,Dev cyan
+	class HM,DM green
+```
