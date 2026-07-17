@@ -1340,3 +1340,22 @@ Pipeline .. RenderPass
 	• Command buffer
 • Казалось бы хм... pipeline? Для OpenGL он один и глобальный.
 #### Пасс рендеринга
+![[../../../_Meta/attachments/10.11.svg]]
+#### Фиксированный конвейер
+<table style="border-collapse:collapse;text-align:center;font-weight:bold">
+<tr>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">VI</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">IA</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">VS</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">CS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">TS</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">ES</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">GS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">VP</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">RS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">MS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">DS</td>
+<td style="background:#fdfd96;padding:6px 9px;border:1px solid #999">FS</td>
+<td style="background:#bfefff;padding:6px 9px;border:1px solid #999">CB</td>
+</tr>
+</table>
