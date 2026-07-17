@@ -2618,5 +2618,24 @@ vkUnmapMemory(Device, stagingBufferMemory);
 • Команда, которую можно положить в очередь, это, в частности, команда записи памяти.
 ```cpp
 vkBeginCommandBuffer(commandBuffer, &beginInfo);
-vkCmdCopyBuffer(commandBuffer, srcBuffer,)
+vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, ....);
+vkEndCommandBuffer(commandBuffer);
 ```
+• Далее можно сразу отправить её в очередь и заблокироваться, дожидаясь ответа.
+```cpp
+vkQueueSubmit(GraphicsQueue, ....); // transfer queue?
+vkQueueWaitIdle(GraphicsQueue);
+```
+#### Демо
+• Покажем очевидное превосходство в FPS на примере.
+```shell
+build2> Release\uniform_buffer.exe -ogl
+```
+![[../../../_Meta/attachments/10.15.gif]]
+Это пример на OpenGL. На карточке автора в среднем это работает в 618 FPS.
+Та же программа, но написаная на Vulkan работает в среднем в 1950 FPS.
+#### Обсуждение
+• Покритикуйте простейшую программу по ссылке (имеется в виду гигантский пример в 1000 строк выше).
+• Что бы вы там улучшили или перепроектировали и как?
+## Физическая и объектная модель
+#### Что происходит в программе на Vulkan?
