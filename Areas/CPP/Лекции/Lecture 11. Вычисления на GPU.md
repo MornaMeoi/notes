@@ -190,9 +190,65 @@ void printf_device_info(cl_device_id devid) {
 	printf("Max dimensions: %u\n", ubuf);
 	
 	psbuf = malloc(sizeof(size_t) * ubuf);
-	ret = clGetDeviceInfo(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t) * ubuf, psbuf, NULL);
+	ret = clGetDeviceInfo(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES,
+												sizeof(size_t) * ubuf, psbuf, NULL);
 	CHECK_ERR(ret);
-	printf("Max dimensions: %u\n", ubuf);
+	printf("Max work item sizes: ");
+	for(int i = 0; i != ubuf; ++i)
+		printf("%u ", (unsigned)psbuf[i]);
+	printf("\n");
+	free(psbuf);
+	
+	ret = clGetDeviceInfo(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(sbuf),
+												&sbuf, NULL);
+	CHECK_ERR(ret);
+	printf("Max work group size: %u\n", (unsigned)sbuf);
+	
+	ret = clGetDeviceInfo(devid, CL_DEVICE_COMPILER_AVAILABLE, sizeof(cavail),
+												&cavail, NULL);
+	CHECK_ERR(ret);
+	printf("Compiler %savailable\n", cavail ? "" : "not ");
+	ret = clGetDeviceInfo(devid, CL_DEVICE_COMPILER_AVAILABLE, sizeof(lavail),
+												&lavail, NULL);
+	CHECK_ERR(ret);
+	printf("Linker %savailable\n", lavail ? "" : "not ");
+	printf("\n");
 }
 
+void enumerate_devices(cl_platform_id platfid) {
+	cl_int ret;
+	cl_uint i, numdevices;
+	cl_device_id* devices;
+	
+	ret = clGetDeviceIDs(platfid, CL_DEVICE_TYPE_ALL, 0, NULL, &numdevices);
+	CHECK_ERR(ret);
+	if(numdevices == 0) // no devices found
+		return;
+	
+	devices = malloc(numdevices * sizeof(cl_device_id));
+	assert(devices);
+	
+	ret = clGetDeviceIDs(platfid, CL_DEVICE_TYPE_ALL, numdevices, devices, NULL);
+	CHECK_ERR(ret);
+	
+	for(i = 0; i < numdevices; ++i)
+		print_device_info(devices[i]);
+	
+	free(devices);
+}
+
+int main() {
+	cl_uint i;
+	struct platforms_t platforms;
+	
+	platforms = get_platforms();
+	
+	for(i = 0; i < platforms.n; ++i) {
+		print_platform_info(platforms.ids[i]);
+		enumerate_devices(platforms.ids[i]);
+	}
+	
+	free(platforms.ids);
+	return 0;
+}
 ```
