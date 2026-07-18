@@ -269,3 +269,94 @@ clReleaseMemObject(buf); // уменьшаем счётчик ссылок до 
 clReleaseMemObject(buf); // уменьшаем счётчик ссылок до 0
 ```
 • В этот момент буфер освобождён и попытка его использовать - это UB.
+#### Создать контекст, очередь, буфер
+• Существуют API для того, чтобы создать контекст, очередь и буферы в нём.
+	• **clCreateContext**, чтобы создать контекст.
+	• **clCreateCommandQueue**, чтобы создать очередь (до OpenCL 2.0).
+	• И так далее, они приблизительно однотипные.
+• Все такого рода вещи тоже создаются rec-counted.
+	• Например, парным к **clReleaseContext** является **clRetainContext**.
+• Чтобы записать или прочитать буфер на устройстве, мы должны поставить запись в очередь (как в вулкане, но без CmdBuffer посередине).
+	• **clEnqueueWriteBuffer** / **clEnqueueReadBuffer**
+Пример с гита:
+```c
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Reading and writing buffers, C way
+//
+// clang cl_justbuf.c -lOpenCL
+//
+//-------------------------------------------------------------------------------
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#ifndef CL_TARGET_OPENCL_VERSION
+#define CL_TARGET_OPENCL_VERSION 120
+#endif 
+
+#include "CL/cl.h"
+
+static void cl_notify_fn(const char* errinfo, const void* private_info, size_t cb, void* user_data);
+
+void cl_process_error(cl_int ret, const char* file, int line);
+
+#define CHECK_ERR(ret) cl_process_error(ret, __FILE__, __LINE__);
+
+struct ocl_ctx_t {
+	cl_context ctx;
+	cl_command_queue que;
+};
+
+void process_buffers(struct ocl_ctx_t* ct);
+
+struct platforms_t {
+	cl_uint n;
+	cl_platform_id* ids;
+};
+
+enum { STRING_BUFSIZE = 4096 };
+
+// get any profile platform
+cl_platform_id select_platform() {
+	cl_uint i;
+	cl_int ret;
+	struct platforms_t p;
+	cl_platfrom_id selected = 0;
+	
+	ret = clGetPlatformIDs(0, NULL, &p.n);
+	CHECK_ERR(ret);
+	assert(p.n > 0);
+	
+	p.ids = malloc(p.n * sizeof(cl_platform_id));
+	assert(p.ids);
+	
+	ret = clGetPlatformIDs(p.n, p.ids, NULL);
+	CHECK_ERR(ret);
+	
+	for(i = 0; i < p.n; ++i) {
+		char buf[STRING_BUFSIZE];
+		cl_platform_id pid = p.ids[i];
+		ret = clGetPlatformInfo(pid, CL_PLATFORM_PROFILE, sizeof(buf), buf, NULL);
+		CHECK_ERR(err);
+		if(!strcmp(buf, "FULL_PROFILE")) {
+			cl_uint_numdevices = 0;
+			ret = clGetPlatformInfo(pid, CL_PLATFORM_NAME, sizeof(buf), buf, NULL);
+			CHECK_ERR(ret);
+			ret = clGetPlatformInfo(pid, CL_DEVICE_TYPE_GPU, 0, NULL, &numdevices);
+			if(numdevices == 0)
+				continue;
+			CHECK_ERR(ret);
+			printf("Selected: %s, # of GPU devices = %d\n", buf, numdevices);
+			selected = pid;
+		}
+	}
+}
+```
