@@ -633,5 +633,12 @@ cl::CommandQueue Queue{Context};
 // true == build immediately
 cl::Program program{Context, vakernel, true};
 
-c
+cl::NDRange GlobalRange{Sz};
+cl::EnqueueArgs Args{Queue, GlobalRange};
+
+cl::KernelFunctor<cl::Buffer, cl::Buffer, cl::Buffer>
+add_vecs{program, "vector_add"};
+
+// enque, execute, wait
+cl::Event evt = add_vecs(Args, A, B, C);
 ```
