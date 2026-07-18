@@ -443,6 +443,87 @@ void process_buffers(struct ocl_ctx_t* pct) {
 	CHECK_ERR(err);
 	
 	// oclbuf --> B
-	ret = clEnqueueReadBuffer(pct->que, oclbuf, CL_TRUE, 0, BUFSZ * sizeof(int), B)
+	ret = clEnqueueReadBuffer(pct->que, oclbuf, CL_TRUE, 0, BUFSZ * sizeof(int), B
+														0, NULL, NULL);
+	CHECK_ERR(err);
+	
+	for(i = 0; i < BUFSZ; ++i) {
+		if(B[i] != i * i) {
+			fprintf(stderr, "Error: B[%d] != %d * %d\n", i, i, i);\
+			abort();
+		}
+	}
+	
+	fprintf(stdout, "%s\n", "Everything is correct");
+	clReleaseMemObject(oclbuf);
+}
+
+void cl_process_error(cl_int ret, const char* file, int line) {
+	const char* cause = "unknown";
+	switch(ret) {
+		case CL_SUCCESS:
+			return;
+		case CL_DEVICE_NOT_AVAILABLE:
+			cause = "devices for this platform not available\n";
+	}
+	// etc
+}
+```
+#### Обсуждение
+• Так же как в Vulkan, многовато кода, который просто должен быть (boilerplate).
+• Какое у нас должно быть первое побуждение, когда мы видим **такое** C API?
+• Правильно: написать C++ wrapper.
+• Далее мы разберём, как может выглядеть и что делать такой враппер на примере стандартного opencl.hpp.
+Пример той же программы, но на opencl.hpp:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Reading and writing buffers, C++ way
+//
+// clang++ cl_justbuf.cc -lOpenCL
+//
+//-------------------------------------------------------------------------------
+
+#include <iostream>
+#include <stdexcept>
+#include <vector>
+
+#ifndef CL_HPP_TARGET_OPENCL_VERSION
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#endif 
+
+#define CL_HPP_ENABLE_EXCEPTIONS
+
+#include "CL/opencl.hpp"
+
+namespace {
+
+// first platform with some GPUs...
+cl::Platform select_platform() {
+	cl::vector<cl::Platform> platforms;
+	cl::Platform::get(&platforms);
+	for(auto p : platforms) {
+		// note: usage of p() for plain id
+		cl_uint numdevices = 0;
+		::clGetDeviceIDs(p(), CL_DEVICE_TYPE_GPU, 0, NULL, &numdevices);
+		if(numdevices > 0)
+			return cl::Platform(p); // retain?
+	}
+	throw std::runtime_error("No platform selected");
+}
+
+enum { BUFSZ = 128 };
+
+} // namespace
+
+int main() try {
+	cl::Platform P = select_platform();
 }
 ```
