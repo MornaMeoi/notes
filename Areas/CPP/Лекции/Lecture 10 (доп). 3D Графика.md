@@ -2690,4 +2690,46 @@ enum class QueueFlagBits : VkQueueFlags {
 ...
 };
 
-vk::Queue
+<span style="color: blue;">vk::QueueFlags</span> bits = vk::QueueFlagBits::eGraphics | vk::QueueFlagBits::eCompute;
+• Задача в том, как удобней определить vk::QueueFlags?
+#### Доступ к нижележащему типу
+```cpp
+template<typename BitType> class Flags {
+	using MaskType = typename std::underlying_type<BitType>::type;
+	MaskType m_mask;
+// ....
+	Flags<BitType> operator|(Flags<BitType> const& rhs) const {
+		return Flags<BitType>(m_mask | rhs.m_mask);
+	}
+};
+
+using QueueFlags = Flags<QueueFlagBits>;
+```
+• Здесь мы предполагаем, что мы инстанцированы исключительно enum class.
+enum class QueueFlagBits : <span style="color: red;">VkQueueFlags</span> <span style="color: gray;">// -- underlying</span>
+#### Размер кода существенно улучшается
+```cpp
+auto mapping = vk::ComponentMapping {
+	vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG,
+	vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA };
+	
+auto subrange = vk::ImageSubresourceRange {
+	vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+	
+for(auto image : swapchain_images_) {
+	vk::ImageViewCreateInfo image_view_create_info(
+		vk::ImageViewCreateFlags(), image, vk::ImageViewType::e2D,
+		format_, mapping, subrange); // наши обёрточки
+	swapchain_image_views_.push_back(
+		device_->createImageViewUnique(image_view_create_info));
+}
+```
+#### Unique pointers/resources
+• Большая часть объетов ведёт себя unique-pointer-подобно.
+```cpp
+template<typename Type, typename Dispatch>
+class UniqueHandle :
+	public UniqueHandleTraits<Type, Dispatch>::deleter {
+// ...
+```
+• Это позволяет как на прошлом слайде завернут
