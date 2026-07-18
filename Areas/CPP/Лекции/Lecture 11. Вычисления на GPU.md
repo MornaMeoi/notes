@@ -356,7 +356,93 @@ cl_platform_id select_platform() {
 			CHECK_ERR(ret);
 			printf("Selected: %s, # of GPU devices = %d\n", buf, numdevices);
 			selected = pid;
+			break;
 		}
 	}
+	
+	free(p.ids);
+	
+	if(selected == 0) {
+		fprintf(sderr, "No platform matches FULL_PROFILE\n");
+		abort();
+	}
+	
+	return selected;
+}
+
+int main() {
+	size_t ndevs;
+	cl_int ret;
+	cl_devices_id* devs;
+	struct ocl_ctx_t ct;
+	cl_platform_id selected_platform id'
+	
+	selected_platform_id = select_platform();
+	
+	cl_context_properties properties[] = {
+		CL_CONEXT_PLATFORM, (cl_context_properties)selected_platform_id,
+		0 // signals end of property list
+	};
+	
+	// try NULL here instead of properties
+	ct.ctx = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, &cl_notify_fn,
+																	 NULL, &ret);
+	CHECK_ERR(ret);
+	
+	ret = clGetContextInfo(ct, ctx, CL_CONTEXT_DEVICES, 0, NULL, &ndevs);
+	CHECK_ERR(ret);
+	
+	assert(ndevs > 0);
+	
+	devs = malloc(ndevs * sizeof(cl_device_id));
+	ret = clGetContextInfo(ct.ctx, CL_CONTEXT_DEVICES, ndevs, devs, NULL);
+	CHECK_ERR(ret);
+	
+#if CL_TARGET_OPENCL_VERSION < 200
+	ct.que = clCreateCommandQueue(ct.ctx, devs[0], 0, &ret);
+#else
+	ct.que = clCreateCommandQueueWithProperties(ct.ctx, devs[0], NULL, &ret);
+#endif 
+	CHECK_ERR(err);
+	
+	process_buffers(&ct);
+	
+	ret = clFlush(ct.que);
+	CHECK_ERR(err);
+	
+	ret = clFinish(ct.que);
+	CHECK_ERR(err);
+	
+	ret = clReleaseCommandQueue(ct.que);
+	CHECK_ERR(err);
+	
+	ret = clReleaseContext(ct.ctx);
+	CHECK_ERR(err);
+	free(devs);
+}
+
+enum { BUFSZ = 128 };
+
+// just create buffers, populate it, read back in second buffer and check
+void process_buffers(struct ocl_ctx_t* pct) {
+	int A[BUFSZ], i;
+	int B[BUFSZ] = {0};
+	cl_mem oclbuf;
+	cl_int ret;
+	
+	for(i = 0; i < BUFSZ; ++i)
+		A[i] = i * i;
+	
+	oclbuf = clCreateBuffer(pct->ctx, CL_MEM_READ_WRITE, BUFSZ * sizeof(int), NULL,
+													&ret);
+	CHECK_ERR(ret);
+	
+	// A --> oclbuf
+	ret = clEnqueueWriteBuffer(pct->que, oclbuf, CL_TRUE, 0, BUFSZ * sizeof(int), A
+														 0, NULL, NULL);
+	CHECK_ERR(err);
+	
+	// oclbuf --> B
+	ret = clEnqueueReadBuffer(pct->que, oclbuf, CL_TRUE, 0, BUFSZ * sizeof(int), B)
 }
 ```
