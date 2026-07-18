@@ -2732,4 +2732,50 @@ class UniqueHandle :
 	public UniqueHandleTraits<Type, Dispatch>::deleter {
 // ...
 ```
-• Это позволяет как на прошлом слайде завернут
+• Это позволяет как на прошлом слайде завернуть в самоумирающий по уничтожению swapchain_image_views_ объект:
+```cpp
+swapchain_image_views.push_back(
+	device_->createImageViewUnique(image_view_create_info));
+```
+#### Обсуждение
+• Простая обёртка - это хорошо, но давайте вернёмся к высокоуровневой архитектуре.
+• Как мы расширим рендерер с учётом возможностей вулкана? Что станет с логической моделью? Что станет со сценой?
+#### Литература
+1. ISO/IEC, "Information technology - Programming languages - C++", ISO/IEC 14882:2017
+2. The C++ Programming Language (4th Edition)
+3. John M. Kessenich, Graham Seller, Dave Shreiner - OpenGL Programming Guide: The Official Guide to Learning OpenGL, 9-th edition, 2016
+4. Parminder Singh - Learning Vulkan, Packt, 2016
+5. Alexander Overvoorde - Vulkan Tutorial, **self-published**, 2020
+6. Dustin Land - Getting explicit: How Hard is Vulkan really, GDC 2018
+7. Jason Ekstrand - What Can Vulkan do for You?, The Linux Foundation, 2017
+8. Michael Worcester - Getting Started with Vulkan, The Khronos Group, 2017
+9. Karl Shultz - Vulkan Tutorial, DevU, 2017
+Дальше вкидывает небольшой *cliffhanger* про Compute Queues. В качестве примера приводит шейдер:
+```glsl
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Simple vertex shader: output blank square without vertex buffers
+//
+// This version works for Vulkan:
+// glslc simplest-v.ver -o simplest-v.ver.spv
+//
+//-------------------------------------------------------------------------------
+
+#version 460
+
+layout(location = 0) in vec2 inPosition;
+layout(location = 1) in vec3 inColor;
+
+layout(location = 0) out vec3 fragColor;
+
+void main() {
+	gl_Position = vec4(inPosition, 0.0, 1.0);
+	fragColor = inColor;
+}
+```
