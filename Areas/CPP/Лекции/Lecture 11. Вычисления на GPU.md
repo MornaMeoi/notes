@@ -525,5 +525,71 @@ enum { BUFSZ = 128 };
 
 int main() try {
 	cl::Platform P = select_platform();
+	cl::string name = P.getInfo<CL_PLATFORM_NAME>();
+	cl::string profile = P.getInfo<CL_PLATFORM_PROFILE>();
+	std::cout << "Selected: " << name << ": " << profile << std::endl;
+	
+	cl_context_properties properties[] = {
+		CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(P()),
+		0 // signals end of property list
+	};
+	
+	cl::Context C(CL_DEVICE_TYPE_GPU, properties);
+	cl::CommandQueue Q(C);
+	
+	cl::vector<int> A(BUFSZ), B(BUFSZ);
+	for(int i = 0; i < BUFSZ; ++i)
+		A[i] = i * i;
+	
+	cl::Buffer D(C, CL_MEM_READ_WRITE, BUFSZ * sizeof(int));
+	
+	cl::copy(Q, A.begin(), A.end(), D);
+	cl::copy(Q, D, B.begin(), B.end());
+	
+	for(int i = 0; i < BUFSZ; ++i) {
+		if(B[i] != i * i) {
+			std::cout << "Error at: " << i << ": " << B[i] << " != " << i * i
+								<< std::endl;
+			return -1;
+		}
+	}
+	
+	std::cout << "Checks passed" << std::endl;
+} catch(cl::Error err) {
+	std::cerr << "ERROR " << err.err() << ":" << err.what() << std::endl;
+	return -1;
+}
+```
+Разницу в количестве строк можно видеть невооружённым глазом. Про читаемость не стоит и говорить.
+#### Пересылка буфера на OpenCL C++
+```cpp
+// Буферы A и B на хоесте
+cl::vector<int> A(BUFSZ), B(BUFSZ);
+
+cl::Context Context{CL_DEVICE_TYPE_GPU, properties};
+cl::CommandQueue Queue{Context};
+
+// Буфер D на устройстве
+cl::Buffer D{Context, CL_MEM_READ_WRITE, BUFSZ * sizeof(int)};
+
+// Пересылка A -> D
+cl::copy(Queue, A.begin(), A.end(), D);
+
+// Пересылка D -> B
+cl::copy(Queue, D, B.begin(), B.end());
+```
+#### Модель вычислений OpenCL
+• Пересылать данные хорошо, но хотелось бы что-то считать.
+• Устройства исполняют ядра (kernels), которые на них отсылаются, попадая в их очередь.
+• Исходный код совокупности ядер называется программой (program) и компилируется на устройстве.
+• И вот те данные над которыми ядра работают уже пересылаются.
+![[../../../_Meta/attachments/11.2.png]]
+#### Итерационное пространство задачи
+• Посмотрим на kernel для сложения векторов
+```openclc
+__kernel void
+vector_add(__global int* A, __global int* B, __global int* C) {
+	int i = get_global_id(0);
+	C[i] = A[i] + B[i];
 }
 ```
