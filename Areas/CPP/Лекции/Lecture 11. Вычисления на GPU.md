@@ -642,3 +642,27 @@ add_vecs{program, "vector_add"};
 // enque, execute, wait
 cl::Event evt = add_vecs(Args, A, B, C);
 ```
+```plantuml
+@startuml
+skinparam ArrowColor #000000
+skinparam rectangle {
+  BorderColor #555555
+}
+
+rectangle "API" as API #f4b6c2
+rectangle "Kernel" as KRN #c9f2c9
+rectangle "OCLC FE" as FE #bfefff
+rectangle "Graphics\ncompiler" as GC #bfefff
+rectangle "OpenCL\nruntime" as RT #fdfd96
+rectangle "GPU\nexecution" as GPU #fdfd96
+rectangle "Kernel mode driver and GPU HW" as KMD #c9f2c9
+
+KRN -up-> API
+API <-down-> RT
+RT <..> FE : Source
+GC <..> RT : SPIRV
+RT --> GPU : Binary + payload
+GPU <--> KMD
+RT <--> KMD
+@enduml
+```
