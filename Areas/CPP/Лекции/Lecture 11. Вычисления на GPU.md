@@ -892,7 +892,7 @@ for(int k = 0; k < AY; k++)
 ```openclc
 __kernel void histogram(__global uchar* data, int nelts, __global int* histogram,
 												__local int* local_hist, int bins) {
-....
+// ....
 	int lid = get_local_id(0); // varying внутри local space
 	int gid = get_global_id(0); // varying внутри global space
 }
@@ -900,5 +900,49 @@ __kernel void histogram(__global uchar* data, int nelts, __global int* histogram
 • В хостовом C++ API есть специальный псевдо-буффер, обозначающий "тут локальная память" (это буфер с памятью null pointer, ненулевого размера).
 ```cpp
 cl::KernelFunctor hist<cl::Buffer, cl_int, cl::Buffer,
-	cl::LocalSpaceArg, cl_int>
+	cl::LocalSpaceArg, cl_int>(program, "histogram");
 ```
+#### Локальная память внутри ядра
+```openclc
+__kernel void matrix_multiply(__global float* A, __global float* B,
+															__global TYPE* C, int AX, int AY, int BY) {
+	const int row = get_local_id(0); // Local row ID (max: TS)
+	const int col = get_local_id(1); // Local col ID (max: TS)
+// ...
+	__local TYPE Asub[TS][TS]; // local memory buffer
+	__local TYPE Bsub[TS][TS];
+}
+```
+• С хоста в любом случае нужно передать размеры локальной памяти в описании аргументов.
+```cpp
+cl::EnqueueArgs Args(Queue, GlobalRange, LocalRange);
+```
+#### Приватная память в OpenCL
+• Каждый поток обладает приватной памятью (пока её мало, думайте о ней как о регистрах).
+• Соотношение скорости локальной и приватной памяти - это сложный вопрос.
+• Работа с локальной и приватной памятью - это высший пилотаж OpenCL.
+![[../../../_Meta/attachments/11.7.png]]
+#### Summary: память
+• Хостовая память.
+• Разновидности памяти на устройстве:
+	• Private memory (просто переменная внутри ядра).
+	• Global memory (обозначается \_\_global).
+	• Constant memory (обозначается \_\_constant).
+	• Local memory (обозначается \_\_local).
+• Shared virtual memory (SVM).
+	• Хостовая память, видимая с устройства. Нужна для динамических структур данных (деревья, списки).
+#### Case study: улучшаем матрицы
+```openclc
+// переменные в приватной памяти (на регистрах)
+int tiledRow = TS * t + row, tiledCol = TS * t + col;
+
+// временные буферы в локальной памяти
+Asub[col][row] = A[globalRaw * AY + tiledCol];
+Bsub[col][row] = B[tiledRow * BY + globalCol];
+
+// в цикле используем локальную память и приватную память
+for(k = 0; k < TS; k++)
+	acc += Asub[k][row] * Bsub[col][k];
+```
+• Увы, как написано на слайде это не будет работать.
+• Дело в том, что потоки бегут с немного разной скоростью.
