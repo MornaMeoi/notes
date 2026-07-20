@@ -883,7 +883,22 @@ for(int k = 0; k < AY; k++)
 • Можно ли здесь как-то всё улучшить?
 • Подумайте, как бы вы подошли к задаче, если бы вы писали программу для обычного CPU?
 #### Локальная память в OpenCL
-• Каждое вычислительное устройство делится на Processing Elements (в терминологии CUDE threads).
+• Каждое вычислительное устройство делится на Processing Elements (в терминологии CUDA threads).
 • Все потоки внутри вычислительного устройства имеют общий доступ к локальной памяти.
 • Думайте о локальной памяти, как о кэше.
 ![[../../../_Meta/attachments/11.6.png]]
+#### Локальная память: управление с хоста
+• Для OpenCL используется модификатор local.
+```openclc
+__kernel void histogram(__global uchar* data, int nelts, __global int* histogram,
+												__local int* local_hist, int bins) {
+....
+	int lid = get_local_id(0); // varying внутри local space
+	int gid = get_global_id(0); // varying внутри global space
+}
+```
+• В хостовом C++ API есть специальный псевдо-буффер, обозначающий "тут локальная память" (это буфер с памятью null pointer, ненулевого размера).
+```cpp
+cl::KernelFunctor hist<cl::Buffer, cl_int, cl::Buffer,
+	cl::LocalSpaceArg, cl_int>
+```
