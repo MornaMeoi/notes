@@ -806,6 +806,51 @@ int main() try {
 	
 	app.vadd(src1.data(), src2.data(), dst.data(), dst.size());
 	
-	for(int i = 0; i < ARR_SIZE; ++i) {}
+	for(int i = 0; i < ARR_SIZE; ++i) {
+		auto lhs = dst[i];
+		auto rhs = src1[i] + src2[i];
+		if(lhs != rhs) {
+			std::cerr << "Error at index " << i << ": " << lhs << " != " << rhs
+								<< std::endl;
+			return -1;
+		}
+	}
+	std::cout << "All checks passed" << std::endl;
+} catch (cl::Error& err) {
+	std::cerr << "OCL ERROR " << err.err() << ":" << err.what() << std::endl;
+	return -1;
+} catch(std::runtime_error& err) {
+	std::cerr << "RUNTIME ERROR " << err.what() << std::endl();
+	return -1;
+} catch(...) {
+	std::cerr << "UNKNOWN ERROR\n";
+	return -1;
 }
 ```
+Если забыть про контекст, будет примерно такая ошибка:
+```
+Selected: Intel(R) OpenCL HD Graphics: FULL_PROFILE
+OCL ERROR -38:clSetKernelArg
+```
+-38 - это Invalid Memory Object.
+#### Информация о выполнении
+• Результатом выполнения функтора является Event.
+```cpp
+cl::Event evt = add_vecs(Args, A, B, C); evt.wait();
+```
+• Его можно использовать, чтобы подождать результат, а можно для профилировочной информации.
+```cpp
+time_start = evt.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+time_end = evt.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+```
+• Это позволяет чётко понимать, сколько мы провели, собственно, на GPU, выполняя задачи (из всего потраченного времени).
+#### Взаимозависимость кернелов
+• В структуре EnqueueArgs мы можем сконфигурировать систему Events.
+```cpp
+cl::EnqueueArgs Args{Queue, GlobalRange};
+cl::Event Evt = add_vecs(Args, A, B, C); // C = A + B
+cl::EnqueueArgs DepArgs{Queue, Evt, GlobalRange};
+cl::Event Evt = add_vecs(DepArgs, A, C, B); // B = A + C
+```
+• Здесь мы сказали запускать второе ядро только после выполнения первого.
+• Одна из сложностей OpenCL: мы всегда должны думать в терминах асинхронных очередей.
