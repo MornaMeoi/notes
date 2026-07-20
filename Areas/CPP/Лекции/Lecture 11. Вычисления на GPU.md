@@ -854,3 +854,23 @@ cl::Event Evt = add_vecs(DepArgs, A, C, B); // B = A + C
 ```
 • Здесь мы сказали запускать второе ядро только после выполнения первого.
 • Одна из сложностей OpenCL: мы всегда должны думать в терминах асинхронных очередей.
+## Память и синхронизация
+#### Обсуждение: а что для матриц?
+• Вам нужно умножить матрицу (N x M) на матрицу (M x K).
+• Что будет элементом итерационного пространства этой задачи?
+![[../../../_Meta/attachments/11.5.png]]
+#### Case study: перемножение матриц
+• Простейшее ядро для перемножения:
+```openclc
+__kernel void simple_multiply(__global int* A, __global int* B, __global int* C,
+															int AX, int AY, int BY) {
+	int row = get_global_id(0);
+	int col = get_global_id(1);
+	int sum = 0;
+	
+	for(int k = 0; k < AY; k++)
+		sum += A[row * AY + k] * B[k * BY + col];
+	C[row * BY + col] = sum;
+}
+```
+• Уже даёт ощутимый выигрыш над аналогичной программой для CPU.
