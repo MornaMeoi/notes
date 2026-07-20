@@ -783,6 +783,29 @@ void OclApp::vadd(cl_int const* APtr, cl_int const* BPtr, cl_int* CPtr,
 	
 	// try forget context here and happy debugging CL_INVALID_MEM_OBJECT:
 	// cl::Program program(vakernel, true /* build immediately */);
+	cl::Program program(C_, vakernel, true /* build immidiately */);
 	
+	vadd_t add_vecs(program, "vector_add");
+	
+	cl::NDRange GlobalRange(Sz);
+	cl::NDRange LocalRange(LOCAL_SIZE);
+	cl::EnqueueArgs Args(Q_, GlobalRange, LocalRange);
+	
+	cl::Event evt = add_vecs(Args, A, B, C);
+	evt.wait();
+	
+	cl::copy(Q_, C, CPtr, CPtr + Sz);
+}
+
+int main() try {
+	OclApp app;
+	cl::vector<cl_int> src1(ARR_SIZE), src2(ARR_SIZE), dst(ARR_SIZE);
+	
+	std::iota(src1.begin(), src1.end(), 0);
+	std::iota(src2.begin(), src2.end(), 0);
+	
+	app.vadd(src1.data(), src2.data(), dst.data(), dst.size());
+	
+	for(int i = 0; i < ARR_SIZE; ++i) {}
 }
 ```
