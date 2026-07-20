@@ -1775,3 +1775,66 @@ barier(CLK_LOCAL_MEM_FENCE);
 for(i = lid; i < num_bins; i += lsize)
 	atomic_add(&histogram[i], local_hist[i]); // собираем
 ```
+#### Демонстрация и обсуждение
+• Надо всегда понимать:
+	• Сколько у вас глобальное итерационное пространство?
+	• Сколько у вас глобальной памяти (обычно больше).
+	• То же самое про локальную память и локальное итерационное пространство.
+• Синхронизация и атомарность внутри OpenCL C могут показаться сложными вещами, но в реальности они там проще, чем на CPU.
+• Разумеется, мы могли бы разбить гистограмму на подзадачи на CPU и синхронизировать эвентами. Было бы это лучше? Попробуйте!
+#### Обсуждение
+• Чтобы упрощать наши программы мы использовали C++ API.
+• Но пока что мы не заглядывали в то, как именно оно устроено.
+• А там есть несколько очень важных уроков.
+Дальше лектор начинает резко прощаться, пропустив 2 темы со слайдов. Но я запишу то, что он быстро пролистал.
+## OpenCL C++ API
+#### Первый шаг: reference handler
+• Почти любая сущность в OpenCL является ref-counted и имеет два специальных метода: retain и release.
+• clRetainMemObject(cl_mem), clReleaseMemObject(cl_mem).
+• clRetainDevice(cl_device_id), clReleaseDevice(cl_device_id).
+• clRetainContext(cl_context), clReleaseContext(cl_context).
+• И так далее.
+• Разумно сделать некий класс, абстрагирующий это. Но увы, нет никакой системности в этих функциях.
+#### Идея специализации
+• Шаблон класса может быть <span style="color: blue;">специализирован</span>, то есть его частный случай для конкретного типа может быть указан непосредственно.
+```cpp
+template<typename T> struct S {
+	void dump() { std::cout << "for all\n"; }
+};
+
+template<> struct S<int> {
+	void dump() { std::cout << "for int\n"; }
+};
+
+S<int> s1; s1.dump();    // используется ваша специализация
+S<double> s2; s2.dump(); // специализацию делает компилятор
+```
+#### Собираем reference handler
+• Общий случай:
+```cpp
+template<typename T> struct ReferenceHandler { };
+```
+• Конкретные случаи:
+```cpp
+template<> ReferenceHandler<cl_mem> {
+	static cl_int retain(cl_mem memory) { return ::clRetainMemObject(memory); }
+	static cl_int release(cl_mem memory) { return ::clReleaseMemObject(memory); }
+};
+```
+• Теперь ReferenceHandler\<X\>::release() - это либо release X, либо ошибка.
+#### Второй шаг: wrapper
+• Враппер хранит в себе объект и вызывает release на уничтожении.
+```cpp
+template<typename cl_type> class Wrapper {
+protected:
+	cl_type obj_;
+	
+public:
+	~Wrapper() { release(); }
+	
+	cl_int release() const {
+		if(!obj_) return CL_SUCCESS;
+		return Reference
+	}
+};
+```
