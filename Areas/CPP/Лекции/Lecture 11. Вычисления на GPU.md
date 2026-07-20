@@ -747,6 +747,42 @@ public:
 
 // select first platform with some GPUs
 cl::Platform OclApp::select_platform() {
-	cl::vector
+	cl::vector<cl::Platform> platforms;
+	cl::Platform::get(&platforms);
+	for(auto p : platforms) {
+		// note : usage of p() for plain id
+		cl_uint numdevices = 0;
+		::clGetDeviceIDs(p(), CL_DEVICE_TYPE_GPU, 0, NULL, &numdevices);
+		if(numdevices > 0)
+			return cl::Platform(p); // retain?
+	}
+	throw std::runtime_error("No platform selected");
+}
+
+// get context for selected platform
+cl::Context OclApp::get_gpu_context(cl_platform_id PId) {
+	cl_context_properties properties[] = {
+		CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(PId),
+		0 // signals end of property list
+	};
+	
+	return cl::Context(CL_DEVICE_TYPE_GPU, properties);
+}
+
+void OclApp::vadd(cl_int const* APtr, cl_int const* BPtr, cl_int* CPtr,
+									size_t Sz) {
+	size_t BufSz = Sz * sizeof(cl_int);
+	
+	
+	cl::Buffer A(C_, CL_MEM_READ_ONLY, BufSz);
+	cl::Buffer B(C_, CL_MEM_READ_ONLY, BufSz);
+	cl::Buffer C(C_, CL_MEM_WRITE_ONLY, BufSz);
+	
+	cl::copy(Q_, APtr, APtr + Sz, A);
+	cl::copy(Q_, BPtr, BPtr + Sz, B);
+	
+	// try forget context here and happy debugging CL_INVALID_MEM_OBJECT:
+	// cl::Program program(vakernel, true /* build immediately */);
+	
 }
 ```
