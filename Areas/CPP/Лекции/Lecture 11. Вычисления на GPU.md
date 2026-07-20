@@ -666,3 +666,53 @@ GPU <--> KMD
 RT <--> KMD
 @enduml
 ```
+Пример с гита:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Simple vectoradd OpenCL application
+//
+// clang++ -o vectoradd.exe cl_vectoradd.cc -lOpenCL
+//
+//-------------------------------------------------------------------------------
+
+#include <algorithm>
+#include <iostream>
+#include <numeric>
+#include <stdexcept>
+#include <vector>
+
+#ifndef CL_HPP_TARGET_OPENCL_VERSION
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#endif 
+
+#define CL_HPP_CL_1_2_DEFAULT_BUILD
+#define CL_HPP_ENABLE_EXCEPTIONS
+
+#include "CL/opencl.hpp"
+
+#ifndef ANALYZE
+#define ANALYZE
+#endif 
+
+#define dbgs \
+	if (!ANALYZE) { \
+	} else \
+		std::cout
+
+constexpr size_t ARR_SIZE = 64;
+constexpr size_t LOCAL_SIZE = 1;
+
+#define STRINGIFY(...) #__VA_ARGS__
+
+// This example have built-in kernel to easy modify, etc
+// -------------------------- OpenCL --------------------------------------------
+const char* vakernel = STRINGIFY(__kernel void vector_add(__)
+```
