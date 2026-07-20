@@ -1834,7 +1834,98 @@ public:
 	
 	cl_int release() const {
 		if(!obj_) return CL_SUCCESS;
-		return Reference
+		return ReferenceHandler<cl_type>::release(obj_);
 	}
 };
 ```
+• Как бы вы написали копирование и присваивание?
+• Также обратим внимание на перегруженные круглые скобки:
+```cpp
+const cl_type& operator ()() const { return object_; }
+cl_type& operator ()() { return object_; }
+cl_type get() const { return object_; }
+```
+• У этого решения есть очевидная проблема:
+```cpp
+Wrapper<T> a, b;
+a() = b();
+```
+• Будет работать без release и retain. Чудовищное нарушение инкапсуляции.
+• Но класс Wrapper находится в namespace detail, т.е. по конвенции не предназначен для использования извне.
+#### Обсуждение
+• Эта идея завернуть всё лишнее в namespace detail пока что встречается в мире часто.
+• С распространением модулей она уйдёт в прошлое, так как модули позволяют определять классы не экспортируя их из модуля.
+• Кстати, как вы думаете, а делать ли врапперу виртуальный деструктор?
+#### Третий шаг: девай
+• Теперь конкретный класс для девайса может быть унаследован от враппера.
+```cpp
+class Device : public detail::Wrapper<cl_device_id> {
+```
+• Возможно некоторое переиспользование копирования и присваивания:
+```cpp
+Device(const Device& dev) : detail::Wrapper<cl_type>(dev) {}
+
+Device& operator=(const Device& dev) {
+	detail::Wrapper<cl_type>::operator=(dev);
+	return *this;
+}
+```
+• Увы, определять их приходится из-за контроля типа в rhs.
+• Однако, у нас есть небольшая засада:
+```cpp
+vector<Device> devices;
+
+vector<cl_device_id> ids(n);
+::clGetDeviceIDs(platform, type, n, ids.data(), NULL);
+
+devices.resize(n);
+
+for(size_type i = 0, e = ids.size(); i < e; ++i)
+	devices[i] = Device(ids[i]);
+```
+• Упс... кто видит тут возможную проблему?
+```cpp
+for(size_type i = 0, e = ids.size(); i < e; ++i)
+	devices[i] = Device(ids[i]); // copy и сразу release
+```
+• Таким образом, мы теряем девайсы из-за сбоя в счётчике ссылок.
+• Что делать?
+#### Выход: специальный конструктор
+• Мы можем предусмотреть специальный retain-ctor:
+```cpp
+explicit Device(const cl_device_id& device, bool retainObject = false) :
+	detail::Wrapper<cl_type>(device, retainObject) {}
+```
+• И если надо создать временный объект, создавать его с retain.
+```cpp
+for(size_type i = 0, e = ids.size(); i < e; ++i)
+	devices[i] = Device(ids[i], true);
+```
+• Теперь всё хорошо, счётчик ссыло сходится.
+#### Этюд: получение информации
+• У нас есть возможность запросить информацию о девайсе.
+```cpp
+char buf[STRING_BUFSIZE];
+::clGetPlatformIndo(pid, CL_PLATFORM_NAME, sizeof(buf), buf, NULL);
+
+cl_uint ubuf;
+::clGetPlatformIndo(pid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(ubuf),
+										&ubuf, NULL);
+```
+• Мы бы хотели:
+```cpp
+std::string pname = p.getInfo<CL_PLATFORM_NAME>();
+unsigned md = d.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+```
+• Первый шаг очевиден: завести эту функцию.
+```cpp
+class Device : public detail::Wrapper<cl_device_id> {
+// ....
+	template<cl_device_info name>
+	??? getInfo(cl_int* err = NULL) const {
+		// делегация к detail::getInfo
+	}
+}
+```
+• Но как разобраться, какой у неё должен быть возвращаемый тип?
+#### 
