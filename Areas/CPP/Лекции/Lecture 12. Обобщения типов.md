@@ -115,3 +115,19 @@ template int max<int>(int x, int y); // инстанцировать тут
 extern template double max<double>(double x, double y);
 ```
 • При явном инстанцировании вы лишаетесь ленивого поведения.
+#### Частичная специализация
+• Для классов доступна также возможность специализировать шаблон частично.
+```cpp
+template<typename T, typename U>
+class Foo {}; // primary template
+
+template<typename T>
+class Foo<T, T> {} // case T == U
+
+template<typename T>
+class Foo<T, int> {}; // case U == int
+
+template<typename T, typename U>
+class Foo<T*, U*> {}l // case pointers
+```
+![[../../../_Meta/attachments/12.1.png]]
