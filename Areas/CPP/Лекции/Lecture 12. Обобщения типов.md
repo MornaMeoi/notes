@@ -131,3 +131,34 @@ template<typename T, typename U>
 class Foo<T*, U*> {}l // case pointers
 ```
 ![[../../../_Meta/attachments/12.1.png]]
+#### Специализация для похожих типов
+• Частичная специализация возможна по семейству похожих типов.
+```cpp
+template<typename T> struct X;
+
+template<typename T> struct X<std::vector<T>>;
+
+X<int> a;              // -> primary template X<T>
+X<std::vector<int>> b; // -> X<std::vector<T>>
+```
+• Примерно так же можно специализировать для всех функций.
+```cpp
+template<typename R, typename T> struct Y;
+template<typename R, typename T> struct Y<R(T)>;
+```
+Пример с гита:
+```cpp
+#include <iostream>
+
+template<typename T, typename U>
+struct Foo {
+	Foo() { std::cout  << 1 << std::endl; }
+};
+
+template<typename T>
+struct Foo<T, T> {
+	Foo() { std::cout << 2 << std::endl; }
+};
+
+template
+```
