@@ -210,3 +210,42 @@ std::unique_ptr<int> ui{new int[1000]()}; // грубая ошибка
 std::unique_ptr<int[]> ui{new int[1000]()}; // хотелось бы так
 ```
 • Хорошая ли идея добавлять частичную специализацию к самому классу unique_ptr?
+#### Вспоминаем структуру unique_ptr
+• Удаление отделено в параметр шаблона.
+```cpp
+template<typename T, typename Delete = default_delete<T>>
+class unique_ptr {
+	T* ptr_;
+	Deleter del_;
+public:
+	unique_ptr(T* ptr = nullptr, Deleter del = Deleter()) : ptr_(ptr), del_(del) {}
+	~unique_ptr() { del_(ptr_); }
+// и так далее
+};
+```
+• Вспоминаем, как мог бы выглядеть default_delete?
+#### Частичная специализация
+• На помощь приходит <span style="color: blue;">частичная специализация для массивов</span>.
+```cpp
+template<typename T> struct default_delete {
+	void operator()(T* ptr) { delete ptr; }
+};
+
+template<typename T> struct default_delete<T[]> {
+	void operator()(T* ptr) { delete[] ptr; }
+};
+```
+• Теперь при массиво-подобном T у нас будет вызван правильный deleter.
+#### Обсуждение
+• Можно ли шаблонную специализацию назвать разновидностью наследования?
+• В наследовании тоже более специлизированный класс наследует более общему.
+#### Нарушение LSP для шаблонов
+• Увы, но (частично) специализированный шаблон может не иметь ничего общего с его полной версией (вплоть до разных имён методов).
+• С точки зрения наследования, это нарушение LSP.
+```cpp
+template<typename T> struct S { void foo(); };
+template<> struct S<int> { void bar(); };
+S<double> sd; sd.foo(); // -> primary template S<T>
+S<int> si; si.bar();    // -> specialization S<int>
+```
+• И, разумеется, шаблоны инвариантны к шаблонной генерализации. Каждая специализация считается новым, не связанным с прочими, типом.
