@@ -1928,4 +1928,56 @@ class Device : public detail::Wrapper<cl_device_id> {
 }
 ```
 • Но как разобраться, какой у неё должен быть возвращаемый тип?
-#### 
+#### Идея: type traits
+• Заводим специальную структуру, чем-то похожую на ReferenceHandler.
+```cpp
+template<typename T, cl_int Name> struct param_traits {};
+```
+• Теперь можно как и раньше расписать спецализации:
+```cpp
+template<> struct param_traits<cl_platform_info, CL_PLATFORM_NAME> {
+	enum { value = CL_PLATFORM_NAME };
+	using type = std::string;
+};
+```
+• Обратите внимание: теперь ключевую роль играют не вложенные функции, а вложенный тип.
+#### Этюд: получение информации
+• Теперь используем здесь наши type traits:
+```cpp
+class Device : public detail::Wrapper<cl_device_id> {
+// ....
+	template<cl_device_info name>
+	typename param_traits<cl_device_info, name>::type
+	getInfo(cl_int* err = NULL) const {
+		// делегация к detail::getInfo
+	}
+}
+```
+• Вот именно за это многие любят C++, а многие - нет.
+#### Иерархия классов
+```mermaid
+flowchart BT
+	Memory["Memory"]
+	Buffer["Buffer"]
+	BufferGL["BufferGL"]
+	Image["Image"]
+	Image2D["Image2D"]
+	Image2DGL["Image2DGL"]
+	Image3D["Image3D"]
+	Image3DGL["Image3DGL"]
+
+	Buffer --> Memory
+	Image --> Memory
+	BufferGL --> Buffer
+	Image2D --> Image
+	Image3D --> Image
+	Image2DGL --> Image2D
+	Image3DGL --> Image3D
+
+	classDef cyan fill:#cbf1f7,stroke:#333,stroke-width:1px
+	class Memory,Buffer,BufferGL,Image,Image2D,Image2DGL,Image3D,Image3DGL cyan
+```
+• Полученная иерархия классов отражает предметную область естественным образом.
+• Например, на рисунке показана иерархия памяти.
+• Для C API у нас, конечно, такого не было. Там мы просто использовали cl_mem небезопасным образом.
+• Обратите внимание на типы для OGL interop.
