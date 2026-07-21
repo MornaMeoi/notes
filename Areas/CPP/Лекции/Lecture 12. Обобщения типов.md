@@ -60,3 +60,28 @@ template<typename T> class Array<T, 3> {
 int foo(int x, int y) { retunr (x > 3) ? 0 : y; }
 foo(a + 3, b + 2);
 ```
+```plantuml
+@startuml
+
+skinparam ArrowColor #000000
+skinparam defaultFontName Monospaced
+skinparam shadowing false
+skinparam rectangle {
+  BorderColor #333333
+  BackgroundColor #FFFFFF
+}
+
+rectangle "invoke foo\ncalc a+3\ntest x > 3" as A1
+rectangle "return 0" as A2
+rectangle "calc b+2\nreturn y" as A3
+A1 --> A2
+A1 --> A3
+
+rectangle "calc a+3\ncalc b+2\ninvoke foo\ntest x > 3" as B1
+rectangle "return 0" as B2
+rectangle "return y" as B3
+B1 --> B2
+B1 --> B3
+
+@enduml
+```
