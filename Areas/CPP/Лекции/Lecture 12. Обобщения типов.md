@@ -274,3 +274,10 @@ template<typename T> struct Foo {
 	int use() { return illegal_name; } // независимое имя, ошибка
 };
 ```
+Другой пример:
+```cpp
+template<typename T> struct Foo {
+	int use() { return T::illegal_name; } // зависимое имя, ок
+};
+```
+
