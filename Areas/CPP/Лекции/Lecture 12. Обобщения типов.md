@@ -131,22 +131,7 @@ template<typename T, typename U>
 class Foo<T*, U*> {}l // case pointers
 ```
 ![[../../../_Meta/attachments/12.1.png]]
-#### Специализация для похожих типов
-• Частичная специализация возможна по семейству похожих типов.
-```cpp
-template<typename T> struct X;
-
-template<typename T> struct X<std::vector<T>>;
-
-X<int> a;              // -> primary template X<T>
-X<std::vector<int>> b; // -> X<std::vector<T>>
-```
-• Примерно так же можно специализировать для всех функций.
-```cpp
-template<typename R, typename T> struct Y;
-template<typename R, typename T> struct Y<R(T)>;
-```
-Пример с гита:
+Пример:
 ```cpp
 #include <iostream>
 
@@ -183,7 +168,45 @@ int main() {
 #ifdef PII
 	Foo<int*, int*> mpipi; // what do you think?
 #endif 
-	
-#i
 }
 ```
+#### Специализация для похожих типов
+• Частичная специализация возможна по семейству похожих типов.
+```cpp
+template<typename T> struct X;
+
+template<typename T> struct X<std::vector<T>>;
+
+X<int> a;              // -> primary template X<T>
+X<std::vector<int>> b; // -> X<std::vector<T>>
+```
+• Примерно так же можно специализировать для всех функций.
+```cpp
+template<typename R, typename T> struct Y;
+template<typename R, typename T> struct Y<R(T)>;
+```
+#### Упрощение имён в специализациях
+• Внутри основного шаблона класса мы всегда можем сокращать имя.
+```cpp
+template<class T> class A {
+	A* a1; // A здесь означает A<T>
+};
+```
+• Это отлично работает также внутри частичной специализации.
+```cpp
+template<class T> class A<T*> {
+	A* a2; // A здесь означает A<T*>
+};
+```
+• Разумеется, указывать полные имена вполне легально (и часто лучше читается).
+#### Case study: unique_ptr
+• Рассмотрим следующее использование unique_ptr:
+```cpp
+std::unique_ptr<int> ui{new int[1000]()}; // грубая ошибка
+```
+• В чём, по вашему, состоит грубая ошибка?
+• Можем ли мы добавить к чему-то частичную специализацию, чтобы как-то предложить законный метод делать такие вещи?
+```cpp
+std::unique_ptr<int[]> ui{new int[1000]()}; // хотелось бы так
+```
+• Хорошая ли идея добавлять частичную специализацию к самому классу unique_ptr?
