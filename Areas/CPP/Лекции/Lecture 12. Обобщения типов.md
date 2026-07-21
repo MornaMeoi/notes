@@ -30,3 +30,28 @@ int bar() { return max<int>(2, 3); }
 // ошибка: ODR violation
 template<> int max(int x, int y) { return 42; }
 ```
+#### Удаление специализаций
+• Частным случаем явной специализации является запрет специализации.
+```cpp
+// для всех указателей
+template<typename T> void foo(T*);
+
+// но не для char* и не для void*
+template<> void foo<char>(char*) = delete;
+template<> void foo<void>(void*) = delete;
+```
+• Подобным образом можно удалять и перегрузки.
+```cpp
+void foo(char*) = delete;
+void foo(void*) = delete;
+```
+#### Специализация по nontype параметрам
+• Нет никаких проблем в том, чтобы специализировать класс по любой разновидности шаблонных параметров.
+• Например, по целым числам.
+```cpp
+template<typename T, int N> class Array;
+
+template<typename T> class Array<T, 3> {
+	// тут более эффективная реализация для трёх элементов
+```
+• Немного сложнее придумать разумный пример специализации по указателям и ссылкам. Можете подумать дома.
