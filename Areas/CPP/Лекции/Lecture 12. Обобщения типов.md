@@ -556,3 +556,32 @@ auto makeAndProcessObject(const T& builder) -> decltype(builder.makeObject()) {
 	return val;
 }
 ```
+#### Решение для C++14 и позднее
+• Для статического решения можно использовать нефиксированную сигнатуру.
+```cpp
+int foo();  // функция с фиксированной сигнатурой
+auto foo(); // функция, для которой возвращаемый тип выводится
+```
+• Использование также несложно:
+```cpp
+template<typename T>
+auto makeAnProcessObject(const T& builder) {
+	auto val = builder.makeObject();
+	// что-то делаем с val
+	return val;
+}
+```
+#### Use before deduction
+• Бывают случаи, когда такой вывод сбивается:
+```cpp
+auto bad_sum_to(int i) {
+	// use before deduction
+	return (i > 2) ? bad_sum_to(i-1) + i : i;
+}
+```
+• Для этой ошибки вовсе не обязательна рекурсия.
+```cpp
+auto func();
+int main() { func(); } // use before deduction
+auto func() { return 0; } // deduction
+```
