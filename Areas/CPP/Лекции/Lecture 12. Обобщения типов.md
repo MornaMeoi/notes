@@ -470,4 +470,24 @@ NamedValue n{"hello", "world"}; // -> NamedValue<std::string>
 #### Обсуждение
 • Мы хотим такой же гибкости для локальных переменных?
 #### Встречаем auto и decltype
-• Для локальных переменных ключевое слово auto работает по правила
+• Для локальных переменных ключевое слово auto работает по правилам вывода типов шаблонов.
+```cpp
+template<typename T> foo(T x);
+const int& t /*= 1*/; // была опечатка на слайде, добавил
+foo(t); // -> foo<int>(int x)
+auto s = t; // -> int s
+```
+• Для точного вывода существует decltype.
+```cpp
+decltype(t) u = 1; // -> const int& u
+```
+#### Категории выражений
+• Любое выражение в языке относится к одной из категорий:
+```cpp
+int x, y;
+   x      = x + 1   ; x      = x                 ;
+// lvalue   prvalue   lvalue   lvalue to prvalue
+   y      = std::move(x);
+// lvalue   xvalue
+```
+• Есть две обобщающие категории: glvalue и xvalue.
