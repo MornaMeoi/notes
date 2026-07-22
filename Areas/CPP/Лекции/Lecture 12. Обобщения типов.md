@@ -490,7 +490,7 @@ int x, y;
    y      = std::move(x);
 // lvalue   xvalue
 ```
-• Есть две обобщающие категории: glvalue и xvalue.
+• Есть две обобщающие категории: glvalue и rvalue.
 ```mermaid
 flowchart TD
 	glvalue["glvalue"]
@@ -507,4 +507,15 @@ flowchart TD
 	classDef blue fill:#ffffff,stroke:#4a90a4,stroke-width:1.5px,color:#3a7d95
 	class glvalue,rvalue,lvalue,xvalue,prvalue blue
 ```
-
+#### Четыре формы decltype
+• decltype существует в двух основных видах: для имени и для выражения.
+• decltype(name) выводит тип, с которым было объявлено имя.
+• decltype(expression) работает чуточку сложнее:
+	• decltype(lvalue) - это тип выражения + левая ссылка
+	• decltype(xvalue) - это тип выражения + правая ссылка
+	• decltype(prvalue) - это тип выражения
+• В итоге, левые или правые ссылки встречаются в неожиданных местах.
+```cpp
+int a[10]; decltype(a[0]) b = a[0]; // -> int& b
+```
+• Это может выглядеть странно, но это логично - ссылка определяет lvalueness.
