@@ -530,3 +530,29 @@ makeAndProcessObject(const T& builder) {
 }
 ```
 • Как написать эту функцию в реалиях 2012 года?
+#### Попытка решения
+• На самом деле, эта проблема сохраняется в свежих версиях стандарта, но её стало сложнее демонстрировать.
+```cpp
+template<typename T> decltype(builder.makeObject()) // Fail
+makeAndProcessObject(const T& builder) {
+	auto val = builder.makeObject();
+	// что-то делаем с val
+	return val;
+}
+```
+• Это не работает, так как имя builder ещё не введено в область видимости.
+#### Решение для C++11
+• Для решения используется так называемый расширенный синтаксис.
+```cpp
+int foo(); // обычный синтаксис
+auto foo() -> int; // расширенный синтаксис
+```
+• Использование очевидно:
+```cpp
+template<typename T>
+auto makeAndProcessObject(const T& builder) -> decltype(builder.makeObject()) {
+	auto val = builder.makeObject();
+	// что-то делаем с val
+	return val;
+}
+```
