@@ -519,3 +519,14 @@ flowchart TD
 int a[10]; decltype(a[0]) b = a[0]; // -> int& b
 ```
 • Это может выглядеть странно, но это логично - ссылка определяет lvalueness.
+#### Проблема в C++11
+• Итак, мы в 2012 году и у нас нет auto для возвращаемого типа функций.
+```cpp
+template<typename T> auto // C++11 Error!
+makeAndProcessObject(const T& builder) {
+	auto val = builder.makeObject();
+	// что-то делаем с val
+	return val;
+}
+```
+• Как написать эту функцию в реалиях 2012 года?
