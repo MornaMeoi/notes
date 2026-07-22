@@ -309,3 +309,17 @@ template<typename T> struct Derived : Base<T> {
 };
 ```
 • Хочется ещё раз призвать не использовать явный this нерационально.
+#### Зависимые имена типов
+• Зависимые имена типов могут вызывать неожиданные проблемы.
+```cpp
+struct S {
+	struct subtype{};
+};
+
+template<typename T> int foo(const T& x) {
+	T::subtype* y;
+	// и так далее
+}
+
+foo<S>(S{}); // казалось бы, всё хорошо?
+```
