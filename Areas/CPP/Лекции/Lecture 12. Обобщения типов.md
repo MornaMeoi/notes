@@ -414,5 +414,40 @@ template<typename T> struct containter {
 	// и так далее
 };
 
-container c(7); 
+container c(7); // -> container<int> c(7);
+```
+• Внезапно будет работать также списочная инициализация, но пока неясно как.
+```cpp
+std::vector v {1, 2, 3}; // -> std::vector<int>
+```
+Примечание на слайде:
+```
+Пример выбран плохо: double не срежется внутри initializer_list. Придумайте лучше!
+```
+#### Проблема: вывод через косвенность
+• Конструктор класса сам может быть шаблонным:
+```cpp
+template<typename T> struct container {
+	template<typename Iter> container(Iter beg, Iter end);
+};
+
+std::vector<double> v;
+container d(v.begin, v.end()); // -> container<double>?
+```
+• Компилятор умён, но не **настолько** умён, чтобы сходить в std::iterator_traits.
+• Тут надо как-то ему подсказать, где искать value_type.
+#### Хинты для вывода (C++17)
+• Пользователь может помочь выводу в сложных случаях.
+```cpp
+template<typename T> struct container {
+	template<typename Iter> container(Iter beg, Iter end);
+	// и так далее
+};
+
+//пользовательский хинт для вывода
+template<typename Iter> constainer(Iter b, Iter e) ->
+	container<typename iterator_traits<Iter>::value_type>;
+	
+std::vector<double> v;
+container d(v.begin(), v.end()); // -> container<double>
 ```
