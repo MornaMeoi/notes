@@ -467,3 +467,7 @@ NamedValue(const char*, const char*) -> NamedValue<std::string>;
 ```cpp
 NamedValue n{"hello", "world"}; // -> NamedValue<std::string>
 ```
+#### Обсуждение
+• Мы хотим такой же гибкости для локальных переменных?
+#### Встречаем auto и decltype
+• Для локальных переменных ключевое слово auto работает по правила
