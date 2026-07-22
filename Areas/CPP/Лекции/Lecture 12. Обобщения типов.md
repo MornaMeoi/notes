@@ -323,3 +323,17 @@ template<typename T> int foo(const T& x) {
 
 foo<S>(S{}); // казалось бы, всё хорошо?
 ```
+Компилятор воспринимает `T::subtype* y;` как умножение.  Проблема решается следующим образом:
+```cpp
+struct S {
+	struct subtype{};
+};
+
+template<typename T> int foo(const T& x) {
+	typename T::subtype* y;
+	// и так далее
+}
+
+foo<S>(S{}); // теперь всё хорошо
+```
+• Эта техника называется устранением неоднозначности (disambiguation).
