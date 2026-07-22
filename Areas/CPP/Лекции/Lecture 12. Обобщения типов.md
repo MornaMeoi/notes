@@ -280,4 +280,32 @@ template<typename T> struct Foo {
 	int use() { return T::illegal_name; } // зависимое имя, ок
 };
 ```
+• Следует запомнить золотое правило: <span style="color: blue;">разрешение зависимых имён откладывается до подстановки шаблонного параметра</span>.
+#### Пример Вандерворда
+• Можем ли мы как-то исправить ситуацию?
+```cpp
+template<typename T> struct Base {
+	void exit();
+};
 
+template<typename T> struct Derived : Base<T> {
+	void foo() {
+		exit(); // можно подумать, что это Base::exit(),
+						// но exit - не зависимое имя, так что нет.
+	}
+};
+```
+• Есть несколько способов сделать имя exit зависимым.
+```cpp
+this->exit();
+Base::exit(); // читается как Base<T>::exit();
+```
+• Это одно из немногих рациональных использований явного this.
+```cpp
+template<typename T> struct Derived : Base<T> {
+	void foo() {
+		this->exit(); // ага, мы стреляем в двухфазное разрешение
+	}
+};
+```
+• Хочется ещё раз призвать не использовать явный this нерационально.
