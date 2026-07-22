@@ -491,3 +491,20 @@ int x, y;
 // lvalue   xvalue
 ```
 • Есть две обобщающие категории: glvalue и xvalue.
+```mermaid
+flowchart TD
+	glvalue["glvalue"]
+	rvalue["rvalue"]
+	lvalue["lvalue"]
+	xvalue["xvalue"]
+	prvalue["prvalue"]
+
+	glvalue --> lvalue
+	glvalue --> xvalue
+	rvalue --> xvalue
+	rvalue --> prvalue
+
+	classDef blue fill:#ffffff,stroke:#4a90a4,stroke-width:1.5px,color:#3a7d95
+	class glvalue,rvalue,lvalue,xvalue,prvalue blue
+```
+
