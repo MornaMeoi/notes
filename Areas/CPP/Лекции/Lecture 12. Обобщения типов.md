@@ -337,3 +337,15 @@ template<typename T> int foo(const T& x) {
 foo<S>(S{}); // теперь всё хорошо
 ```
 • Эта техника называется устранением неоднозначности (disambiguation).
+#### Зависимые имена шаблонов
+• Зависимые имена шаблонов также могут вызывать неожиданные проблемы.
+```cpp
+template<typename T> struct S {
+	template<typename U> void foo(){}
+};
+
+template<typename T> void bar() {
+	S<T> s; s.foo<T>();
+}
+```
+• Тут, как вы думаете, что-то не так или всё ok?
