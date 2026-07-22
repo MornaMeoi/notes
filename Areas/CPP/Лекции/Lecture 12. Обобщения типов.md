@@ -451,3 +451,19 @@ template<typename Iter> constainer(Iter b, Iter e) ->
 std::vector<double> v;
 container d(v.begin(), v.end()); // -> container<double>
 ```
+#### Вывод без конструктора
+• Агрегатное значение может и не иметь конструктора
+```cpp
+template<typename T> struct NamedValue {
+	T value;
+	std::string name;
+};
+```
+• Тоже можно немного помочь компилятору.
+```cpp
+NamedValue(const char*, const char*) -> NamedValue<std::string>;
+```
+• Теперь конструируем агрегат из двух строк.
+```cpp
+NamedValue n{"hello", "world"}; // -> NamedValue<std::string>
+```
