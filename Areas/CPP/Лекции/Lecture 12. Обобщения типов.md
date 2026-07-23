@@ -718,4 +718,9 @@ template<typename T> void buz(const T&& param); // аналогично
 for(auto elt : v)
 	use(elt);
 ```
-• Куда лучший вари
+• Куда лучший вариант:
+```cpp
+for(auto&& elt : v) // elt - это T& или T&&
+	use(elt);
+```
+• Он лишён недостатков, которые мы заметили ранее.
