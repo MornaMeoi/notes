@@ -623,3 +623,19 @@ auto a = std::atomic<int>{9}; // ok только в C++17
 auto arr = std::array<int, 100>{}; // быстро с C++17
 ```
 • Некоторая критика этого принципа основана на сложности чтения кода.
+#### Проблемы с AAA
+• Первое: не следует тянуть AAA в нестатические функции. Эта идиома <span style="color: blue;">только</span> для инициализации <span style="color: blue;">локальных переменных</span>.
+```cpp
+auto foo(int x); // non-fixed ABI (from C++14)
+int foo(auto x); // non-fixed ABI (from C++20)
+```
+• Второе: есть случаи, когда это всё ещё не работает.
+```cpp
+auto x = long long {42}; // FAIL
+auto x = static_cast<long long>(42); // ok, but...
+
+const int& foo();
+
+auto x = foo(); // decays
+auto x = static_cast<const int&>(foo()); // still decays
+```
