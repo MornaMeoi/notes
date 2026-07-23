@@ -694,3 +694,28 @@ foo(y); // -> int foo<const int&>(const int&)
 foo(5); // -> in foo(int&&)
 ```
 • Для консистентности он выводится в ссылку для lvalue, но не для rvalue.
+#### Неуниверсальные ссылки
+• Контекст сворачивания требует <span style="color: blue;">вывода</span> типов, а не их подстановки:
+```cpp
+template<typename T> struct Buffer {
+	void emplace(T&& param); // здесь T подставляется
+};
+
+template<typename T> struct Buffer {
+	template<typename U>
+	void emplace(U&& param); // здесь U выводится
+};
+```
+• Контекст для сворачивания не будет создан, если тип уточнён более, чем &&.
+```cpp
+const auto&& x = y; // никакого сворачивания ссылок
+template<typename T> void buz(const T&& param); // аналогично
+```
+#### Идиома for-auto&&
+• Теперь мы знаем ответ на поставленный ранее вопрос.
+• Допустимый вариант:
+```cpp
+for(auto elt : v)
+	use(elt);
+```
+• Куда лучший вари
