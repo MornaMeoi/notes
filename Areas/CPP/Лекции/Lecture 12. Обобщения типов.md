@@ -667,7 +667,30 @@ auto&& d = move(y); // -> int&& && d = move(y);
                                   <span style="color: gray;"> // -> int& c = y;</span>
 <span style="color: blue;">auto</span>&& d = move(y); <span style="color: gray;">// -></span> <span style="color: blue;">int&&</span> <span style="color: gray;">&& d = move(y);</span>
                                    <span style="color: gray;">// -> int&& d = move(y);</span>
+#### Универсальность ссылок
 • Правила вывода дают интересную картину: auto& - это всегда lvalue ref, но auto&& - это либо lvalue ref, либо rvalue ref (зависит от контекста).
 ```cpp
-auto&& y = x; // x - это some& -> y - это some&
+int x;
+auto&& y = x; // -> int& y = x;
 ```
+• Это в целом работает и для decltype и для шаблонов (но для шаблонов есть одна техническая трудность).
+```cpp
+decltype(x)&& z = x; // int& z = x;
+
+template<typename T> void foo(T&& t);
+foo(x); // foo<???>(int& t) как вы думаете, чему равен T?
+```
+• Такие ссылки называют <span style="color: blue;">forwarding references</span> или <span style="color: blue;">универсальными ссылками</span>.
+#### Небольшое уточнение
+• При сворачивании типов шаблонами, мы должны также вывести тип шаблонного параметра.
+```cpp
+template<typename T> int foo(T&&);
+
+int x;
+const int y = 5;
+
+foo(x); // -> int foo<int&>(int&)
+foo(y); // -> int foo<const int&>(const int&)
+foo(5); // -> in foo(int&&)
+```
+• Для консистентности он выводится в ссылку для lvalue, но не для rvalue.
