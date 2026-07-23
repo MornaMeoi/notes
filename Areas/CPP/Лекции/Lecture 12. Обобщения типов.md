@@ -655,7 +655,19 @@ auto&& d = move(y); // -> int&& && d = move(y);
 ```
 • Чтобы получился корректный тип, ссылки должны быть свёрнуты (collapsed).
 #### Правила свёртки ссылок
+| Inner | Outer | Result |
+| ----- | ----- | ------ |
+| T&    | T&    | T&     |
+| T&    | T&&   | T&     |
+| T&&   | T&    | T&     |
+| T&&   | T&&   | T&&    |
 • Левая ссылка выигрывает, если она есть.
 • Для предыдущего примера это даёт:
-auto&& c = y;
-auto&& d = move(y); // -> int&& && d = move()
+<span style="color: red;">auto</span>&& c = y;              <span style="color: gray;">// -></span> <span style="color: red;">int&</span> <span style="color: gray;">&& c = y;</span>
+                                  <span style="color: gray;"> // -> int& c = y;</span>
+<span style="color: blue;">auto</span>&& d = move(y); <span style="color: gray;">// -></span> <span style="color: blue;">int&&</span> <span style="color: gray;">&& d = move(y);</span>
+                                   <span style="color: gray;">// -> int&& d = move(y);</span>
+• Правила вывода дают интересную картину: auto& - это всегда lvalue ref, но auto&& - это либо lvalue ref, либо rvalue ref (зависит от контекста).
+```cpp
+auto&& y = x; // x - это some& -> y - это some&
+```
