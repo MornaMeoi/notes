@@ -750,5 +750,11 @@ template<typename Fun, typename Arg>
 • Вывод типов является точным, но, при этом, выводится из всей правой части.
 ```cpp
 double x = 1.0;
-decltype(x)
+decltype(x) tmp = x; // два раза x не нужен
+decltype(auto) tmp = x; // это именно то, что нужно
+```
+• Однако, что стоит справа expr или id-expr? Зависит от выражения...
+```cpp
+decltype(auto) tmp = x; // -> double
+decltype(auto) tmp = (x); // -> double&
 ```
