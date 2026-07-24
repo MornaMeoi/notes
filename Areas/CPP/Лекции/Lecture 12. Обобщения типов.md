@@ -758,3 +758,11 @@ decltype(auto) tmp = x; // это именно то, что нужно
 decltype(auto) tmp = x; // -> double
 decltype(auto) tmp = (x); // -> double&
 ```
+#### Обсуждение
+• Пожалуйста, не пользуйтесь этой штукой, если абсолютно не уверены.
+#### Прозрачная оболочка
+• Кажется, для прозрачной оболочки - это идеально подойдёт.
+```cpp
+template<typename Fun, typename Arg>
+decltype(auto) transpare
+```
