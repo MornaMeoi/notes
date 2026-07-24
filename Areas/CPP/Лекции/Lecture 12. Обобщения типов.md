@@ -954,3 +954,14 @@ int main(int argc, char **argv) {
     std::cout << "Numerical divergence found" << std::endl;
 }
 ```
+```shell
+/EHsc /DVISUALIZE benchemplace.cc
+```
+Вывод такой, что без emplace вызываются default-ctor, а с ним только copy-ctor.
+#### Литература
+• \[CC11\] ISO/IEC 14882 - "Information technology - Programming languages - C++", 2011
+• \[BS\] Bjarne Stroustrup - The C++ Programming Language (4th Edition), 2013
+• \[EM\] Scott Meyers, "Effective Modern C++: 42 Specific Ways to Imporove Your Use of C++11 and C++14"
+• \[SM\] Scott Meyers "Type Deduction and Why You Care", CppCon, 2014
+• \[VJ\] Davide Vandervoorde, Nicolai M. Josuttis - The C++ Templates. The Complete Guide, 2nd edition, Addison-Wesley Professional, 2017
+• \[BS\] Bob Steagall "Back to Basics: Templates" (2 parts), CppCon, 2021
