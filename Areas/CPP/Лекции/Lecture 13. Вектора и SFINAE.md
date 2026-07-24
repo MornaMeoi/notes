@@ -204,3 +204,25 @@ struct S {
 
 S s = {3}; // ctor
 ```
+#### Первое представление об итераторах
+```cpp
+vector<int> v(10);
+
+// pi - это указатель
+auto pi = &v[0];
+pi += 3;
+assert(*pi == v[4]);
+
+// как узнать, что pi в конце?
+```
+```cpp
+vector<int> v(10);
+
+// vi - это итератор
+auto vi = v.begin();
+vi += 3;
+assert(*vi == v[4]);
+
+if(vi == v.end()) { что-то }
+```
+![[../../../_Meta/attachments/13.2.png]]
