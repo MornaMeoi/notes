@@ -764,5 +764,19 @@ decltype(auto) tmp = (x); // -> double&
 • Кажется, для прозрачной оболочки - это идеально подойдёт.
 ```cpp
 template<typename Fun, typename Arg>
-decltype(auto) transpare
+decltype(auto) transparent(Fun fun, Arg arg) { return fun(arg); }
 ```
+• Увы, её недостаток теперь в том, что она не слишком прозрачна.
+```cpp
+extern Buffer foo(Buffer x);
+
+Buffer b;
+Buffer t = transparent(&foo, b); // тут явное копирование b
+```
+#### Снова прозрачная оболочка
+• Возможный выход: сделать аргумент ссылкой
+```cpp
+template<typename Fun, typename Arg>
+decltype(auto) transparent(Fun fun, Arg& arg) { return fun(arg); }
+```
+• Но появляется новая беда: теперь rvalues не проходят в функцию
