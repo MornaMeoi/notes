@@ -181,5 +181,26 @@ template<typename T> class Tree {
 	// тут какая-то специфика дерева
 	bool add_node(T& data);
 	
+public:
+	Tree(std::initializer_list<T> il) {
+		for(auto ili = il.begin(); ili != il.end(); ++ili)
+			add_node(*ili);
+	}
 };
+```
+• Плохая новость: вам теперь надо следить, есть ли он в классе.
+#### Просто правило для {}
+• Если в классе совсем нет конструкторов, это агрегат как в C.
+```cpp
+struct S { int x, y; }; S s = {1, 2}; // aggregate
+```
+• Иначе, если есть конструктор из initializer_list, возьмётся он.
+• Иначе, если есть любой другой конструктор, возьмётся он.
+```cpp
+struct S {
+	int x, y;
+	S(int n) : x(n), y(n) {}
+};
+
+S s = {3}; // ctor
 ```
