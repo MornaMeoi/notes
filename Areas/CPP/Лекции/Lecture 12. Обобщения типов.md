@@ -779,4 +779,62 @@ Buffer t = transparent(&foo, b); // тут явное копирование b
 template<typename Fun, typename Arg>
 decltype(auto) transparent(Fun fun, Arg& arg) { return fun(arg); }
 ```
-• Но появляется новая беда: теперь rvalues не проходят в функцию
+• Но появляется новая беда: теперь rvalues не проходят в функцию.
+```cpp
+extern Buffer foo(Buffer x);
+
+Buffer b;
+Buffer t = transparent(&foo, b); // ok
+Buffer u = transparent(&foo, foo(b)); // ошибка компиляции
+```
+• Возможный выход: перегрузить по константной ссылке.
+```cpp
+template<typename Fun, typename Arg>
+decltype(auto) transparent(Fun fun, Arg& arg) { return fun(arg); }
+
+template<typename Fun, typename Arg>
+decltype(auto) transparent(Fun fun, const Arg& arg) { return fun(arg); }
+
+Buffer t = transparent(&foo, b); // ok
+Buffer u = transparent(&foo, foo(b)); // ok, но копируется
+```
+• Но есть проблемы:
+	• Всего 10 аргументов потребуют 1024 перегрузки.
+	• Вызов для rvalue всё ещё требует копирования.
+• Решение для первой проблемы: универсализовать ссылку.
+```cpp
+template<typename Fun, typename Arg>
+decltype(auto) transparent(Fun fun, Arg&& arg) {
+	return fun(arg);
+}
+
+Buffer t = transparent(&foo, b); // ok
+Buffer u = transparent(&foo, foo(b)); // ok, но копируется
+```
+#### Чего бы нам хотелось
+• Решение для второй проблемы: условное перемещение
+```cpp
+template<typename Fun, typename Arg>
+decltype(auto) transparent(Fun fun, Arg&& arg) {
+	/*if(arg это rvalue)
+		return fun(move(arg));
+	else*/
+		return fun(arg);
+}
+
+Buffer t = transparent(&foo, b); // ok
+Buffer u = transparent(&foo, foo(b)); // ok
+```
+• Это решило бы часть проблем. Но это не легальный C++. Хотя, постойте....
+#### Решение: использовать std::forward
+```cpp
+template<typename Fun, typename Arg>
+decltype(auto) transparent(Fun fun, Arg&& arg) {
+	return fun(std::forward<Arg>(arg));
+}
+
+Buffer t = transparent(&foo, b); // ok
+Buffer u = transparent(&foo, foo(b)); // ok
+```
+• Это называется perfect forwarding и бывает удивительно полезной идиомой.
+• Три главных составляющих: контекст вывода T, тип T&& и std::forward<T
