@@ -66,4 +66,10 @@ bool* start = &t[0]; // это не скомпилируется, но пред�
 assert(t[1] == start[1]); // oops!
 ```
 Важно запомнить две вещи:
-• vector<bool> не удовлетворя
+• <span style="color: red;">vector&ltbool&gt не удовлетворяет соглашениям контейнера vector.</span>
+• <span style="color: red;">vector&ltbool&gt не содержит элементов типа bool.</span>
+• Не используйте vector\<bool\> для обобщённого программирования.
+```cpp
+using vector_bool = vector<bool>;
+vector_bool x(10); // условно ок, но тут лучше std::bitset
+```
