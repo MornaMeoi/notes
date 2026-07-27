@@ -324,3 +324,62 @@ template<typename T, T v> struct integral_constant {
 using ic6 = integral_constant<int, 6>
 auto n = 7 * ic6{};
 ```
+#### Истина и ложь для типов
+• Самые полезные из интегральных констант - самые простые.
+```cpp
+using true_type = integral_constant<bool, true>;
+using false_type = integral_constant<bool, false>;
+```
+• Всё это есть в стандарте: std::integral_constant и т.д.
+• Попробуем написать простой определитель, чтобы проверить одинаковые ли два типа.
+```cpp
+template<typename T, typename U>
+struct is_same : std::false_type {};
+```
+• По умолчанию разные. Что дальше?
+#### Равенство типов
+• Теперь можно решить задачу определения равенства типов.
+```cpp
+template<typename T, typename U>
+struct is_same : std::false_type {};
+
+template<typename T>
+struct is_same<T, T> : std::true_type {}; // для T == T
+
+template<typename T, typename U>
+using is_same_t = typename is_same<T, U>::type;
+```
+• Благодаря SFINAE, будет работать.
+```cpp
+assert(is_same<int, int>::value && !is_same<char, int>::value);
+```
+#### Определители и модификаторы
+Определитель: является ли тип ссылкой.
+```cpp
+template<typename T> struct is_reference : false_type {};
+template<typename T> struct is_reference<T&> : true_type {};
+template<typename T> struct is_reference<T&&> : true_type {};
+```
+Модификатор: убираем ссылку с типа. Если ссылки не было, то оставляем тип.
+```cpp
+template<typename T> struct remove_reference { using type = T; };
+template<typename T> struct remove_reference<T&> { using type = T; };
+template<typename T> struct remove_reference<T&&> { using type = T; };
+```
+Для модификатора полезен алиас
+```cpp
+template<typename T>
+using remove_reference_t = typename remove_reference<T>::type;
+```
+#### Четырнадцать категорий
+• Любой тип в языке C++ попадает хотя бы под одну из перечисленных ниже категорий.
+```cpp
+is_void;
+is_null_pointer;
+is_integral, is_floating_point; // для T и для cv T& транзитивно
+is_array; // только встроенные, не std::array
+is_pointer; // включая указатели на обычные функции
+is_lvalue_reference, is_rvalue_reference;
+is_member_object_pointer, is_member_function_pointer;
+is_enum, 
+```
