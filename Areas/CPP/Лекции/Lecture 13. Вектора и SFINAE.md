@@ -287,4 +287,16 @@ template<typename T> T negate(const T& t) {
 
 negate(2.0); // ошибка второй фазы
 ```
-•
+• Здесь в контексте сигнатуры и шаблонных параметров нет никакой невалидности.
+```cpp
+int negate(int i) { return -i; }
+
+template<typename T> T::value_type negate(const T& t) {
+	typename T::value_type n = -t();
+	// тут используем n
+}
+
+negate(2.0); // substitution failure
+```
+• Здесь в контексте сигнатуры и шаблонных параметров выводится T -> double и, разумеется, T::value_type невалидно.
+#### Обсуж
