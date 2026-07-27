@@ -736,3 +736,23 @@ flowchart TB
 • Допустим также, что с каждым ребром нужно связать дополнительную информацию EL, а с каждой вершиной дополнительную информацию VL.
 • Можно ли сделать это вне самого графа?
 • Можно ли дать возможность добавить эти данные как параметры графа?
+#### HWCG: формальная постановка
+• На стандартном вводе граф в обычном представлении v<sub>1</sub> -- v<sub>2</sub>, w<sub>e</sub>:
+```
+1 -- 2, 4
+2 -- 3, 5
+3 -- 4, 6
+4 -- 1, 1
+```
+• Необходимо считать его в эффективное представление выше.
+• Далее, если граф не является двудольным, вывести ошибку. Если граф является двудольным, покрасить вершины первой доли в синий цвет (цвет - это атрибут вершины), второй доли в красный цвет. Цвет вершины 1 всегда синий.
+• В итоге, вывести на стандартный вывод все вершины и цвет каждой.
+```
+1 b 2 r 3 b 4 r
+```
+#### Литература
+• \[CC11\] ISO/IEC 14882 - "Information technology - Programming languages - C++", 2011
+• \[BS\] Bjarne Stroustrup - The C++ Programming Language (4th Edition), 2013
+• \[EM\] Scott Meyers, "Effective Modern C++: 42 Specific Ways to Improve Your Use of C++11 and C++14"
+• \[SM\] Scott Meyers "Type Deduction and Why You Care", CppCon, 2014
+• \[VJ\] Davice Vandevoorde, Nicolai M. Josuttis - C++ Templates. The Complete Guide, 2nd edition, Addison-Wesley Professional, 2017
