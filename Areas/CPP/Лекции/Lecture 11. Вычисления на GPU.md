@@ -1999,3 +1999,13 @@ flowchart BT
 • Получится ли у вас серьёзно обогнать CPU?
 • Входные данные: число элементов N, далее N несортированных элементов.
 • Выходные данные: сортированная последовательность.
+#### Литература
+• \[CC11\] ISO/IEC 14882 - "Information technology - Programming language - C++", 2011
+• \[OCL2\] The OpenCL Specification v2.2, 2019
+• \[BS\] Bjarne Stroustrup - The C++ Programming Language (4th Edition), 2013
+• \[TM\] Timothy Mattson - OpenCL Programming guide, 2011
+• \[MS\] Matthew Scarpino - OpenCL in Action, 2011
+• \[RB\] Ravishekhar Banger - OpenCL Programming by Example, 2013
+• \[DK\] David Kaeli - Heterogeneous Computing with OpenCL 2.0, 2015
+• \[JK\] John Kessenich - OpenGL Programming Guie, Version 4.5, 2016
+Далее лектор ещё совсем бегло рассказал про расширения OpenCL на примере double.
