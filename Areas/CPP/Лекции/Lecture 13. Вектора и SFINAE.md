@@ -278,4 +278,13 @@ int g = max(1, 1.0); // подстановка в 1 провалена
 #### SFINAE и ошибки
 • Не любая ошибочная конструкция - это SFINAE. Важен контекст подстановки.
 ```cpp
+int negate(int i) { return -i; }
+
+template<typename T> T negate(const T& t) {
+	typename T::value_type n = -t();
+	// тут используем n
+}
+
+negate(2.0); // ошибка второй фазы
 ```
+•
