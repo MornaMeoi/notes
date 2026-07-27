@@ -230,5 +230,48 @@ if(vi == v.end()) { что-то }
 • Важно, что итераторы не являются указателями, они абстрагируют их.
 • В итоге, любой контейнер может быть сконструирован из любого диапазона.
 ```cpp
-std::list<int> {1,}
+std::list<int> l{1, 2, 3};
+std::vector<int> v(l.begin(), l.end());
 ```
+• Это потрясающе удобно, чтобы перекидывать один контейнер в другой.
+• Как бы вы написали конструктор из пары итераторов?
+#### Конструирование из итераторов
+• Наивная попытка вызывает у нас небольшую проблему.
+```cpp
+template<typename T> class MyVector {
+	// ....
+public:
+	MyVector(size_t nelts, T value); // 1
+	template<typename Iter> MyVector(Iter fst, Iter lst); // 2
+	// ....
+};
+
+MyVector<int> mvec(2, 2); // ошибка, выбран 2
+```
+## SFINAE
+#### Обсуждение: провал подстановки
+• Что если подстановка в некотором контексте не может быть выполнена?
+```cpp
+template<typename T>
+typename T::ElementT at(T const& a, int i);
+
+int* p = new int[30];
+
+auto a = at<int>(p, i); // Substitution failure
+```
+• Что если вывод типов в некотором контексте провален?
+```cpp
+template<typename T> T max(T a, T b);
+int g = max(1, 1.0); // Deduction failure
+```
+#### SFINAE
+• **Substitution Failure Is Not An Error** (провал подстановки не является ошибкой).
+```cpp
+template<typename T> T max(T a, T b);
+template<typename T, typename U> auto max(T a, U b);
+
+int g = max(1, 1.0); // подстановка в 1 провалена
+										 // подстановка в 2 успешна
+```
+• Если в результате подстановки в <span style="color: blue;">непосредственном контексте</span> класса (функции, алиаса, переменной) возникает <span style="color: blue;">невалидная конструкция</span>, эта подстановка неуспешна, но не ошибочна.
+• В этом случае второй фазы поиска имён просто не выполняется.
