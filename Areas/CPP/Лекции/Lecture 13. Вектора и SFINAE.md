@@ -314,6 +314,13 @@ template<typename T, typename U> int foo() {
 ```cpp
 template<typename T, T v> struct integral_constant {
 	static const T value = v;
-	typedef
+	typedef T value_type;
+	typedef integral_constant type;
+	operator value_type() const { return value; }
 };
+```
+• Возможна даже арифметика.
+```cpp
+using ic6 = integral_constant<int, 6>
+auto n = 7 * ic6{};
 ```
