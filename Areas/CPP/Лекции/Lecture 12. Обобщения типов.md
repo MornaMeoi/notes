@@ -57,7 +57,7 @@ template<typename T> class Array<T, 3> {
 • Немного сложнее придумать разумный пример специализации по указателям и ссылкам. Можете подумать дома.
 #### Ленивость и энергичность
 ```cpp
-int foo(int x, int y) { retunr (x > 3) ? 0 : y; }
+int foo(int x, int y) { return (x > 3) ? 0 : y; }
 foo(a + 3, b + 2);
 ```
 ```plantuml
@@ -128,7 +128,7 @@ template<typename T>
 class Foo<T, int> {}; // case U == int
 
 template<typename T, typename U>
-class Foo<T*, U*> {}l // case pointers
+class Foo<T*, U*> {}; // case pointers
 ```
 ![[../../../_Meta/attachments/12.1.png]]
 Пример:
