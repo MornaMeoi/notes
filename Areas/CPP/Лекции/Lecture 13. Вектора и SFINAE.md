@@ -713,7 +713,19 @@ f(2, 1.0); // OK, пачка состоит из: int, double
 ```
 • Специальная конструкция `sizeof...(Args)` либо `sizeof...(args)` возвращает размер пачки в штуках.
 #### Паттерны раскрытия
-• Говорят, что пачка параметров "раскрыв"
+• Говорят, что пачка параметров "раскрывается" в теле функции или класса.
+```cpp
+template<typename ... Types> void f(Types ... args);
+template<typename ... Types> void g(Types ... args) {
+	f(args ...);                            // -> f(x, y);
+	f(&args ...);                           // -> f(&x, &y);
+	f(h(args) ...);                         // -> f(h(x), h(y));
+	f(const_cast<const Types*>(&args) ...); // -> f(const_cast<const int*>(&x),
+	                                        //      const_cast<const double*>(&y));
+}
+
+g(1, 1.0); // -> g(int x, double y);
+```
 #### Представление графа
 • У Кнута в TAOCP приведено следующее представление графа
 
