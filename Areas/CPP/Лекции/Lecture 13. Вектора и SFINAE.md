@@ -758,11 +758,21 @@ decltype(auto) transparent(Fun fun, Arg&&... arg) {
 ```cpp
 template<typename Fun, typename... Args>
 decltype(auto) transparent(Fun&& fun, Args&&... args) {
-	return std::forward<Fun>(fun)(std::forawrd<Args>(args)...);
+	return std::forward<Fun>(fun)(std::forward<Args>(args)...);
 }
 ```
 • Теперь функции тоже не требуется быть обязательно копируемой.
 • Выглядит это чуть страшнее, зато теперь тут не к чему особо придраться.
+#### Контейнеры тяжёлых классов
+• Мы уже говорили о хранении тяжёлых классов в контейнерах.
+```cpp
+template<typename T> class Stack {
+	struct StackNode {
+		T elem; StackNode* next;
+		StackNode(T e, StackNode* nxt) : elem(e), next(b)
+	};
+};
+```
 #### Представление графа
 • У Кнута в TAOCP приведено следующее представление графа
 
