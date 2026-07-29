@@ -745,6 +745,22 @@ decltype(auto) transparent(Fun fun, Arg&& arg) {
 }
 ```
 • Можно ли использовать вариабельный шаблон и переписать её для произвольного количества аргументов?
+```cpp
+template<typename Fun, typename... Args>
+decltype(auto) transparent(Fun fun, Arg&&... arg) {
+	return fun(forward<Args>(args)...);
+}
+```
+• Это очень простое и чисто техническое изменение.
+• Следует обратить особое внимание на паттерн совместного раскрытия при пробросе.
+#### Обсуждение: пробросим функцию?
+• В функцие-подобном объекте оператор вызова может быть && аннотирован.
+```cpp
+template<typename Fun, typename... Args>
+decltype(auto) transparent(Fun&& fun, Args&&... args) {
+	return std::forward<Fun>
+}
+```
 #### Представление графа
 • У Кнута в TAOCP приведено следующее представление графа
 
