@@ -769,9 +769,16 @@ decltype(auto) transparent(Fun&& fun, Args&&... args) {
 template<typename T> class Stack {
 	struct StackNode {
 		T elem; StackNode* next;
-		StackNode(T e, StackNode* nxt) : elem(e), next(b)
+		StackNode(T e, StackNode* nxt) : elem(e), next(nxt) {}
 	};
+public:
+	void push(const T& elem) { top_ = new StackNode(elem, top_); }
+	// .... и так далее ....
 };
+```
+• Подумаем о следующем коде:
+```cpp
+s.push(Heavy(100, 200, 300)); // всё очень плохо
 ```
 #### Представление графа
 • У Кнута в TAOCP приведено следующее представление графа
