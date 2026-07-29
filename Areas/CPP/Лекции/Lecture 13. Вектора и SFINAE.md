@@ -1172,3 +1172,22 @@ flowchart TB
 • \[EM\] Scott Meyers, "Effective Modern C++: 42 Specific Ways to Improve Your Use of C++11 and C++14"
 • \[SM\] Scott Meyers "Type Deduction and Why You Care", CppCon, 2014
 • \[VJ\] Davice Vandevoorde, Nicolai M. Josuttis - C++ Templates. The Complete Guide, 2nd edition, Addison-Wesley Professional, 2017
+<h1 align="center">СЕКРЕТНЫЙ УРОВЕНЬ</h1>
+
+---
+<p align="center">Свёртки</p>
+## Свёртки
+#### Свёртки
+| Паттерн свёртки  | Результирующее выражение              |
+| ---------------- | ------------------------------------- |
+| ... op pack      | ( ... (p1 op p2) op p3) ... op pN     |
+| init ... op pack | ( ... (init op p1) op p2) ... op pN   |
+| pack op ...      | (p1 op (p2 op ( ... (pN-1 op pN) ...) |
+| pack op ... fini | (p1 op (p2 op ( ... (pN op fini) ...) |
+```cpp
+template<typename... T>
+auto sum_all(T... args) { return (args + ...); }
+
+template<typename... T>
+void print_all(T... args) { (cout << ... << args) << endl; }
+```
