@@ -758,9 +758,11 @@ decltype(auto) transparent(Fun fun, Arg&&... arg) {
 ```cpp
 template<typename Fun, typename... Args>
 decltype(auto) transparent(Fun&& fun, Args&&... args) {
-	return std::forward<Fun>
+	return std::forward<Fun>(fun)(std::forawrd<Args>(args)...);
 }
 ```
+• Теперь функции тоже не требуется быть обязательно копируемой.
+• Выглядит это чуть страшнее, зато теперь тут не к чему особо придраться.
 #### Представление графа
 • У Кнута в TAOCP приведено следующее представление графа
 
