@@ -1029,6 +1029,41 @@ template<typename...> using void_t = void;
 ```
 • Интуитивно `void_t<T, U, V>` означает **void**, если все типы легальны и нелегален, если нелегален хоть один.
 • Думайте о нём как о логической коньюнкции SFINAE характеристик.
+#### Задача: зависимый тип
+• С ранних пор была замечена полезность техники SFINAE для трюков и хаков. Классический пример: определить наличие зависимого типа в классе.
+```cpp
+struct foo { typedef float foobar; };
+struct bar { };
+
+std::cout << std::boolalpha << /* ??? foo */ << " " << /* ??? bar */;
+```
+• Это снова отображение из типов в целые, и без SFINAE задача опять выглядит нерешаемой.
+#### Решение: void_t
+• Решение использует SFINAE и void_t.
+```cpp
+template<typename, typename = void>
+struct has_typedef_foobar: std::false_type { };
+
+template<typename T>
+struct has_typedef_foobar<T, std::void_t<typename T::foobar>>: std::true_type{};
+```
+• Теперь мы можем определить вещи на этапе компиляции.
+```cpp
+struct foo { typedef float foobar; };
+std::cout << std::boolalpha << has_typedef_foobar<foo>{};
+```
+#### Конструирование из итераторов
+• Можно попытаться решить задачу с итераторами вот так:
+```cpp
+MyVector(size_t nelts, T value);
+
+template<typename Iter, typename = void_t<decltype(*Iter{}), decltype(++Iter{})>>
+MyVector(Iter fst, Iter lst);
+```
+• Увы, это не слишком изящно. Дело в том, что инкремент требует lvalue.
+• Но его-то мы, как раз, пока и не можем создать. Хотя иногда везёт.
+#### Абстракция значения
+• В некоторых случаях (например, для ис)
 #### Представление графа
 • У Кнута в TAOCP приведено следующее представление графа
 
