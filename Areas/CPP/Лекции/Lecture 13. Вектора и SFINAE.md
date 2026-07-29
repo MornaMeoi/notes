@@ -932,8 +932,18 @@ public:
 	Stack(const Stack<T>& rhs) = delete;
 	~Stack();
 	
+	Stack<T>& operator=(const Stack<T>& rhs) = delete;
+	
 	void push_back(const T& elem) { top_ = new StackElem(elem, top_); }
+	
+	template<typename... Args> void emplace_back(Args&&... args);
 };
+
+template<typename T>
+template<typename... Args>
+void Stack<T>::emplace_back(Args&&... args) {
+	top_ = new StackElem(top_, std::forward<Args>(args)...);
+}
 
 template<typename T> Stack<T>::~Stack() {
 	struct StackElem* nxt = top_;
@@ -949,11 +959,29 @@ int main() {
 	Stack<Heavy> s;
 	for(int i = 0; i != 5; ++i) {
 		std::cout << std::endl << "next" << std::endl;
-		s.push_back(Heavy(100));
+		s.emplace_back(100);
 	}
 	std::cout << std::endl << "we are done\n" << std::endl;
 }
 ```
+Теперь на каждой итерации только:
+```
+Heavy created
+```
+#### Emplace
+• Обычно метод контейнера, который размещает объект, а не пробрасывает его, называют <span style="color: blue;">emplace</span>.
+```cpp
+template<typename T> class Stack {
+	// детали реализации
+public:
+	void push(const T& elem) { top_ = new StackNode(top_, elem); }
+	
+	template<typename U> void emplace(U&&... args) {
+		top_ = new StackNode(top_, forward<U>(args)...);
+	}
+};
+```
+• В стандартной библиотеке размещение поддерживают все последовательные контейнеры.
 #### Представление графа
 • У Кнута в TAOCP приведено следующее представление графа
 
