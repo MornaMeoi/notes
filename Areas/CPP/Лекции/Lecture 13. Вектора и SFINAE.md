@@ -1191,3 +1191,13 @@ auto sum_all(T... args) { return (args + ...); }
 template<typename... T>
 void print_all(T... args) { (cout << ... << args) << endl; }
 ```
+#### Проблемы print_all
+```cpp
+template<typename... T>
+void print_all(T... args) { (cout << ... << args) << endl; }
+```
+• Очевидно, что print_all записанный как есть не вставляет между выводимыми числами пробельные символы.
+```cpp
+print_all(1, 1.5, 3); // -> 11.53
+```
+• Как заставить его это сделать?
