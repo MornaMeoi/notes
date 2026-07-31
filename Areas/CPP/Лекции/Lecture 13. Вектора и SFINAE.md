@@ -1201,3 +1201,36 @@ void print_all(T... args) { (cout << ... << args) << endl; }
 print_all(1, 1.5, 3); // -> 11.53
 ```
 • Как заставить его это сделать?
+#### Решение: функтор AddSpace
+• Вандерворд и Йосьюттис \[3\]  предлагают следующее решение:
+```cpp
+template<typename T> class AddSpace {
+	const T& ref;
+public:
+	AddSpace(const T& r) : ref(r) {}
+	ostream& operator<<(ostream& os, AddSpace s) {
+		return os << s.ref << ' ';
+	}
+};
+
+template<typename... T> void print_all(T... args) {
+	(cout << ... << AddSpace(args)) << "\n";
+}
+```
+#### Экзотические свёртки (самостоятельно)
+• Представьте, что у вас есть дерево с узлом
+```cpp
+template<typename T> struct Node {
+	T data;
+	Node* left;
+	Node* right;
+};
+```
+• Вы хотите заставить работать код:
+```cpp
+Node* top = /* получаем узел 1*/;
+
+Node* seven = tree_get(top, right, right, left); // узел 7
+Node* four = tree_get(top, left, right, left); // узел 4
+```
+• Домашняя работка: написать такую функцию (проще чем кажется).
