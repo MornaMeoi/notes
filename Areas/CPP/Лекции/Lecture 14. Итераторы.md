@@ -38,3 +38,32 @@ size_t traverse(Cont& cont, F func) {
 }
 ```
 • Теперь подойдёт любой стандартный контейнер.
+#### Range-based обход
+• Концепция итератора может быть скрыта под капотом.
+```cpp
+template<typename C, typename F>
+size_t traverse(C&& cont, F func) {
+	size_t nelts = 0;
+	for(auto&& elt : cont)
+		if(!(++nelts, func(elt))) // elt это *it
+			break;
+	return nelts;
+}
+```
+• Тут очевидны две ответственности этого цикла.
+```cpp
+for(/* range_declaration : range_expression*/)
+	/*loop_statement*/;
+```
+• Эквивалентно следующему:
+```cpp
+auto&& __range = /*range_expression*/;
+auto __begin = std::begin(__range);
+auto __end = std::end(__range);
+for(; __begin != __end; ++__begin) {
+	/*range_declaration*/ = *__begin;
+	/*loop_statement*/;
+}
+```
+#### Требования к range-based обходу
+• Объект, возвращаемый s
