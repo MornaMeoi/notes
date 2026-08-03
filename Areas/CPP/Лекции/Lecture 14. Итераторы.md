@@ -58,8 +58,8 @@ for(/* range_declaration : range_expression*/)
 • Эквивалентно следующему:
 ```cpp
 auto&& __range = /*range_expression*/;
-auto __begin = std::begin(__range);
-auto __end = std::end(__range);
+auto __begin = begin(__range); // не обязательно std::begin
+auto __end = end(__range);     // не обязательно std::end
 for(; __begin != __end; ++__begin) {
 	/*range_declaration*/ = *__begin;
 	/*loop_statement*/;
