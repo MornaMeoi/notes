@@ -200,6 +200,53 @@ template<typename T> class Matrix {
 	std::vector<T> matrix_;
 	
 public:
+	Matrix(int lines = 0, int columns = 0)
+		: lines_(lines), columns_(columns), matrix_(lines * columns) {}
+	T& at(int x, int y) { return matrix_[x * columns_ + y]; }
+	const T& at(int x, int y) const { return matrix_[x * columns_ + y]; }
+	T* data() { return matrix_.data(); }
+	int x() const { return lines_; }
+	int y() const { return columns_; }
 	
+	void readMatrix() {
+		int res, i, j;
+		std::cin.exceptions(std::istream::failbit);
+		std::cin >> lines_ >> columns_;
+		matrix_.resize(lines_ * columns_);
+		for(i = 0; i < lines_; ++i)
+			for(j = 0; j < lines_; ++j)
+				std::cin >> matrix_[i + columns_ + j];
+	}
+	void resizeto(int lines, int columns) {
+		lines_ = lines;
+		columns_ = columns;
+		matrix_.resize(lines_ * columns);
+	}
+	
+	auto begin() { return matrix_.begin(); }
+	auto cbegin() { return matrix_.begin(); }
+	auto end() { return matrix_.end(); }
+	auto cend() { return matrix_.end(); }
 };
+
+template<typename T>
+void cpp_transpose_mult(const Matrix<T>& a, const Matrix<T>& b, Matrix<T>& c) {
+	int AX = a.x(), AY = a.y(), BY = b.y();
+	assert(AX == b.x());
+	std::vector<T> tmp(BY * AY);
+	
+	for(int i = 0; i < AY; ++i)
+		for(int j = 0; j < BY; ++j)
+			tmp[j * AY + i] = b.at(i, j);
+	
+	for(int i = 0; i < AX; ++i)
+		for(int j = 0; j < BY; ++j) {
+			c.at(i, j) = 0;
+			for(int k = 0; k < AY; ++k)
+				c.at(i, j) += a.at(i, k) * tmp[j * AY + k];
+		}
+}
+
+template<typename CRandIt, typename RandIt>
+
 ```
