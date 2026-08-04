@@ -368,7 +368,8 @@ int main() {
 	print_iterator_type<typename std::deque<int>::iterator>();
 	print_iterator_type<typename std::forward_list<int>::iterator>();
 	print_iterator_type<typename std::list<int>::iterator>();
-	print_iterator_type<typename std::deque<int>::iterator>();
-	print_iterator_type<typename std::deque<int>::iterator>();
+	print_iterator_type<typename std::vector<int>::iterator>();
+	print_iterator_type<std::istream_iterator<int>>();
+	print_iterator_type<std::ostream_iterator<int>>();
 }
 ```
