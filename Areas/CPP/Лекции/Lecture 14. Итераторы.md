@@ -152,3 +152,24 @@ std::distance(Iter fst, Iter snd); // snd - fst, либо цикл
 std::advance(Iter fst, int n); // fst + n, либо цикл
 ```
 • Они делают это устраивая явную перегрузку по тегу категории.
+#### Обсуждение
+• Учитывая возможную плохую асимптотику distance, этот код может быть чуть хуже явного цикла.
+```cpp
+template<typename C, typename F>
+size_t traverse(C&& cont, F func) {
+	auto it = std::find_if_not(cont.begin(), cont.end(), func);
+	return std::distance(cont.begin(), it);
+}
+```
+• Но, может быть, он чем-то лучше?
+#### Обсуждение: используйте итераторы
+• Этот пример лучше тем, что показывает реальное требование: не контейнер, а два итератора:
+```cpp
+template<typename It, typename F>
+size_t traverse(It start, It fin, F func) {
+	auto it = std::find_if_not(start, fin, func);
+	return std::distance(start, it);
+}
+```
+• Есть ли в действительности разница по скорости?
+• Да. И внезапно она бывает просто огромная.
