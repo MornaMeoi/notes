@@ -293,3 +293,82 @@ int main() {
 				std::cerr << "Divergence at: " << i << ", " << j << std::endl;
 }
 ```
+#### Определение категории итераторов
+• Используйте класс характеристик
+```cpp
+typename iterator_traits<Iter>::iterator_category;
+```
+• Возможные значения
+	• `input_itertator_tag`
+	• `output_iterator_tag`
+	• `forward_iterator_tag: public input_iterator_tag`
+	• `bidirectional_iterator_tag: public forward_iterator_tag`
+	• `random_access_iterator_tag: public bidirectional_iterator_tag`
+#### Перегрузка по тегу
+• Например, перегрузим вывод для тегов, чтобы отлаживать наши программы.
+```cpp
+ostream& operator<<(ostream& out, random_access_iterator_tag) {
+	out << "random access"; return out;
+}
+// .... и так далее для всех тегов ....
+template<typename Iter> void print_iterator_type() {
+	cout << iterator_traits<Iter>::iterator_category{} << endl;
+}
+```
+• Теперь мы легко узнаем, например, категорию для деков.
+```cpp
+print_iterator_type<typename deque<int>::iterator>();
+```
+Пример:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Iterator categories example
+//
+//-------------------------------------------------------------------------------
+
+#include <deque>
+#include <forward_list>
+#include <iostream>
+#include <iterator>
+#include <list>
+#include <vector>
+
+std::ostream& operator<<(std::ostream& out, std::random_access_iterator_tag) {
+	out << "random access";
+}
+
+std::ostream& operator<<(std::ostream& out, std::bidirectional_iterator_tag) {
+	out << "bidirectional";
+}
+
+std::ostream& operator<<(std::ostream& out, std::forward_iterator_tag) {
+	out << "forward";
+}
+
+std::ostream& operator<<(std::ostream& out, std::input_iterator_tag) {
+	out << "input";
+}
+
+std::ostream& operator<<(std::ostream& out, std::output_iterator_tag) {
+	out << "output";
+}
+
+template<typename Iter> void print_iterator_type() {
+	cout << iterator_traits<Iter>::iterator_category{} << endl;
+}
+
+int main() {
+	print_iterator_type<typename std::deque<int>::iterator>();
+	print_iterator_type<typename std::forward_list<int>::iterator>();
+	print_iterator_type<typename std::list<int>::iterator>();
+	print_iterator_type<typename std::deque<int>::iterator>();
+	print_iterator_type<typename std::deque<int>::iterator>();
+}
+```
