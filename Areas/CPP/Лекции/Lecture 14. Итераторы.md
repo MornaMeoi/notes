@@ -173,3 +173,33 @@ size_t traverse(It start, It fin, F func) {
 ```
 • Есть ли в действительности разница по скорости?
 • Да. И внезапно она бывает просто огромная.
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Interesting benchmark, showing true cost of abstraction
+// and inline capabilites of compiler
+// Based on homework of Oleg Suhodolov.
+//
+// g++ matrix_repro.cc -O2
+// ./a.out < test.dat
+//
+//-------------------------------------------------------------------------------
+
+#include <cassert>
+#include <iostream>
+#include <vector>
+
+template<typename T> class Matrix {
+	int lines_, columns_;
+	std::vector<T> matrix_;
+	
+public:
+	
+};
+```
