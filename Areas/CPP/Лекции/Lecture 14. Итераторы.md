@@ -373,3 +373,20 @@ int main() {
 	print_iterator_type<std::ostream_iterator<int>>();
 }
 ```
+Вывод будет такой:
+```
+random access
+forward
+bidirectional
+random access
+input
+output
+```
+#### Проверка категории
+• Иногда мы хотим обложить перегрузку SFINAE проверкой
+```cpp
+template<typename It>
+// имеет смысл тольок для input iterators
+void foo(It first, It last)
+```
+• Поможет ли нам здесь void_t?
