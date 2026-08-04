@@ -248,7 +248,8 @@ void cpp_transpose_mult(const Matrix<T>& a, const Matrix<T>& b, Matrix<T>& c) {
 }
 
 template<typename CRandIt, typename RandIt>
-void iter_transpose_mult<CRandIt A, RandIt C, int AX, int AY, int BY) {
+void iter_transpose_mult<CRandIt A, CRandIt B, RandIt C, int AX, int AY,
+												 int BY) {
 	assert(AX > 0 && AY > 0 && BY > 0);
 	using T = typename std::iterator_traits<RandIt>::value_type;
 	std::vector<T> tmp(BY * AY);
@@ -260,6 +261,35 @@ void iter_transpose_mult<CRandIt A, RandIt C, int AX, int AY, int BY) {
 	for(int i = 0; i < AX; i++)
 		for(int j = 0; j < BY; j++) {
 			C[i * BY + j] = 0;
+			for(int k = 0; k < AY; k++)
+				C[i * BY + j] += A[i * AY + k] * tmk[j * AY + k];
 		}
+}
+
+int main() {
+	time_t start, fin;
+	long elapsed;
+	Matrix<int> A, B, C, D;
+	A.readMatrix();
+	B.readMatrix();
+	C.resizeto(A.x(), B.y());
+	D.resizeto(A.x(), B.y());
+	
+	start = clock();
+	cpp_transpose_mult(A, B, C);
+	fin = clock();
+	elapsed = fin - start;
+	std::cout << "C++ with transpose: " << elapsed << "\n";
+	
+	start = clock();
+	iter_transpose_mult(A.cbegin(), B.cbegin(), D.begin(), A.x(), A.y(), B.y());
+	fin = clock();
+	elapsed = fin - start;
+	std::cout << "C++ with iterators: " << elapsed << "\n";
+	
+	for(int i = 0; i < A.x(); ++i)
+		for(int j = 0; j < A.y(); ++j)
+			if(C.at(i, j) != D.at(i, j))
+				std::cerr << "Divergence at: " << i << ", " << j << std::endl;
 }
 ```
