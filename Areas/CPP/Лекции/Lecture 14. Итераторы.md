@@ -803,5 +803,83 @@ using reference = std::pair<KeyType&, ValueType&>;
 using KeyRef = typename iterator_traits<KeyIt>::reference;
 using ValueRef = typename iterator_traits<ValueIt>::reference;
 
-using reference 
+using reference = std::pair<KetRef, ValueRef>
+
+reference operator*() const { return {*Kit_, *Vit_}; } // ok 
+```
+#### Настоящая проблема: стрелочка
+• Как вообще должен выглядеть оператор разыменования?
+```cpp
+auto zit = make_zip_iterator(k.begin(), b.begin());
+assert(k.front() == zit->first);
+
+// zit->first drills down to (zit.operator->())->first
+```
+• Это должен быть аналог разыменованию и обращению к полю.
+```cpp
+pointer operator->() const { return /* some pointer */; }
+```
+• Но что такое pointer? Просто решение не подходит.
+```cpp
+using pointer = std::pair<KeyPtr, ValuePtr>; // нет p->first
+```
+#### Некоторые дурацкие способы
+• Можно продлить временному объекту жизнь, сделав его статическим.
+```cpp
+using pointer = value_type*;
+
+pointer operator->() const {
+	static reference Ref;
+	Ref = {*Kit_, *Vit_};
+	return &Ref;
+}
+```
+• Какие тут проблемы?
+• Например, рассмотрим `use(zit->first, (zit+1)->first)`.
+#### Изящное решение: прокси-класс
+• На помощь приходит прокси-класс.
+```cpp
+template<typename Reference> struct arrow_proxy {
+	Reference R;
+	Reference* operator->() { return &R; } // non const
+};
+
+using pointer = arrow_proxy<reference>;
+
+pointer operator->() const { return pointer{{*Kit_, *Vit_}}; }
+```
+• Есть некие опасения в том, что прокси провиснет, но нам он нужен, чтобы пережить drill-down, а его явно переживёт.
+Вот так это выглядит:
+```cpp
+//-----------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-----------------------------------------------------------------------------
+//
+// Example siplified from Arthur O'Dwyers zip range to illustrate key concept
+// of proxy classes for operator->() and overall iterator development
+//
+// original: https://quuxplusone.github.io/blog/2019/02/06/arrow-proxy/
+//
+//-----------------------------------------------------------------------------
+
+#include <iterator>
+#include <utility>
+
+namespace itertools {
+
+//-----------------------------------------------------------------------------
+//
+// Consider a zip_range rhat referes to two other containers and lets you
+// iterate them in parallel:
+//
+// std::vector<int> keys;
+// std::vector<double> values;
+// for(auto&& both : itertools::make_zip_range(keys))
+
+};
+
 ```
