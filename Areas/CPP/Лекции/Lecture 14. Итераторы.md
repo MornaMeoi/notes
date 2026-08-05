@@ -420,3 +420,14 @@ using conditional_t = typename conditional<B, T/*, F*/>::type;
 • Да. Просто вычеркнем технически все упоминания false-type.
 #### ENABLE_IF
 • Получившаяся триада enable_if является одной из самых полезных идиом в практическом SFINAE.
+```cpp
+template<bool B, typename T = void>
+struct enable_if { using type = T; }
+
+template<typename T = void>
+struct enable_if<false, T> { }
+
+template<bool B, typename T = void>
+using enable_if_t = typename enable_if<B, T>::type;
+```
+• Выкинув false, сделаем true примитивным. Например, void.
