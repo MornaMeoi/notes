@@ -390,3 +390,33 @@ template<typename It>
 void foo(It first, It last)
 ```
 • Поможет ли нам здесь void_t?
+#### Интерлюдия: conditional_type
+• Рассмотрим следующую sfinae-триаду
+```cpp
+template<bool B, typename T, typename F>
+struct conditional { using type = T; }
+
+template<typename T, typename F>
+struct conditional<false, T, F> { using type = F; }
+
+template<bool B, typename T, typename F>
+using conditional_t = typename conditional<B, T, F>::type;
+```
+• Она представляет собой условный тип.
+• Можно ли сделать его невалидным для F?
+#### Условный тип
+• Рассмотрим следующую sfinae-триаду
+```cpp
+template<bool B, typename T/*, typename F*/>
+struct conditional { using type = T; }
+
+template<typename T/*, typename F*/>
+struct conditional<false, T/*, F*/> { /*using type = F;*/ }
+
+template<bool B, typename T/*, typename F*/>
+using conditional_t = typename conditional<B, T/*, F*/>::type;
+```
+• Можно ли сделать его невалидным для F?
+• Да. Просто вычеркнем технически все упоминания false-type.
+#### ENABLE_IF
+• Получившаяся триада enable_if является одной из самых полезных идиом в практическом SFINAE.
