@@ -1183,6 +1183,80 @@ template<typename C> void test() {
 	
 	// 1 2 3 > 4 5 6 7
 	
-	auto vi = remove_constness
+	auto vi = remove_constness_meyers(cont, cvi);
+	*vi *= 3;
+	auto rvi = remove_constness_reverse_meyers(cont, crvi);
+	*rvi *= 2;
+	
+	// 1 2 6 <- * -> 12 5 6 7
+	
+  if ((6 == *crvi) && (12 == *vi))
+    std::cout << "#" << typeid(C).name() << " PASSED\n" << std::endl;
+  else
+    std::cout << "#" << typeid(C).name() << " FAILED\n" << std::endl;
+}
+
+int main() {
+  test<std::list<int>>();
+  test<std::vector<int>>();
+  test<std::deque<int>>();
 }
 ```
+Получается, ответ на изначальный вопрос:
+```
+3 4
+```
+![[../../../_Meta/attachments/14.4.png]]
+#### Адаптация: обратный range-based обход
+• Задача: сделать адаптер `reverse_cont`, такой, чтобы работал цикл:
+```cpp
+for(auto&& elt : vec) // - обойти в прямом порядке
+for(auto&& elt : reverse_cont(vec)) // - обойти в обратном порядке
+```
+#### Реализация reverse_cont
+```cpp
+template<typename T> struct reversion_wrapper {
+	T& iterable;
+};
+
+template<typename T> auto begin(reversion_wrapper<T> w) {
+	return rbegin(w.iterable);
+}
+
+template<typename T> auto end(reversion_wrapper<T> w) {
+	return rend(w.iterable);
+}
+
+template<typename T>
+reversion_wrapper<T> reverse_cont(T&& iterable) {
+	return { iterable };
+}
+```
+#### Обсуждение
+• Это разительно отличается от полноценного zip range.
+• Тут мы, по сути, переиспользуем обычные итераторы. Меняется только обёртка.
+#### Адаптация: inserters
+• Преобразование записи во вставку
+```cpp
+std::vector<int> vec;
+
+// тяжёлый способ
+std::back_insert_iterator<std::vector<int>> bins(vec);
+
+// лёгкий способ
+auto bins = std::back_inserter(vec);
+
+*bins = 1; // вставка элемента, как vec.push_back(1)
+```
+• Что должен делать инкремент bins++?
+Правильная версия:
+```cpp
+std::vector<int> vec;
+auto bins = std::back_inserter(vec);
+bins = 1; // вставка элемента, как vec.push_back(1)
+```
+• Что должен делать инкремент bins++? - практически ничего.
+• Более того, даже разыменование \*bins ничего осмысленного не делает. Поэтому работает также, как показано выше.
+#### Виды адаптеров вставки для итераторов
+• std::back_inserter для вставки в конец (предпочтительно).
+• std::front_inserter для вставки в начало (можно попать на аси)
