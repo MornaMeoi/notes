@@ -1088,4 +1088,25 @@ vector<int> vecb = { vecf.rbegin(), vecf.rend() };
 ![[../../../_Meta/attachments/14.2.png]]
 • Она так проста, потому что указатели ковариантны к константности.
 • Увы, итераторы инвариантны и могут не иметь вообще ничего общего.
-• Как будет выглядет
+• Как будет выглядеть (видимо, более сложная) диаграмма преобразований итераторов?
+#### Диаграмма Майерса
+![[../../../_Meta/attachments/14.3.png]]
+<span style="color: blue;">(1, 2, 3, 4) Обращение итератора</span >
+```cpp
+auto rit = make_reverse_iterator(it);
+auto it = rit.base();
+```
+<span style="color: blue;">(5, 6) Добавление константности</span >
+```cpp
+Cont::const_iterator cit = it;
+Cont::const_reverse_iterator crit = rit;
+```
+#### Предложение Майерса
+• Актуальная проблема: `const_cast` для итераторов. То есть, как привести `const_iterator` к обычному?
+• Майерс предлагает использовать advance.
+```cpp
+Iter i(cont.begin());
+std::advance(i, std::distance<decltype(ci)>(i, ci));
+```
+• Вопросы:
+	• Зачем
