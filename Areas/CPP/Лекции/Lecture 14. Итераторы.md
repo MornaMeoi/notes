@@ -963,9 +963,129 @@ bool operator==(const zip_iterator_t<KeyIt, ValueIt>& Lhs,
 template<typename KeyIt, typename ValueIt>
 bool operator!=(const zip_iterator_t<KeyIt, ValueIt>& Lhs,
 								const zip_iterator_t<KeyIt, ValueIt>& Rhs) {
-	return !L
+	return !Lhs.equals(Rhs);
 }
 
+template<typename KeyIt, typename ValueIt>
+auto make_zip_iterator(KeyIt K, ValueIt V) {
+	return zip_iterator_t<KeyIt, ValueIt>{K, V};
+}
+
+//-----------------------------------------------------------------------------
+//
+// zip_range_t is leightweight helper to keep range reference
+//
+//-----------------------------------------------------------------------------
+template<typename Keys, typename Values> class zip_range_t {
+	Keys& K_;
+	Values& V_;
+	using KIter = typename std::remove_reference_t<Keys>::iterator;
+	using Viter = typename std::remove_reference_t<Values>::iterator;
+	
+public:
+	zip_range_t(Keys& K, Values& V) : K_(K), V_(V) {}
+	
+	// begin and end interface
+public:
+	zip_iterator_t<KIter, VIter> begin() {
+		return make_zip_iterator(std::begin(K_), std::begin(V_));
+	}
+	
+	zip_iterator_t<KIter, VIter> end() {
+		return make_zip_iterator(std::end(K_), std::end(V_));
+	}
 };
 
+//-----------------------------------------------------------------------------
+//
+// make_this range helper interface to actually zip ranges
+//
+//-----------------------------------------------------------------------------
+template<typename Keys, typename Values>
+auto make_zip_range(Keys& K, Values& V) {
+	return zip_range_t<Keys, Values>{K, V};
+}
+
+} // namespace itertools
 ```
+Дальше лектор запускает вот эти тесты:
+```cpp
+//-----------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-----------------------------------------------------------------------------
+//
+// Example simplified from Arthur O'Dwyers zip range to illustrate key concept
+// of proxy classes for operator->() and overall iterator development
+//
+// original: https://quuxplusone.github.io/blog/2019/02/06/arrow-proxy/
+//
+//-----------------------------------------------------------------------------
+
+#include <cassert>
+#include <iostream>
+#include <vector>
+
+#include "ziprange.hpp"
+
+int main() {
+  std::vector<bool> b = {false, false, true, false};
+  std::vector<int> k = {1, 2, 3, 4};
+  std::vector<double> v = {4.5, 3.5, 2.5, 1.5};
+
+  // 1. assignment
+  auto zit = itertools::make_zip_iterator(k.begin(), b.begin());
+  assert(zit->first == k.front());
+  (*zit).first = 42;
+  assert(zit->first == 42);
+  zit->second = true;
+  assert(b.front() == true);
+
+  // 2. diapasone iterating
+  for (auto &&both : itertools::make_zip_range(k, v))
+    std::cout << both.first << " " << both.second << "\n";
+
+    // 3. wrong iterators don't work
+#ifdef BAD
+  auto osit = std::ostream_iterator<int>{std::cout};
+  auto wit = itertools::make_zip_iterator(osit, b.begin());
+#endif
+}
+```
+Тесты, конечно же, проходят.
+#### Обсуждение
+• Рассмотренный zip-range - это типичный адаптер итератора.
+• Давайте поговорим о некоторых других.
+## Преобразования и адаптеры
+#### Обсуждение
+• Категории итераторов - это не единственный признак, по которому они могут различаться.
+• Какие ещё признаки приходят на ум для различия итераторов внутри **одной и той же** категории, например, bidirectional?
+#### Направления и константность
+• По направлению:
+	• `cont.begin()`
+	• `cont.rbegin()`
+• Константные:
+	• `cont.cbegin()`
+	• `cont.crbegin()`
+![[../../../_Meta/attachments/14.1.png]]
+#### Пример обратных итераторов
+• Как получить вектор, обратный данному?
+```cpp
+vector<int> vecf = {1, 2, 3, 4, 5, 6};
+```
+• Плохой вариант:
+```cpp
+vector<int> vecb = { vecf.end(), vecf.begin() };
+```
+• Хороший вариант:
+```cpp
+vector<int> vecb = { vecf.rbegin(), vecf.rend() };
+```
+#### Преобразования указателей
+![[../../../_Meta/attachments/14.2.png]]
+• Она так проста, потому что указатели ковариантны к константности.
+• Увы, итераторы инвариантны и могут не иметь вообще ничего общего.
+• Как будет выглядет
