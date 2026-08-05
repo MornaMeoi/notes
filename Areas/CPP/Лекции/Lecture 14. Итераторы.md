@@ -1109,4 +1109,80 @@ Iter i(cont.begin());
 std::advance(i, std::distance<decltype(ci)>(i, ci));
 ```
 • Вопросы:
-	• Зачем
+	• Зачем явно указан шаблонный параметр?
+	• Проблемы с этим подходом?
+• Явный шаблонный параметр, чтобы избежать неоднозначного вывода типов.
+• Основная проблема: время O(N) для "неудачных" контейнеров. Таких, как списки.
+#### Трюк Хинанта
+• Изящная юридическая казуистика из серии "не знаешь - не угадаешь".
+```cpp
+template<typename Container, typename ConstIterator>
+typename Container::iterator
+remove_constness(Container& c, ConstIterator it) {
+	return c.erase(it, it);
+}
+```
+• Идея в том, что начиная с C++11, удаление пустого диапазона позволено. Не делает ничего и возвращает `iterator`.
+• Это работает за O(1), но не работает для обратных итераторов и строк.
+#### Переход к прямому итерированию
+```cpp
+std::vector v {1, 2, 3, 4, 5, 6, 7};
+auto ri = v.rbegin() + 4;
+auto it = ri.base();
+cout << *ri << " " << *it << endl; // что на экране?
+```
+Прежде чем отвечать на этот вопрос, лектор показывает пример:
+```cpp
+//-----------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-----------------------------------------------------------------------------
+//
+// Meyers advance
+//
+//-----------------------------------------------------------------------------
+
+#include <deque>
+#include <iostream>
+#include <iterator>
+#include <list>
+#include <string>
+#include <vector>
+
+template<typename C, typename It>
+auto remove_constness_reverse_meyers(C& v, It cvi) {
+	static_assert(std::is_same<typename C::const_reverse_iterator, It>::value,
+								"Iterator shall be from container and reverse");
+	auto rsi = v.rbegin();
+	std::advance(rsi, std::distance<decltype(cvi)>(rsi, cvi));
+	return rsi;
+}
+
+template<typename C, typename It> auto remove_constness_meyers(C& v, It cvi) {
+	static_assert(std::is_same<typename C::const_iterator, It>::value,
+								"Iterator shall be from container and reverse");
+	auto si = v.rbegin();
+	std::advance(si, std::distance<decltype(cvi)>(si, cvi));
+	return si;
+}
+
+template<typename C> void test() {
+	C cont{1, 2, 3, 4, 5, 6, 7};
+	auto crvi = cont.crbegin();
+	
+	// 1 2 3 4 5 6 7 <
+	
+	std::advance(crvi, 4);
+	
+	// 1 2 3 < 4 5 6 7
+	
+	auto cvi = crvi.base();
+	
+	// 1 2 3 > 4 5 6 7
+	
+	auto vi = remove_constness
+}
+```
