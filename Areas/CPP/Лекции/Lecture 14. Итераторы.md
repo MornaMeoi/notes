@@ -431,3 +431,17 @@ template<bool B, typename T = void>
 using enable_if_t = typename enable_if<B, T>::type;
 ```
 • Выкинув false, сделаем true примитивным. Например, void.
+#### Проверка категории
+• Иногда мы хотим обложить перегрузку SFINAE проверкой
+```cpp
+template<typename It>
+using iterator_category_t = typename std::iterator_traits<IT>::iterator_category;
+
+template<typename It, typename T = std::enable_if_t<
+	std::is_base_of_v<input_iterator_tag,
+										iterator_category_t<It>>>>
+void foo(It first, It last)
+```
+• Все ли понимают, почему base of, а не same?
+#### Обсуждение
+• Неплохой вектор с плохим итератором.
