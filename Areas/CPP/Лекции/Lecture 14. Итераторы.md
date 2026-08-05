@@ -1258,5 +1258,58 @@ bins = 1; // вставка элемента, как vec.push_back(1)
 • Что должен делать инкремент bins++? - практически ничего.
 • Более того, даже разыменование \*bins ничего осмысленного не делает. Поэтому работает также, как показано выше.
 #### Виды адаптеров вставки для итераторов
-• std::back_inserter для вставки в конец (предпочтительно).
-• std::front_inserter для вставки в начало (можно попать на аси)
+• `std::back_inserter` для вставки в конец (предпочтительно).
+• `std::front_inserter` для вставки в начало (можно попать на асимптотику).
+• `std::inserter` для вставки в произвольное место (шансы на так себе асимптотику сильно увеличиваются).
+```cpp
+std::vector<int> v = {2, 3, 7, 11};
+auto it = std::find(v.begin(), v.end(), 3);
+auto insit = std::inserter(v, it);
+insit = 5; // теперь v = {2, 3, 5, 7, 11}
+```
+#### Пример: кросс-копирование
+```cpp
+template<typename InpIter, typename OutIter>
+OutIter cross_copy(InpIter fst, InpIter lst, OutIter dst) {
+	while(fst != lst) { *dst = *fst; ++fst; ++dst; }
+	return dst;
+}
+
+std::list<int> lst = {1, 2, 3, 4, 5, 6};
+std::vector<int> vec;
+```
+Задача: скопировать содержимое списка `lst` в вектор `vec`.
+```cpp
+// ответ 1
+vec.resize(lst.size());
+cross_copy(lst.begin(), lst.end(), vec.begin());
+// ответ 2 с insert-итератором
+cross_copy(lst.begin(), lst.end(), std::back_inserter(vec));
+// также можно вывести эту последовательность на экран
+cross_copy(vec.begin(), vec.end(), std::ostream_iterator<int>(std::cout, "\n"));
+```
+#### Простая задача: снова cross-copy
+```cpp
+template<typename InpIter, typename OutIter>
+OutIter cross_copy(InpIter fst, InpIter lst, OutIter dst) {
+	while(fst != lst) { *dst = *fst; ++fst; ++dst; }
+	return dst;
+}
+
+std::list<int> lst = {1, 2, 3, 4, 5, 6};
+std::vector<int> vec = {10, 20, 30, 40, 50, 60};
+
+cross_copy(lst.begin(), lst.end(), inserter(vec, vec.begin() + 3)); // что в vec?
+// vec == { 10, 20, 30, 1, 2, 3, 4, 5, 6, 40, 50, 60 }
+```
+#### Обсуждение
+• Рассмотрим этот пример ещё раз:
+```cpp
+std::vector<int> vec = {10, 20, 30, 40, 50, 60};
+auto i5 = vec.begin() + 5;
+cross_copy(lst.begin(), lst.end(), std::inserter(vec, vec.begin() + 3));
+// vec == { 10, 20, 30, 1, 2, 3, 4, 5, 6, 40, 50, 60 }
+*i5 = 42;
+```
+• А теперь что в векторе?
+• Кажется, мы тут наступили на нечто не слишком приятное.
