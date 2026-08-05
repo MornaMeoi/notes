@@ -744,3 +744,64 @@ auto make_zip_range(Keys& K, Values& V) {
 ```
 • И сам он очень прост. Сложности только с типом итератора.
 • Что должен внутри себя хранить zip range?
+#### Пишем свой итератор: тело
+• Тело тоже не представляет проблем.
+```cpp
+template<typename Keys, typename Values>
+class zip_range_t {
+	Keys& K_; Values& V_;
+	
+public:
+	zip_iterator_t<KIter, VITer> begin() {
+		return make_zip_iterator(std::begin(K_), std::begin(V_));
+	}
+	// тут должно быть что-то
+};
+```
+• Что вы будете писать дальше?
+#### Пишем свой итератор: первые шаги
+• В нашем итераторе нам нужно определить пять фундаментальных подтипов:
+	• **iterator_category** - категория нашего итератора
+	• **difference_type** - тип для хранения разности итераторов
+	• **value_type** - тип значений, по которым мы итерируемся
+	• **reference** - тип ссылки на значения, по которым мы итерируемся
+	• **pointer** - тип указателя на значения, по которым мы итерируемся
+• Как вы думаете, как мы их определим в нашем случае?
+#### Простые вещи
+• Некоторые вещи действительно просты,
+```cpp
+// вспомогательные using для value_type составных частей
+using KeyType = typename iterator_traits<KeyIt>::value_type;
+using ValueType = typename iterator_traits<ValueIt>::value_type;
+
+// наше value - это пара values
+using value_type = std::pair<KeyType, ValueType>;
+```
+• К сожалению, так нельзя определить тип pointer, потому что мы <span style="color: blue;">на самом деле</span> не итерируемся по контейнеру пар.
+• Мы вернёмся к этому довольно скоро.
+#### Базовый интерфейс
+• Нет никаких проблем, чтобы попарно увеличивать и уменьшать наши итераторы.
+```cpp
+zip_iterator_t(KeyIt Kit, ValueIt Vit) : Kit_(Kit), Vit_(Vit) {}
+zip_iterator_t& operator++() { ++Kit_; ++Vit_; return *this; }
+zip_iterator_t& operator++(int) { /* тоже ничего сложного */ }
+```
+• Первая засада ждёт на операторе разыменования.
+```cpp
+using reference = std::pair<KeyType&, ValueType&>;
+reference operator*() const { return {*Kit_, *Vit_}; }
+```
+• Будет ли это работать?
+#### Всегда пользуйтесь traits
+• Очевидно:
+```cpp
+using reference = std::pair<KeyType&, ValueType&>;
+```
+• Это ошибка, если в контейнере reference отличается от `value&`, например для `vector<bool>` и многих других.
+• Корректно:
+```cpp
+using KeyRef = typename iterator_traits<KeyIt>::reference;
+using ValueRef = typename iterator_traits<ValueIt>::reference;
+
+using reference 
+```
