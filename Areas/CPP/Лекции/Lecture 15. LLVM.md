@@ -251,6 +251,19 @@ entry:
 	%f1 = getlementptr ([10 x i32], [10 x i32]* @fibarr, i64 0, i64 1)
 	store i32 1, i32* %f0
 	store i32 1, i32* %f1
-	br 
+	br label %for.cond
+	
+for.cond:
+	%i.0 = phi i64 [2, %entry], [%inc, %for.body]
+	%cmp = icmp ult i64 %i.0, 10
+	br i1 %cmp, label %for.body, label %for.end
+....
 }
+```
+#### Как написать тело цикла?
+```llvm
+....
+for.cond:
+	%i.0 = phi i64 [2, %entry], [%inc, %for.body]
+	%cmp = 
 ```
