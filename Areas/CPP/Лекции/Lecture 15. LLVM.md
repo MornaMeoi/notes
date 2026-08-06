@@ -453,7 +453,112 @@ flowchart TD
 declare i8* @malloc(i32) ; вероятно это malloc из C standard library
 ```
 • Далее она используется через `call`.
+• Также через `call` заведён инлайн-ассемблер.
+```llvm
+call void asm sideffect "mov ax, bx", ""()
+```
 • Также через `call` можно делать индиректные вызовы.
 ```llvm
 %result = call i64 %binop(i64 %x, i64 %y)
+```
+## Генерация IR
+Далее лектор на примере простейшей программы на ParaCL (числа Фибоначчи) показывает разницу между скомпилированной программой и интерпретируемой.
+```pcl
+n = 0;
+a = 0;
+b = 1;
+x = ?;
+
+while(n < x) {
+  n = n + 1;
+
+  if (n == 1)
+    print a;
+
+  if (n == 2)
+    print b;
+
+  if (n > 2) {
+    tmp = b;
+    b = a + b;
+    a = tmp;
+    print b;
+  }
+}
+```
+Комплит так:
+```bash
+./build/ParaCL tests-pcl/fib/file.pcl
+```
+Из этого получается LLVM IR модуль (pcl.module). Далее лектор говорит, что чтобы получить исполняемый модуль из LLVM IR модуля, его надо слинковать со стандартной библиотекой. Стандартная библиотека языка ParaCL:
+```cpp
+//------------------------------------------------------------------------------
+//
+// pcllib.cc -- ParaCL driver
+//
+// main calls __pcl_start
+// defines __pcl_print and __pcl_scan
+//
+//------------------------------------------------------------------------------
+
+#include <iostream>
+
+extern "C" void __pcl_start();
+
+extern "C" void __pcl_print(int n) { std::cout << n << std::endl; }
+
+extern "C" int __pcl_scan() {
+  int n;
+  std::cin >> n;
+  if (!std::cin) {
+    std::cerr << "Problem reading stdin\n";
+    exit(1);
+  }
+  return n;
+}
+
+int main() { __pcl_start(); }
+```
+Далее ловким движением рук лектор делает:
+```bash
+clang++ file.pcl.ll ./pcl-lib/pcllib.cc
+```
+и получает исполняемый файл.
+Далее лектор замечает, что точно так же можно интерпретировать:
+```bash
+./build/ParaCLi tests-pcl/fib/file.pcl
+```
+И отмечает, что исполняемый файл работает в разы быстрее.
+Далее лектор предлагает сравнить на последовательности collatz:
+```pcl
+n = ?;
+x = 2;
+cmax = 0;
+xmax = 0;
+
+while (x < n) {
+  c = 0;
+  y = x;
+  while (y > 1) {
+    c = c + 1;
+    t = 0;
+    if ((y % 2) == 0) {
+      t = 1;
+      y = y / 2;
+    } 
+    if ((t == 0) && ((y % 2) != 0)) {
+      y = 3 * y + 1;
+    }
+  }
+
+  if (c > cmax) {
+    xmax = x;
+    cmax = c; 
+  }
+
+  x = x + 1;
+}
+
+print xmax;
+print cmax;
 ```
