@@ -382,3 +382,8 @@ flowchart LR
 
 	linkStyle 0,1,2,3 marker-end:none
 ```
+#### Идеология User / Value
+%1 = add i64 %0, 1 ; value
+%2 = add i64 %1, %1 ; user / value
+%3 = add i64 %1, %2 ; user
+• Инструкция, которая порождает Value - это и есть Value (по SSA)
