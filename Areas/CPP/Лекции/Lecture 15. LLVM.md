@@ -212,4 +212,17 @@ store i32 %1, i32* gv
 ```
 • Как достать указатель на его нулевой и первый элемент?
 #### GEP: униформность доступа
-• Идея getelementptr - одинаковый доступ к массивам и структурам.
+• Идея `getelementptr` - одинаковый доступ к массивам и структурам.
+\<result\> = getelementptr \<ty\>, <span style="color: blue;">&#60ty>*</span> \<ptrval\> {, \<ty\> \<idx\>}*
+• Здесь каждый индекс снимает один уровень косвенности.
+<span style="color: gray;">; мы хотим написать: fibarr\[1\] = 1</span>
+%fst = i32* getlementptr \[10 x i32\],
+										 <span style="color: blue;">[10 x i32]*</span> @fibarr, <span style="color: red;">i64 1</span> <span style="color: gray;">; FAIL</span>
+store i32 1, %fst
+![[../../../_Meta/attachments/15.2.png]]
+Правильный вариант
+<span style="color: gray;">; мы хотим написать: fibarr\[1\] = 1</span>
+%fst = i32* getlementptr \[10 x i32\],
+										 <span style="color: blue;">[10 x i32]*</span> @fibarr, <span style="color: blue;">i64 0, i64 1</span> <span style="color: gray;">; OK</span>
+store i32 1, %fst
+![[../../../_Meta/attachments/15.3.png]]
