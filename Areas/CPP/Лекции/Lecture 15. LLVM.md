@@ -297,7 +297,65 @@ for.body:
 ```
 #### Обсуждение
 • И для структуры и для массива у нас был `gep` с первым индеком 0.
+<span style="color: gray;">// auto arrayfirst = &fibarr[1]</span>
+%arrayfirst = i32* getelementptr \[10 x i32\], \[10 x i32\]* @fibarr. <span style="color: red;">i64 0,</span> i64 1
+<span style="color: gray;">// auto eltptr = &S.field3[3]</span>
+%eltptr = getelementptr %struct.S, %struct.S* @x, <span style="color: red;">i32 0</span>, i32 2, i64 3
+• Можно ли придумать, когда он будет не ноль?
+#### Обсуждение
+• В LLVM IR нет <span style="color: blue;">объектов</span> в том смысле, в каком они есть в C.
+• Есть SSA-values, которые не перезаписываются.
+• Есть локации в "памяти", которые униформны и доступны только по указателю.
+• Сложно ли материализовать SSA-value?
+• Сложно ли поднять семантическую сеть операций с памятью в SSA?
+#### Фибоначчи без phi: локальные allocas
+```llvm
+define dso_local i32 @fib(i32) #0 {
+	%2 = alloca i32, allign 4 ; слоты для материализации
+	%3 = alloca i32, allign 4 ; SSA значений
+	%4 = alloca i32, allign 4
+	%5 = alloca i32, allign 4
+	%6 = alloca i32, allign 4
+	
+	store i32 %0, i32* %2, allign 4
+	store i32 0, i32* %3, allign 4
+	store i32 1, i32* %4, allign 4
+	store i32 0, i32* %5, allign 4
+	br label %7
+}
 ```
-// auto arrayfirst = &fibarr[1]
-%array
+Дальше
+```llvm
+store i32 %0, i32* %2, allign 4
+store i32 0, i32* %3, allign 4
+store i32 1, i32* %4, allign 4
+store i32 0, i32* %5, allign 4
+br label %compare
+
+compare: ; preds = %body, %entry
+
+%8 = load i32, i32* %5, align 4
+%9 = load i32, i32* %2, align 4
+%10 = icmp ult i32 %8, %9
+br i1 %10, label %body, label %exit
+
+body: ; preds: %compare
+
+%12 = load i32, i32* %3, align 4
+store i32 %12, i32* %6, align 4
+
+%13 = load i32, i32* %4, align 4
+store i32 %13, i32* %3, align 4
+
+%14 = load i32, i32* %6, align 4
+%15 = load i32, i32* %4, align 4
+%16 = add nsw i32 %15, %14
+
+store i32 %16, i32* %4, align 4
+br label %compare
+
+exit: ; preds: %body
 ```
+#### Обсуждение
+• Понятно, что классы всех инструкций (add, sub, gep, phi, ...) наследуются от базового класса Instruction.
+• Как бы вы спроектировали этот класс?
