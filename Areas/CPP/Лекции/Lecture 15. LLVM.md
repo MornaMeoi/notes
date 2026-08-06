@@ -359,3 +359,26 @@ exit: ; preds: %body
 #### Обсуждение
 • Понятно, что классы всех инструкций (add, sub, gep, phi, ...) наследуются от базового класса Instruction.
 • Как бы вы спроектировали этот класс?
+#### Представление инструкции
+```cpp
+class Instruction : public User, 
+										public ilist_node_with_parent<Instruction, BasicBlock>
+```
+```mermaid
+flowchart LR
+	Instruction["Instruction"]
+	User["User"]
+	Value["Value"]
+	INWP["ilist_node_with_parent"]
+	INode["ilist_node"]
+
+	Instruction --- User
+	User --- Value
+	Instruction --- INWP
+	INWP --- INode
+
+	classDef c fill:#4a90b8,stroke:#2c6a8a,stroke-width:1.5px,color:#fff
+	class Instruction,User,Value,INWP,INode c
+
+	linkStyle 0,1,2,3 marker-end:none
+```
