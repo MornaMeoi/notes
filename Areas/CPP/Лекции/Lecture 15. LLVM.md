@@ -51,7 +51,7 @@ define <span style="color: green;">i32</span> <span style="color: blue;">@fib</s
 • Инструкции
 
 define i32 @fib(i32) {
-<span style="color: brown;">; 1:</span> 
+<span style="color: gray;">; 1:</span> 
 	%2 = icmp ult i32 %0, 2
 	br i1 %2, label %9, label %3
 	
@@ -59,11 +59,39 @@ define i32 @fib(i32) {
 	<span style="color: brown;">%4 = add i32 %0, -1</span> 
 	<span style="color: brown;">%5 = call i32 @fib(i32 %4)</span> 
 	<span style="color: brown;">%6 = add i32 %0, -2</span> 
-	<span style="color: brown;">%7 = call i32 @fib(i32 %6)</span> 
-	<span style="color: brown;">%8 = add i32 %5, %7</span> 
-	<span style="color: brown;">br label %9</span>                   <span style="color: gray;">; terminator</span> 
+	<span style="color: brown;">%7 = call i32 @fib(i32 %6)</span>
+	<span style="color: brown;">%8 = add i32 %5, %7</span>
+<span style="color: brown;">br label %9</span>                   <span style="color: gray;">; terminator</span> 
 	
 <span style="color: gray;">; 9:</span> 
 	%10 = phi i32 \[%8, %3\], \[1, %1\]
 	ret i32 %10
 }
+#### LLVM - это SSA представление
+• Обычное представление
+```
+x = foo();
+y = x;
+x = bar();
+y = x + y;
+```
+• SSA
+```
+x.0 = foo();
+y.0 = x.0;
+x.1 = bar();
+y.1 = x.1 + y.0;
+```
+• Конечно, тут есть проблема. Как представить схождения управления?
+• Обычное представление
+```
+x = foo();
+if(x > 5) x = x + 1;
+x = x + 2;
+```
+• SSA
+```
+x.0 = foo();
+if(x.0 > 5) x.1 = x.0 + 1;
+x.2 = ? + 2;
+```
