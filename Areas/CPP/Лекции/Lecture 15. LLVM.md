@@ -1130,3 +1130,24 @@ if(auto* LC = dyn_cast<Constant>(LHS))
 		return Insert(Add, Name);
 	}
 ```
+#### Обсуждение
+• Выше упомянут dyn_cast, а не dynamic_cast.
+```cpp
+if(auto* LC = dyn_cast<Constant>(LHS))
+```
+• Что такое dyn_cast?
+## RTTI в стиле LLVM
+#### Домашнее задание: ParaCL compiler
+• Разработайте кодогенератор языка ParaCL (далее - парасил) в LLVM IR в объёме арифметика + if + while.
+• Скомпилированная программа должна считывать со стандартного ввода всё, что считывается, и печатать на стандартный вывод всё, что нужно распечатать.
+• Скрафтить хорошие тесты - важная часть задачи.
+• Эта домашняя работа следует за симулятором парасила из пятого семинара.
+• Надеюсь, все дошли в нём до высоких уровней?
+#### Литература
+• Information technology - Programming languages - C++, ISO/IEC 14882, 2017
+• Bjarne Stroustrup - The C++ Programming Language (4th Edition)
+• Davide Vandevoorde, Nicolai M. Josuttis - C++ Templates. The Complete Guide, 2nd edition, Addison-Wesley Professional, 2017
+• Chris Lattner - LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation, CGO\`2004
+• Mike Shah - Introduction to LLVM, Fosdem\`2018
+• Bridgers, Piovezan - LLVM IR Tutorial, EuroLLVM\`2019
+• Kaleidoscope language [tutorial](https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl01.html)
