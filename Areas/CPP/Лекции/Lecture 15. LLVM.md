@@ -109,7 +109,7 @@ x.2 = phi(x.0, x.1) + 2;
 • Типы
 • Метки
 • Базовые блоки
-• <span style="color: blue;">phi-узлы
+• <span style="color: blue;">phi-узлы</span>
 • Комментарии
 • Инструкции
 
@@ -130,3 +130,19 @@ define i32 @fib(i32) {
 	<span style="color: blue;">%10 = phi i32 [%8,</span>  %3<span style="color: blue;">], [1,</span>  %1<span style="color: blue;">]</span> 
 	ret i32 %10
 }
+#### Инструкции
+• Базовый LLVM IR содержит фиксированное количество платформенно-независимых инструкций.
+\<result\> = <span style="color: blue;">add</span> \<ty\> \<op1\>, \<op2\>
+\<result\> =<span style="color: blue;">icmp</span> \<cond\> \<ty\> \<op1\>, \<op2\>
+\<result\> = <span style="color: blue;">phi</span> \<ty\> \[ \<val0\>, \<label0\> \], ...
+<span style="color: blue;">br</span> i1 \<cond\>, label \<iftrue\>, label \<iffalse\>
+<span style="color: blue;">br</span> label \<dest\>
+• Добавление новой инструкции крайне болезненно и меняет биткод.
+#### Типы
+• Пустой тип: `void`
+• Скалярные типы: `i1`, `i8`, `i16`, ... , `half`, `float`, `double`
+• Векторные типы: `<10 x i32>`
+• Указатели: `i32*`, `i32 addrspace(5)*`
+• Массивы: `[10 x i32], [12 x [10 x float]]`
+• Структуры: `{i32, i32, float, i8`
+• Функции: `i32 (i32, i32)`
