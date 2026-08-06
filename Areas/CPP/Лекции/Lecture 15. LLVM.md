@@ -562,3 +562,272 @@ while (x < n) {
 print xmax;
 print cmax;
 ```
+Далее лектор запускает на интерпретаторе:
+```bash
+./build/ParaCLi tests-pcl/collatz/bench.pcl
+```
+На миллионе (1000000) интерпретатор завис более чем на 10 секунд.
+Далее на компиляторе:
+```bash
+./build/ParaCL tests-pcl/collatz/bench.pcl
+clang++ bench.pcl.ll ./pcl-lib/pcllib.cc
+```
+Для миллиона отработало мгновенно. Для пяти миллионов тоже достаточно быстро.
+#### Контекст
+• LLVM исходно проектировался как компилятор, способный работать в многозадачных режимах.
+• LLVMContext содержит все глобальные сущности. Например, типы.
+• Примитивные типы можно просто получить:
+```cpp
+llvm::Type::getInt32Ty(*currentContext)
+```
+• Более сложные типы конструируются из примитивных.
+```cpp
+// using FTPrint = void (int);
+Type* Tys[] = { getInt32Ty(*currentContext) };
+FunctionType* FTPrint =
+		FunctionType::get(getVoidTy(*currentContext), Tys, false);
+```
+#### Владение контекстом
+• Любая работа начинается с создания контекста, которое обычно тривильно.
+```cpp
+Context = new llvm::LLVMContext; // можно и без new
+```
+• У контекста стёрт конструктор копирования, поэтому его нельзя положить в контейнер вроде vector.
+• Означает ли это, что у нас нет возможности следить за его временем жизни автоматически?
+Далее лектор приводит пример:
+```cpp
+//-----------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//------------------------------------------------------------------------------
+//
+// Codegen.hpp -- code generation support
+// main design flaw: global code generator
+//
+//------------------------------------------------------------------------------
+
+#pragma once
+
+#include <map>
+#include <string>
+
+#include "llvm/ADT/APInt.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Value.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Target/TargetMachine.h"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Scalar/GVN.h"
+#include "llvm/Transforms/Utils.h"
+
+#include "INode.hpp"
+
+struct CodeGen {
+  llvm::LLVMContext Context_;
+  llvm::IRBuilder<> *Builder_;
+  llvm::Module *Module_;
+  std::map<std::string, llvm::Value *> NamedValues_;
+
+  // Function initialized in StartFunction, this is questionable design
+  // We need to call EndCurrentFunction mandatory
+  // Can we redesign it?
+  llvm::Function *Function_ = nullptr;
+
+  CodeGen(std::string Name)
+      : Builder_(new llvm::IRBuilder<>(Context_)),
+        Module_(new llvm::Module(Name, Context_)) {}
+
+  // assumption: extern void Name() { ..... }
+  void StartFunction(std::string Name);
+
+  void EndCurrentFunction() { Builder_->CreateRetVoid(); }
+
+  void SaveModule(std::string ModuleName);
+
+  llvm::Value *AddDeclRead(std::string Varname) {
+    auto *V = NamedValues_[Varname];
+    assert(V);
+    auto *Ty = static_cast<llvm::AllocaInst *>(V)->getAllocatedType();
+    return Builder_->CreateLoad(Ty, V, Varname.c_str());
+  }
+
+  llvm::Value *AddDeclWrite(std::string Varname, llvm::Value *Rhs) {
+    auto *V = NamedValues_[Varname];
+    assert(V);
+    return Builder_->CreateStore(Rhs, V);
+  }
+
+  void AddDecl(std::string Varname) {
+    auto &&BB = Function_->getEntryBlock();
+    auto Ty = llvm::Type::getInt32Ty(Context_);
+    llvm::IRBuilder<> TmpB(&BB, BB.begin());
+    auto *Alloca = TmpB.CreateAlloca(Ty, 0, Varname.c_str());
+    NamedValues_[Varname] = Alloca;
+  }
+
+  llvm::BasicBlock *StartIf(llvm::Value *CondV) {
+    llvm::BasicBlock *ThenBB = llvm::BasicBlock::Create(Context_, "then", Function_);
+    llvm::BasicBlock *MergeBB = llvm::BasicBlock::Create(Context_, "endif", Function_);
+    Builder_->CreateCondBr(CondV, ThenBB, MergeBB);
+    Builder_->SetInsertPoint(ThenBB);
+    return MergeBB;
+  }
+
+  void EndIf(llvm::BasicBlock *MergeBB) {
+    // assume we are now in ThenBB
+    Builder_->CreateBr(MergeBB);
+    Builder_->SetInsertPoint(MergeBB);
+  }
+
+  using WhileBlocksTy = std::pair<llvm::BasicBlock *, llvm::BasicBlock *>;
+
+  WhileBlocksTy StartWhile(llvm::Value *CondV) {
+    llvm::BasicBlock *BodyBB = llvm::BasicBlock::Create(Context_, "body", Function_);
+    llvm::BasicBlock *MergeBB = llvm::BasicBlock::Create(Context_, "endwhile", Function_);
+    Builder_->CreateCondBr(CondV, BodyBB, MergeBB);
+    Builder_->SetInsertPoint(BodyBB);
+    return std::make_pair(BodyBB, MergeBB);
+  }
+
+  void EndWhile(llvm::Value *CondV, WhileBlocksTy BBs) {
+    // assume we are now inside body
+    Builder_->CreateCondBr(CondV, BBs.first, BBs.second);
+    Builder_->SetInsertPoint(BBs.second);
+  }
+
+  llvm::Value *AddOperation(Node::Operation Op, llvm::Value *LeftV,
+                            llvm::Value *RightV);
+
+  llvm::Type *getInt32Ty() { return llvm::Type::getInt32Ty(Context_); }
+
+  llvm::Type *getVoidTy() { return llvm::Type::getVoidTy(Context_); }
+
+  void createFnDecl(llvm::FunctionType *FT, std::string Name) {
+    llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Name, Module_);
+  }
+
+  ~CodeGen() {
+    delete Builder_;
+    delete Module_;
+  }
+};
+
+CodeGen *createCodeGen(std::string Name);
+
+extern std::unique_ptr<CodeGen> GlobalGen;
+```
+И рассматривает драйвер:
+```cpp
+//-----------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//------------------------------------------------------------------------------
+//
+// driver.cpp -- main entry point
+//
+//------------------------------------------------------------------------------
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+
+#include "Codegen.hpp"
+#include "parser.hpp"
+
+Node::IScope *CurrentScope = nullptr;
+std::unique_ptr<CodeGen> GlobalGen = nullptr;
+
+static int CurrentInlinePos = 0;
+
+FILE *OpenFile(const char *Name) {
+  FILE *F = fopen(Name, "r");
+  if (!F) {
+    perror("Cannot open file");
+    throw std::runtime_error("No input file exists");
+  }
+  return F;
+}
+
+int main(int argc, char *argv[]) try {
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " file.pcl" << std::endl;
+    return 0;
+  }
+
+  auto fdeleter = [](FILE *f) { fclose(f); };
+
+  std::unique_ptr<FILE, decltype(fdeleter)> F(OpenFile(argv[1]), fdeleter);
+  yyin = F.get();
+  std::unique_ptr<Node::IScope> CurrentScopeOwner{createScope()};
+  CurrentScope = CurrentScopeOwner.get();
+
+#if (CODEGEN == 1)
+  GlobalGen.reset(createCodeGen("pcl.module"));
+  GlobalGen->StartFunction("__pcl_start");
+#endif
+
+  yyparse();
+
+#if (CODEGEN == 1)
+  // bad assumption that function is single
+  GlobalGen->EndCurrentFunction();
+
+  // save module to file
+  auto ModuleName = std::filesystem::path(argv[1]).filename().string() + ".ll";
+  std::cout << "Saving module to: " << ModuleName << "\n";
+  GlobalGen->SaveModule(ModuleName);
+#endif
+} catch (const std::exception &e) {
+  std::cerr << "Exception: " << e.what() << std::endl;
+} catch (...) {
+  std::cerr << "Exception unknown\n";
+}
+
+void PrintError(char const *Errmsg) {
+  std::cerr << "Error: " << Errmsg << " - Line " << yylineno << ", Column "
+            << CurrentInlinePos << std::endl;
+  throw std::runtime_error("parse error");
+}
+
+void BeginToken(char *t, int *yyinlinePos) {
+  yylloc.first_line = yylineno;
+  yylloc.first_column = *yyinlinePos;
+  yylloc.last_line = yylineno;
+  *yyinlinePos += strlen(t);
+  yylloc.last_column = *yyinlinePos;
+  CurrentInlinePos = *yyinlinePos;
+}
+```
+#### Модули
+• Итак, у нас есть контекст.
+• Далее мы используем его, чтобы создать модуль.
+```cpp
+Module = std::make_unique<llvm::Module>("pcl.module", Context);
+```
+• Модуль обозначает единицу трансляции. Скомпилируем fib.cc, и мы увидим:
+
+; ModuleID = 'fib.cc'
+source_filename = "fib.cc"
+target datalayout = какой-то layout
+target triple 
