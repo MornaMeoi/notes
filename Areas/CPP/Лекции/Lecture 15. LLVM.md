@@ -95,3 +95,38 @@ x.0 = foo();
 if(x.0 > 5) x.1 = x.0 + 1;
 x.2 = ? + 2;
 ```
+#### Явные phi-узлы
+• SSA
+```
+x.0 = foo();
+if(x.0 > 5) x.1 = x.0 + 1;
+x.2 = phi(x.0, x.1) + 2;
+```
+#### Основные термины LLVM IR
+• Ключевые слова
+• Глобальные символы
+• Локальные символы
+• Типы
+• Метки
+• Базовые блоки
+• <span style="color: blue;">phi-узлы
+• Комментарии
+• Инструкции
+
+define i32 @fib(i32) {
+<span style="color: gray;">; 1:</span> 
+	%2 = icmp ult i32 %0, 2
+	br i1 %2, label %9, label %3
+	
+<span style="color: gray;">; 3:</span> 
+	%4 = add i32 %0, -1
+	%5 = call i32 @fib(i32 %4)
+	%6 = add i32 %0, -2
+	%7 = call i32 @fib(i32 %6)
+	<span style="color: blue;">%8</span> = add i32 %5, %7
+	br label %9              <span style="color: gray;">; terminator</span> 
+	
+<span style="color: gray;">; 9:</span> 
+	<span style="color: blue;">%10 = phi i32 [%8,</span>  %3<span style="color: blue;">], [1,</span>  %1<span style="color: blue;">]</span> 
+	ret i32 %10
+}
