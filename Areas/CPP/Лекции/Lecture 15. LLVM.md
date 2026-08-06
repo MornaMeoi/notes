@@ -226,3 +226,31 @@ store i32 1, %fst
 										 <span style="color: blue;">[10 x i32]*</span> @fibarr, <span style="color: blue;">i64 0, i64 1</span> <span style="color: gray;">; OK</span>
 store i32 1, %fst
 ![[../../../_Meta/attachments/15.3.png]]
+#### GEP для структуры
+• Смоделируем своего рода структуру.
+```llvm
+; struct S { int x; double y; float z[10]; };
+%struct.S = { i32, double, [10 x float] }
+
+@x = %struct.S zeroinitializer
+
+define i32 @main() {
+	%eltptr = getlementptr %struct.S,
+												 %struct.S* @x, i32 0, i32 2, i64 3
+	store float 1.000000e+00, float* %eltptr
+}
+```
+К какому элементу идёт обращение через `eltptr`?
+#### Пишем голову цикла
+```llvm
+@fibarr = global [10 x i32] zeroinitializer
+
+define void @fill() {
+entry:
+	%f0 = getlementptr ([10 x i32], [10 x i32]* @fibarr, i64 0, i64 0)
+	%f1 = getlementptr ([10 x i32], [10 x i32]* @fibarr, i64 0, i64 1)
+	store i32 1, i32* %f0
+	store i32 1, i32* %f1
+	br 
+}
+```
