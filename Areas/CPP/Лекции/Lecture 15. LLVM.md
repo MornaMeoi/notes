@@ -146,3 +146,15 @@ define i32 @fib(i32) {
 • Массивы: `[10 x i32], [12 x [10 x float]]`
 • Структуры: `{i32, i32, float, i8`
 • Функции: `i32 (i32, i32)`
+#### Возвращаемся к числам Фибоначчи
+```llvm
+@fibarr = global [10 x i32] zeroinitializer
+
+.....
+	; fibarr[0] = 0; fibarr[1] = 1;
+	br label %for.cond
+	
+for.cond:
+	%i.0 = phi i64 [2, %entry], [%inc, %for.body]
+	%cmp = icmp ult i64 %i.0
+```
