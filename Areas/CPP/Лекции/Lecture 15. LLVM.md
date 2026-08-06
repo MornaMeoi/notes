@@ -826,8 +826,55 @@ void BeginToken(char *t, int *yyinlinePos) {
 Module = std::make_unique<llvm::Module>("pcl.module", Context);
 ```
 • Модуль обозначает единицу трансляции. Скомпилируем fib.cc, и мы увидим:
-
+```llvm
 ; ModuleID = 'fib.cc'
 source_filename = "fib.cc"
 target datalayout = какой-то layout
-target triple 
+target triple = "x86_64-pc-linux-gnu"
+```
+#### DataLayout и TargetTriple
+• Технически выставить после создания DataLayout и TargetTriple может быть неплохой идеей.
+```cpp
+Module->setTargetTriple("x86_64-unknown-unknown");
+```
+• В обычном кланге есть возможность задавать march или mcpu.
+• Поддержать во фронтенде PCL эти опции может быть хорошей идеей.
+• Немного странные правила DataLayout строчек можно посмотреть в официальной [документации](https://llvm.org/docs/LangRef.html#langref-datalayout).
+• Что ещё может быть в модуле?
+#### Модуль как мультиконтейнер
+• Интересный способ заглянуть в содержимое - это посмотреть итераторы.
+• <span style="color: blue;">Итератор по функциям: begin/end/rbegin/rend</span>.
+• Итератор по глобальным переменным: global_begin/global_end.
+• Итератор по алиасам: alias_begin/alias_end.
+• Итератор по косвенным вызовам: ifunc_begin/ifunc_end.
+• Итератор по метаданным: named_metadata_begin/named_metadata_end, etc...
+• Кроме того, для каждого поддержан range: aliases/globals, etc...
+```cpp
+for(auto&& g : Module->globals()) { // нечто с g
+```
+#### Функции
+• Функция создаётся после того, как создан её тип.
+```cpp
+auto* Int32Ty = llvm::Type::getInt32Ty(Context);
+
+// using scanty = int ();
+auto* ScanTy = llvm::FunctionType::get(Int32Ty, false);
+
+auto* ScanF = Function::Create(ScanTy, ExternalLinkage, "__pcl_scan", Module); 
+```
+• Мы создаём "функцию" и назначаем её в модуль.
+• Мы создаём "функцию", чтобы назначить её в модуль позднее:
+```cpp
+Module->getFunctionList().push_back(ScanF);
+```
+• Здесь используется тот факт, что функции - это интрузивный список.
+#### Базовые блоки
+• Чтобы начать вставку нам понадобится базовый блок.
+```cpp
+auto* BB = BasicBlock::Create(*Ctx, "entry", CurrentFunction);
+```
+• Имя и функция - необязательные параметры.
+• Ещё один параметр, четвёртый - это блок после которого вставлять (по умолчанию в конец).
+• Функция является родителем блока, но блок всегда может быть отвязан от функции через `removeFromParent` и вставлен в другую через `insertInto`.
+• Кроме того, у блока есть `eraseFromParent`, которая отвязывает его от родителя и стирает.
+Далее лектор рассуждает о том, что парсер должен быть отделён от кодгена и приводит пример:
