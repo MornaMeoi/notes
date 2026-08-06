@@ -166,3 +166,24 @@ for.body:
 	
 for.end:
 ```
+```mermaid
+flowchart TD
+	entry["entry block"]
+	cond["cond block"]
+	body["body block"]
+	exit["exit block"]
+
+	entry --> cond
+	cond --> body
+	body --> cond
+	cond --> exit
+
+	classDef c fill:#bfefff,stroke:#333,stroke-width:1px,color:#000
+	classDef e fill:#a9d4d4,stroke:#333,stroke-width:1px,color:#000
+	class entry,cond,body c
+	class exit e
+```
+#### Обсуждение
+• Теперь нам надо построить заполнение массива.
+• Наличие в языке таких типов как "указатель" предполагает некую модель памяти.
+• Разумно ли вносить на уровень общего для всех IR такие тонкости как alignment, padding, etc?
