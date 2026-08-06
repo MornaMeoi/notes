@@ -156,5 +156,13 @@ define i32 @fib(i32) {
 	
 for.cond:
 	%i.0 = phi i64 [2, %entry], [%inc, %for.body]
-	%cmp = icmp ult i64 %i.0
+	%cmp = icmp ult i64 %i.0, 10
+	br i1 %cmp, label %for.body, label %for.end
+	
+for.body:
+	; fibarr[i] = fibarr[i - 1] + fibarr[i - 2]
+	%inc = add i64 %i.0, 1
+	br label %for.cond
+	
+for.end:
 ```
