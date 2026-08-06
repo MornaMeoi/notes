@@ -383,7 +383,77 @@ flowchart LR
 	linkStyle 0,1,2,3 marker-end:none
 ```
 #### Идеология User / Value
-%1 = add i64 %0, 1 ; value
-%2 = add i64 %1, %1 ; user / value
-%3 = add i64 %1, %2 ; user
-• Инструкция, которая порождает Value - это и есть Value (по SSA)
+<span style="color: blue;">%1</span> = add i64 %0, 1 <span style="color: gray;">; value</span>
+<span style="color: red;">%2</span> = add i64 <span style="color: blue;">%1</span>, <span style="color: blue;">%1</span> <span style="color: gray;">; user / value</span>
+%3 = add i64 <span style="color: blue;">%1</span>, <span style="color: red;">%2</span> <span style="color: gray;">; user</span>
+• Инструкция, которая порождает Value - <span style="color: blue;">это и есть Value</span> (по SSA)
+• Value знает обо всех свои Users(Value\:\:use_iterator)
+• User знает о других своих операндах (User\:\:op_iterator)
+```cpp
+User::getOperand(i) // вернёт Value*
+```
+#### ilist: интрузивные списки
+• Вообще-то в идеологии C++ большинство стандартных контейнеров <span style="color: blue;">неинтрузивны</span>. То есть, объект, помещённый в контейнер, не знает, помещён он в контейнер или нет.
+• Увы, на идеологию LLVM лучше легли интрузивные списки. В таком списке сам элемент списка предоставляет механизмы prev/next.
+• Поскольку каждая инструкция является узлом интрузивного списка, она должна наследовать от `ilist_node`.
+• Благодаря этому допустимо сделать так:
+```cpp
+Instruction* subInst = addInst->getNextNode();
+```
+#### Представление базового блока
+```cpp
+class BasicBlock : public Value,
+									 public ilist_node_with_parent<BasicBlock, Function>
+```
+```mermaid
+flowchart LR
+	BasicBlock["BasicBlock"]
+	Value["Value"]
+	INWP["ilist_node_with_parent"]
+	INode["ilist_node"]
+
+	BasicBlock --- Value
+	BasicBlock --- INWP
+	INWP --- INode
+
+	classDef c fill:#4a90b8,stroke:#2c6a8a,stroke-width:1.5px,color:#fff
+	class BasicBlock,Value,INWP,INode c
+
+	linkStyle 0,1,2 marker-end:none
+```
+#### Представление функции
+```cpp
+class Function : public GlobalObject, public ilist_node<Function>
+```
+```mermaid
+flowchart TD
+	Function["Function"]
+	GlobalObject["GlobalObject"]
+	GlobalValue["GlobalValue"]
+	Constant["Constant"]
+	User["User"]
+	Value["Value"]
+	INode["ilist_node"]
+
+	Function --- GlobalObject
+	GlobalObject --- GlobalValue
+	GlobalValue --- Constant
+	Constant --- User
+	User --- Value
+	Function --- INode
+
+	classDef c fill:#4a90b8,stroke:#2c6a8a,stroke-width:1.5px,color:#fff
+	class Function,GlobalObject,GlobalValue,Constant,User,Value,INode c
+
+	linkStyle 0,1,2,3,4,5 marker-end:none
+```
+#### Функции в LLVM IR
+• Чтобы использовать функцию, её следует объявить.
+```llvm
+declare i8* @malloc(i32) ; вероятно это malloc из C standard library
+```
+• Далее она используется через `call`.
+• Также через `call` можно делать индиректные вызовы.
+```llvm
+%result = call i64 %binop(i64 %x, i64 %y)
+```
