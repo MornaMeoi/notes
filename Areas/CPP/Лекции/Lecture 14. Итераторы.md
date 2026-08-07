@@ -1433,3 +1433,12 @@ std::vector entries(start, fin); // vector<directory_entry>
 ```
 • Далее у каждого из `entries[i]` можно, в свою очередь, получить path и т.д.
 • Тут интересно, что directory_iterator предоставляет не только интерфейс итератора, но и интерфейс диапазона.
+• Имея путь, мы можем сделать итерацию по содержимому папки.
+```cpp
+std::filesystem::directory_iterator content{path};
+```
+• Интересно, что тут это не итератор, а обёртка.
+```cpp
+std::vector entries(content.begin(), content.end());
+```
+• Далее у каждого из 
