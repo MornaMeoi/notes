@@ -1212,17 +1212,19 @@ void Value::deleteValue() {
 #define HANDLE_MEMORY_VALUE(Name)                                               \
 		case Value::Name##Val:                                                      \
 			static_cast<DerivedUser*>(this)->DeleteValue(                             \
-				static_cast<DerivedUser*>(this));
+				static_cast<DerivedUser*>(this));                                       \
 			break;
 		
-#define HANDLE_CONSTANT(Name)
-		case Value::Name##Val:
-			llvm_unreachable("constants should be destroyed with destroyConstant");
-			breakl;
+#define HANDLE_CONSTANT(Name)                                                   \
+		case Value::Name##Val:                                                      \
+			llvm_unreachable("constants should be destroyed with destroyConstant");   \
+			break;
 		// И так далее
 	}
 }
 ```
+## Оптимизации и опять ParaCL
+
 #### Домашнее задание: ParaCL compiler
 • Разработайте кодогенератор языка ParaCL (далее - парасил) в LLVM IR в объёме арифметика + if + while.
 • Скомпилированная программа должна считывать со стандартного ввода всё, что считывается, и печатать на стандартный вывод всё, что нужно распечатать.
