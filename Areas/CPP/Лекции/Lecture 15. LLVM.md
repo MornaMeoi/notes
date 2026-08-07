@@ -1245,6 +1245,14 @@ clang++ addsub.pcl.ll -O2 -S -masm=intel -o addsub.pcl.s -mllvm --print-after-al
 ```
 Далее он рассматривает IR Dump и отмечает, что на блоке After SROA (Scalar Replacement Of Aggregates) код уже стал почти идеальным.
 #### Жизнь инструкции
+![[../../../_Meta/attachments/15.4.png]]
+#### Работа с IR и утилиты llvm toolchain
+• Применим вручную оптимизацию tail-call elimination:
+```bash
+llvm-as fib_handwrtitten.ll -o fib_handwritten.bc
+opt -tailcallelim 
+```
+
 #### Домашнее задание: ParaCL compiler
 • Разработайте кодогенератор языка ParaCL (далее - парасил) в LLVM IR в объёме арифметика + if + while.
 • Скомпилированная программа должна считывать со стандартного ввода всё, что считывается, и печатать на стандартный вывод всё, что нужно распечатать.
