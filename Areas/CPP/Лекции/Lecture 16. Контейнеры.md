@@ -67,5 +67,6 @@ forward_list<int> snd = { 10, 20, 30 };
 auto it = fst.begin(); // указывает на 1
 
 // перемещаем second в начало first, it указывает на 1
-
+fst.splice_after(fst.before_begin(), snd);
 ```
+![[../../../_Meta/attachments/16.4.png]]
