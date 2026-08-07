@@ -35,3 +35,37 @@ for(int i = 0; i != N; ++i) {
 \**Но оставьте комментарий в коде, если вы его действительно* ***выберете***.
 #### Деки против векторов
 #### Вектора
+• Доступ к элементу O(1)
+• Вставка в конец аморт. O(1)+
+• Вставка в начало O(N)
+• Вставка в середину O(N)
+• Вычисление размера O(1)
+• <span style="color: cyan;">Есть гарантии по памяти</span>
+• Есть reserve/capacity
+#### Деки
+• Доступ к элементу O(1)
+• <span style="color: cyan;">Вставка в конец O(1)</span>
+• <span style="color: cyan;">Вставка в начало O(1)</span>
+• Вставка в середину O(N)
+• Вычисление размера O(1)
+• Нет гарантий по памяти
+• <span style="color: cyan;">Нет необходимости в reserve/capacity</span>
+#### Обсуждение
+• <span style="color: brown;">"deque is the data structure of choice when most insertions and deletions take place at the beginning or at the end of the sequence"</span>
+• А как бы вы реализовали deque?
+#### Узловые контейнеры
+• deque - произвольный доступ, быстрая вставка в начало и в конец.
+• forward_list - последовательный доступ, быстрая вставка в любое место.
+• list - последовательный доступ, быстрая вставка в любое место, итерация в обе стороны.
+![[../../../_Meta/attachments/16.2.png]]
+#### Особая возможность списков: сплайс
+![[../../../_Meta/attachments/16.3.png]]
+#### Сплайс для списков: простая форма
+```cpp
+forward_list<int> fst = { 1, 2, 3 };
+forward_list<int> snd = { 10, 20, 30 };
+auto it = fst.begin(); // указывает на 1
+
+// перемещаем second в начало first, it указывает на 1
+
+```
