@@ -1441,4 +1441,56 @@ std::filesystem::directory_iterator content{path};
 ```cpp
 std::vector entries(content.begin(), content.end());
 ```
-• Далее у каждого из 
+• Предположим, что нужно написать программу, которая брала бы рабочую папку и искала всё содержимое в её подпапках первого уровня.
+#### Обход первого уровня: первый вариант
+• Первый вариант довольно прост.
+```cpp
+std::vector<directory_entry> contents(directory_entry d);
+
+auto files_in_subdirs() {
+	std::filesystem::directory_iterator start{"."};
+	std::vector<std::filesystem::directory_entry> res;
+	for(auto&& item : start)
+		if(item.is_directory()) {
+			auto ents = contents(item);
+			res.insert(res.end(), ents.begin(), ents.end());
+		}
+	return res;
+}
+```
+#### Обход первого уровня: проблема
+• Но в первом варианте явно есть ненужное копирование
+```cpp
+if(item.is_directory()) {
+	auto ents = contents(item);
+	res.insert(res.end(), ents.begin(), ents.end()); // copy
+} // тут ents умрёт
+```
+• Мы можем его улучшить, сделав move-итераторы.
+```cpp
+res.insert(res.end(),
+					 std::make_move_iterator(ents.begin()),
+					 std::make_move_iterator(ents.end())); // move
+```
+• Эти итераторы работают вполне предсказуемо, заменяя копирование перемещением.
+#### Некая двойственность
+• Мы можем сделать перемещение через итераторы к стандартному алгоритму
+```cpp
+std::copy(std::make_move_iterator(src.begin()),
+					std::make_move_iterator(src.end()),
+					dst.begin());
+```
+• Или через специализированный алгоритм
+```cpp
+std::move(src.begin(), src.end(), dst.begin());
+```
+• Обратите внимание на прекрасную перегрузку move.
+• Как бы вы предпочли сделать? Как бы вы учли move-итераторы в вашей SFINAE-реализации для почти std::copy?
+#### Литература
+• Information technology - Programming languages - C++, ISO/IEC 14882, 2017
+• Bjarne Stroustrup - The C++ Programming Language (4th Edition)
+• Scott Meyers - Effective STL, 50 specific ways to improve your use of the standard template library, 2001
+• Scott Meyers - Effective Modern C++, O'Reilly, 2014
+• Davide Vandevoorde, Nicolai M. Josuttis - C++ Templates. The Complete Guide, 2nd edition Addison-Wesley Professional, 2017
+• Casey Carter - Iterator Haiku, CppCon, 2016
+• Patrick Niedzelski - Building and Extending the Iterator Hierarchy in a Modern, Multicore World, CppCon, 2016
