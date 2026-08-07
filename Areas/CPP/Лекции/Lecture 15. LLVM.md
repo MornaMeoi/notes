@@ -1250,9 +1250,48 @@ clang++ addsub.pcl.ll -O2 -S -masm=intel -o addsub.pcl.s -mllvm --print-after-al
 • Применим вручную оптимизацию tail-call elimination:
 ```bash
 llvm-as fib_handwrtitten.ll -o fib_handwritten.bc
-opt -tailcallelim 
+opt -tailcallelim fib_handwritten.bc -o fibopt.bc
+llvm-dis fibopt.bc -o fibopt.ll
 ```
-
+• Можно подать на утилиту opt различные опции, например, -debug, чтобы посмотреть лог работы или -dot-cfg, чтобы сбросить графы.
+• IR после каждой из оптимизаций на O2 можно посмотреть так:
+```bash
+llc -O2 --print-after-all fib_handwritten.ll
+```
+• LLVM 11 делает более 100 высокоуровневых оптимизаций.
+#### Модульность llvm toolchain: clang
+• LLVM - это библиотека, проводящая работа над LLVM IR и способная грузить, в свою очередь, библиотеки бэкендов.
+• Для того, чтобы вся конструкция заработала как сишный компилятор, используется фронтенд clang.
+• Команда для оптимизатора напрямую:
+```bash
+llc -O2 --print-after-all fib_handwritten.ll
+```
+• Команда для clang с указанием пробросить оптимизатору:
+```bash
+clang -O2 -mllvm --print-after-all -x ir fib_handwritten.ll
+```
+#### Структура
+```bash
+clang -mllvm --debug-pass=Structure -O2 fib.c -S -emit-llvm
+```
+• Эта команда показывает дерево всех фаз оптимизации и опции для каждой из их групп.
+```
+ModulePass Manager
+	Force set function attributes
+	Infer set function attributes
+	Inerprocedural Sparse Conditional Constant Propagation
+	Called Value Propagation
+	Global Variable Optimizer
+	FunctionPass Manager
+		Dominator Tree Construction
+		Promote Memory to Register
+	Dead Argument Elimination
+	FunctionPass Manager
+		Dominator Tree Construction
+		Basic Alias Analysis (stateless AA impl)
+....
+```
+Далее лектор на примере тех же чисел collatz показывает, что благодаря LLVM ParaCL работает р
 #### Домашнее задание: ParaCL compiler
 • Разработайте кодогенератор языка ParaCL (далее - парасил) в LLVM IR в объёме арифметика + if + while.
 • Скомпилированная программа должна считывать со стандартного ввода всё, что считывается, и печатать на стандартный вывод всё, что нужно распечатать.
