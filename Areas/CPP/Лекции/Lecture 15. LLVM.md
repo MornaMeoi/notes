@@ -1137,6 +1137,27 @@ if(auto* LC = dyn_cast<Constant>(LHS))
 ```
 • Что такое dyn_cast?
 ## RTTI в стиле LLVM
+#### Допустим, мы не хотим RTTI
+• Предположим, у нас есть некая иерархия:
+```cpp
+struct Base; // abstract
+struct DerivedLeft : Base; // abstract
+struct DerivedRight : Base;
+struct MostDerivedL1 : DerivedLeft;
+struct MostDerivedL2 : DerivedLeft;
+struct MostDerivedR : DerivedRight;
+```
+• Это нечто проде узлов в иерархии ParaCL.
+• Мы можем завести виртуальные деструкторы. Но для узлом у нас, скорее всего, уже есть некий enum.
+```cpp
+enum BaseId {
+	DerivedRightId,
+	MostDerivedL1Id,
+	MostDerivedL2Id,
+	MostDerivedRId
+};
+```
+
 #### Домашнее задание: ParaCL compiler
 • Разработайте кодогенератор языка ParaCL (далее - парасил) в LLVM IR в объёме арифметика + if + while.
 • Скомпилированная программа должна считывать со стандартного ввода всё, что считывается, и печатать на стандартный вывод всё, что нужно распечатать.
