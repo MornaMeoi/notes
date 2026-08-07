@@ -1324,5 +1324,7 @@ cross_copy(lst.begin(), lst.end(), std::inserter(vec, vec.begin() + 3));
 	• второй итератор достижим из первого
 #### Задача: валиден ли диапазон?
 ```cpp
-std::
+std::istream_iterator<string> beg(ifstream("in.txt")), end;
+cross_copy(beg, end, std::ostream_iterator<string>(ofstream("out.txt")));
 ```
+Лектор отмечает, что `ifstream("in.txt")` умирает в конце выражения.
