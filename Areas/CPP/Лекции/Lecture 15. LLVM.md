@@ -1148,7 +1148,7 @@ struct MostDerivedL2 : DerivedLeft;
 struct MostDerivedR : DerivedRight;
 ```
 • Это нечто проде узлов в иерархии ParaCL.
-• Мы можем завести виртуальные деструкторы. Но для узлом у нас, скорее всего, уже есть некий enum.
+• Мы можем завести виртуальные деструкторы. Но для узлом у нас, скорее всего, уже есть некий enum, и мы не хотели бы дублировать то же в RTTI.
 ```cpp
 enum BaseId {
 	DerivedRightId,
@@ -1157,7 +1157,72 @@ enum BaseId {
 	MostDerivedRId
 };
 ```
-
+#### Заводим волшебный classof
+• База - это всегда база.
+```cpp
+struct Base {
+	static inline bool classof(Base const*) { return true; }
+	BaseId getValueID() const { return Id; }
+};
+```
+• Тут чуть сложнее (допускаем, что везде есть getValueId).
+```cpp
+struct DerivedRight : Base {
+	static inline bool classof(DerivedRight const*) { return true; }
+	
+	static inline bool classof(Base const* B) {
+		switch(B->getValueID()) {
+			case DerivedRightId:
+			case MostDerivedRId:
+				return true;
+			default:
+				return false;
+		}
+	}
+};
+```
+#### Теперь будет работать isa, dyn_cast, etc
+• Простейший шаблонный метод
+```cpp
+template<typename To, typename From>
+bool isa(From const& f) { return To::classof(&f); }
+```
+• В итоге,  в LLVM (а вы уже поняли, что речь про LLVM) работает
+```cpp
+if(isa<Function>(myVal)) { // ....
+```
+• Аналогично работает `dyn_cast`: возвращает либо указатель, либо `nullptr`.
+```cpp
+if(auto* AI = dyn_cast<AllocationInst>(Val)) { // ....
+```
+• Его контролируемый вариант `cast`: либо кастует, либо `abort`.
+#### Обсуждение
+• Обратите внимание: в нетривиальной иерархии у нас нет ни одного виртуального деструктора.
+• Как мы будем удалять по указателю на базовый класс?
+#### Ответ: ужасно
+```cpp
+void Value::deleteValue() {
+	switch(getValueID()) {
+	
+#define HANDLE_VALUE(Name)                                                      \
+		case Value::Name##Val:                                                      \
+			delete static_cast<Name*>(this);                                          \
+			break;
+		
+#define HANDLE_MEMORY_VALUE(Name)                                               \
+		case Value::Name##Val:                                                      \
+			static_cast<DerivedUser*>(this)->DeleteValue(                             \
+				static_cast<DerivedUser*>(this));
+			break;
+		
+#define HANDLE_CONSTANT(Name)
+		case Value::Name##Val:
+			llvm_unreachable("constants should be destroyed with destroyConstant");
+			breakl;
+		// И так далее
+	}
+}
+```
 #### Домашнее задание: ParaCL compiler
 • Разработайте кодогенератор языка ParaCL (далее - парасил) в LLVM IR в объёме арифметика + if + while.
 • Скомпилированная программа должна считывать со стандартного ввода всё, что считывается, и печатать на стандартный вывод всё, что нужно распечатать.
