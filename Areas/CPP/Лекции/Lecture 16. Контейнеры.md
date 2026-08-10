@@ -70,3 +70,13 @@ auto it = fst.begin(); // указывает на 1
 fst.splice_after(fst.before_begin(), snd);
 ```
 ![[../../../_Meta/attachments/16.4.png]]
+#### Сплайс для списков: сложная форма
+```cpp
+// forward_list<int> fst = {10, 20, 30, 1, 2, 3};
+// forward_list<int> snd = {};
+// it указывает на 1
+
+// перекидываем элементы со второго по it в список second
+snd.splice_after(snd.before_begin(), fst, fst.begin(), it);
+```
+![[../../../_Meta/attachments/16.5.png]]
