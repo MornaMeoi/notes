@@ -92,3 +92,5 @@ fst.splice_after(fst.before_begin(), snd, snd.begin());
 ![[../../../_Meta/attachments/16.6.png]]
 #### Обсуждение
 • Какие вы видите применения спискам?
+#### Идея контейнерных адаптеров
+![[../../../_Meta/attachments/16.7.png]]
