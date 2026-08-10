@@ -80,3 +80,15 @@ fst.splice_after(fst.before_begin(), snd);
 snd.splice_after(snd.before_begin(), fst, fst.begin(), it);
 ```
 ![[../../../_Meta/attachments/16.5.png]]
+#### Сплайс для списков: средняя форма
+```cpp
+// forward_list<int> fst = { 10, 1, 2, 3 };
+// forward_list<int> snd = { 20, 30 };
+// it указывает на 1
+
+// все элементы второго списка, начиная со второго, в первый
+fst.splice_after(fst.before_begin(), snd, snd.begin());
+```
+![[../../../_Meta/attachments/16.6.png]]
+#### Обсуждение
+• Какие вы видите применения спискам?
