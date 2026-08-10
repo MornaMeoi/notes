@@ -94,3 +94,35 @@ fst.splice_after(fst.before_begin(), snd, snd.begin());
 • Какие вы видите применения спискам?
 #### Идея контейнерных адаптеров
 ![[../../../_Meta/attachments/16.7.png]]
+#### Виды адаптеров
+• stack - LIFO стек над последовательным контейнером.
+```cpp
+template<class T, class Container = deque<T>> class stack;
+```
+• queue - FIFO очередь над последовательным контейнером.
+```cpp
+template<class T, class Container = deque<T>> class queue;
+```
+• priority_queue - очередь с приоритетами (как binary heap) над последовательным контейнером.
+```cpp
+template<class T,
+				 class Container = vector<T>,
+				 class Compare = less<typename Container::value_type>>
+class priority_queue;
+```
+#### Case study: алгоритм Прима
+```cpp
+pq.push(std::make_pair(first(G), src)); // first(G)
+
+while(!pq.empty()) {
+	auto elt = pq.top().second; pq.pop();
+	if(mst[elt]) continue;                // mst[v]
+	for(auto e : adjacent(G, elt)) {      // adjacent(G, v)
+		w = wight(G, e); v = tip(G, e);     // weight(G,e); tip(G,e)
+		if(!mst[elt] && key[v] < w) {       // key[v]
+			key[v] = w; parent[v] = u;        // parent[v]
+			pq.push(std::make_pair(w, v));
+		}
+	}
+}
+```
