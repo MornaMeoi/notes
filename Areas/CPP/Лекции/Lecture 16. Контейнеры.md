@@ -194,5 +194,43 @@ foo(bstr<span style="color: blue;">.c_str()</span>);
 #### Шаблон класса строки
 • Представим (это не так), что строка была бы устроена вот так:
 ```cpp
-template<typen
+template<typename CharT> class basic_string { /*....*/ };
 ```
+• Определения для удобства:
+```cpp
+typedef basic_string<char> string;
+typedef basic_string<u16char_t> u16string;
+typedef basic_string<u32char_t> u32string;
+typedef basic_string<wchar_t> wstring;
+```
+• Что бросается в глаза?
+#### Характеристики типов
+• Есть много вопросов, ответы на которые разные для разных строк с разными типами символов. Разумно свести всё это в класс
+```cpp
+template<typename CharT> class char_traits;
+```
+• Основные методы:
+• `assign`, `eq`, `lt`, `move`, `compare`, `find`, `eof`, ....
+```cpp
+template<typename CharT, typename Traits = std::char_traits<CharT>>
+class basic_string {
+```
+• К слову, а является ли способ выделения памяти характеристикой символа?
+#### Аллокаторы
+• Выделение памяти абстрагирует аллокатор. Стандартный аллокатор сводится к malloc.
+```cpp
+template<typename CharT,
+				 typename Traits = std::char_traits<CharT>,
+				 typename Allocator = std::allocator<CharT>>
+class basic_string { /*....*/ }
+```
+• К слову, полный шаблон вектора тоже выглядит не вполне очевидно:
+```cpp
+template<typename T, typename Allocator = std::allocator<T>>
+class vector { /*....*/ }
+```
+#### Обсуждение
+• Следующие вопросы не слишком логически связаны.
+• Как, по вашему, выглядит аллокатор для `std::list`?
+• Как вы думаете, строка должна иметь методы вроде `reserve` и `capacity`?
+• Ну и, раз уж мы вынесли строку в отдельный класс, что вы думаете о специальных интерфейсах для неё?
