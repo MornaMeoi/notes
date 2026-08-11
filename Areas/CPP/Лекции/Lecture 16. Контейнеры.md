@@ -262,3 +262,22 @@ szt hpos = s.find("H", ellp);
 assert(hpos == std::string::npos);
 ```
 ![[../../../_Meta/attachments/16.9.png]]
+#### Проблема статических строк
+• Что вы думаете об использовании константных статических строк?
+```cpp
+static const std::string kName = "oh literal, my literal";
+// .....
+int foo(const std::string& arg);
+// .....
+foo(kName);
+```
+#### Решение: string_view(C++17)
+• `string_view` - это невладеющий указатель на строку.
+```cpp
+static std::string_view kName = "oh literal, my literal";
+// .....
+int foo(std::string_view arg);
+// .....
+foo(kName);
+```
+• Здесь нет ни heap indirection, ни создания временного объекта.
