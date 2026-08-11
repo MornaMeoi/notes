@@ -234,3 +234,31 @@ class vector { /*....*/ }
 • Как, по вашему, выглядит аллокатор для `std::list`?
 • Как вы думаете, строка должна иметь методы вроде `reserve` и `capacity`?
 • Ну и, раз уж мы вынесли строку в отдельный класс, что вы думаете о специальных интерфейсах для неё?
+#### Поиск в строках
+• Строки предлагают эффективные специальные возможности поиска в них.
+```cpp
+string s = "Hello";
+
+unsigned long notfound = s.find("bye");
+assert(notfound == std::string::npos);
+
+unsigned long ellp = s.find("ell");
+unsigned long hpos = s.find("H", ellp);
+assert(hpos == std::string::npos);
+```
+![[../../../_Meta/attachments/16.8.png]]
+• Кто видит возможную проблему в этом коде?
+• Но использование этих возможностей таит сюрпризы:
+```cpp
+using szt = std::string::size_type;
+
+string s = "Hello";
+
+szt notfound = s.find("bye");
+assert(notfound == std::string::npos);
+
+szt ellp = s.find("ell");
+szt hpos = s.find("H", ellp);
+assert(hpos == std::string::npos);
+```
+![[../../../_Meta/attachments/16.9.png]]
