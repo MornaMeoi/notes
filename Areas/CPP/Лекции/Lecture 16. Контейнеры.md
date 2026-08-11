@@ -171,11 +171,11 @@ auto s3 = s1 & s2; // s3 = 0xf000
 
 char astr\[\] = "hello";
 char bstr\[15\];
-int alen = std::strlen(astr);
+int alen = <span style="color: blue;">std::strlen</span>(astr);
 assert(alen == 5);
-std::strcpy(bstr, astr);
-std::strcat(bstr, ", world!");
-res = std::strcmp(astr, bstr);
+<span style="color: blue;">std::strcpy</span>(bstr, astr);
+<span style="color: blue;">std::strcat</span>(bstr, ", world!");
+res = <span style="color: blue;">std::strcmp</span>(astr, bstr);
 assert(res < 0);
 foo(bstr);
 
@@ -184,10 +184,10 @@ using std::string;
 
 string astr = "hello";
 string bstr;
-int alen = astr.length();
+int alen = <span style="color: blue;">astr.length();</span>
 assert(alen == 5);
-bstr = astr;
-bstr += ", world!";
-res = astr.compare(bstr);
+<span style="color: blue;">bstr = astr;</span>
+<span style="color: blue;">bstr += ", world!";</span>
+res = <span style="color: blue;">astr.compare(bstr);</span>
 assert(res < 0);
-foo(bstr.c_str());
+foo(bstr<span style="color: blue;">.c_str()</span>);
