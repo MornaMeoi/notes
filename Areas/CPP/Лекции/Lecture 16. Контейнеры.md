@@ -191,3 +191,8 @@ assert(alen == 5);
 res = <span style="color: blue;">astr.compare(bstr);</span>
 assert(res < 0);
 foo(bstr<span style="color: blue;">.c_str()</span>);
+#### Шаблон класса строки
+• Представим (это не так), что строка была бы устроена вот так:
+```cpp
+template<typen
+```
