@@ -165,3 +165,29 @@ auto s3 = s1 & s2; // s3 = 0xf000
 #### Обсуждение: поговорим о строках
 • Почему специальный `std::string`, а не `vector<char>`?
 • Важная ремарка: формально `std::string` - это непрерывный контейнер, имеющий с вектором много общего.
+#### Строки: базовая функциональность
+\#include \<cstring\>
+\#include \<cassert\>
+
+char astr\[\] = "hello";
+char bstr\[15\];
+int alen = std::strlen(astr);
+assert(alen == 5);
+std::strcpy(bstr, astr);
+std::strcat(bstr, ", world!");
+res = std::strcmp(astr, bstr);
+assert(res < 0);
+foo(bstr);
+
+\#include \<string\>
+using std::string;
+
+string astr = "hello";
+string bstr;
+int alen = astr.length();
+assert(alen == 5);
+bstr = astr;
+bstr += ", world!";
+res = astr.compare(bstr);
+assert(res < 0);
+foo(bstr.c_str());
