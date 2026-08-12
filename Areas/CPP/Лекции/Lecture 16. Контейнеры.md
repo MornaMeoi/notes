@@ -289,3 +289,54 @@ foo(kName);
 • compare
 • find
 • data
+```cpp
+std::string str = "    trim me  ";
+str::string_view sv = str;
+
+auto trimfst = sv.find_first_not_of(" ");;
+auto minsz = std::min(trimfst, sv.size());
+
+sv.remove_prefix(minsz);
+
+auto trimlst = sv.find_last_not_of(" ");
+auto sz = sv.size() - 1;
+minsz = std::min(trimlst, sz);
+
+sv.remove_suffix(sz - minsz);
+```
+#### Views: идея для span (C++20)
+• `std::span` для одномерных массивов то же, что `string_view` для строк.
+```cpp
+int arr[4] = {1, 2, 3, 4}; // просто данные
+std::array<int, 4> = {1, 2, 3, 4}; // копирование до main
+```
+• span решает эту проблему.
+```cpp
+std::span<int, 4> arr = {1, 2, 3, 4}; // просто данные
+```
+• По умолчанию, второй параметр N - это `std::dynamic_extent`/
+```cpp
+std::span<int> dynarr(arr); // неизвестный размер
+```
+• Разумеется, у него куда более простой интерфейс, чем у string view.
+#### Обсуждение
+• Хватит ли нам последовательных контейнеров?
+## Ассоциативные контейнеры
+#### Смысл ассоциативности
+• Вектора индексированы целыми числами и позволяют сопоставить целое число хранимому значению.
+```cpp
+vector<T> v; // int -> T
+```
+• Как сделать произвольное отображение `T -> U`?
+#### Ассоциативный массив
+• Основная идея ассоциативного массива - это контейнер unordered map.
+```cpp
+template<
+	typename Key, typename T,
+	typename Hash = std::hash<Key>,
+	typename KeyEqual = std::equal_to<Key>,
+	typename Allocator = std::allocator<std::pair<const Key, T>>
+> class unordered_map;
+```
+• Здесь важными являются два отношения: отношение equals и, собственно, hash-функция.
+• При этом, ключи уникальны, и мы можем менять значения, но не ключи.
