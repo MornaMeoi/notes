@@ -419,8 +419,36 @@ for(aito it = m.begin(); it != m.end(); ++it)
 ```
 • Можно итерироваться внутри бакета, указав его номер.
 ```cpp
-f
+for(int i = 0; i < m.bucket_count(); ++i) {
+	for(auto it = m.begin(); it != m.end(i); ++it)
 ```
+• В обоих случаях вам доступен только forward iterator.
+• Как бы вы написали адаптор, чтобы позволить второй вариант через range based for?
+Пример с godbolt:
+```cpp
+#include <iostream>
+#include <unordered_map>
+
+int main() {
+	std::unordered_map<int, int> m;
+	m.reserve(10);
+	m.max_load_factor(10.0);
+	for(int i = 0; i < 100; ++i)
+		m.insert(std::make_pair(i, i));
+	
+	for(auto it = m.begin(); it != m.end(); ++it)
+		std::cout << it->first << " ";
+	std::cout << std::endl;
+	
+	for(int i = 0; i < m.bucket_count(); ++i) {
+		std::cout << "Bucket #" << i << std::endl;
+		for(auto it = m.begin(i); it != m.end(i); ++it)
+			std::cout << it->first; << " ";
+		std::cout << std::endl;
+	}
+}
+```
+Ну и далее в первом выводе видно, что все числа перемешаны, а в дальнейших видно, как они раскиданы по бакетам.
 #### Представление в памяти
 • На самом деле, в растространённых реализациях (libstdc++, etc) таблица представлена списком элементов, каждый из которых хранит свой хеш и вектором указателей на начало блока.
 • Стандарт устроен так, что это практически единственный способ выполнить все его ограничения.
