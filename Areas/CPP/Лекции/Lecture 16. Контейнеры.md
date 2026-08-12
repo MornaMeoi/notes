@@ -281,3 +281,11 @@ int foo(std::string_view arg);
 foo(kName);
 ```
 • Здесь нет ни heap indirection, ни создания временного объекта.
+#### Базовые операции над string_view
+• remove_prefix
+• remove_suffix
+• copy
+• substr
+• compare
+• find
+• data
