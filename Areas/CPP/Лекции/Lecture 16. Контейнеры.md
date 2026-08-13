@@ -580,6 +580,7 @@ auto orbit(T num, RandIt gensbeg, RandIt gensend) {
 }
 
 int main() {
+	std::vector gens = {Z7{3}, Z7{5}};
 }
 ```
 #### Обсуждение
