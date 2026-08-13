@@ -510,7 +510,66 @@ auto& x = it->second;
 • Особый вид `unordered_map`, который хранит только ключи называется `unordered_set`.
 • Вы можете рассматривать `unordered_set` как массив с дешёвым поиском из уникальных элементов.
 ```cpp
-std::unordered_set s
+std::unordered_set s = {1, 2, 2, 2, 1}; // = {1, 2}
+```
+• Поддержка инварианта уникальности и поиска (в случае вектора нужна сортированность) дешевле, чем для вектора.
+#### Case study: орбита в группе
+• Группой называется множество элементов с групповой операцией над ними.
+• Например, группа $\{Z_7, \times\}$ это числа $\{1 \dots 6\}$ с операцией умножения $\bmod 7$.
+• Зададимся генерирующими элементами группы, например $\{3, 5\}$.
+• Тогда у любого элемента будет **орбита**: все элементы, которые можно получить, умножая его на генераторы, умножая поличшиеся результаты на генераторы и т.д.
+• Естественный контейнер для хранения орбиты - это `unordered_set`, т.к. вектор при вставке придётся пересортировывать и удалять дубликаты.
+Пример из гита:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Simplest example: blank square on the screen
+// This example also show how to use GLFW library which is rather standard
+// Note really short time to first triangle (quad in this case)
+//
+// cl /EHsc ogl-simplest.cc /link glfw3dll.lib opengl32.lib
+//
+//-------------------------------------------------------------------------------
+
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <unordered_set>
+#include <vector>
+
+struct Z7 {
+	int val;
+	Z7(int v = 0) : val(v % 7) {}
+	operator int() const { return val; }
+	auto operator <=>(const Z7&) const = default;
+};
+
+namespace std {
+template<> struct hash<Z7>  {
+	std::size_t operator()(Z7 K) const {
+		std::hash<int> h;
+		return h(K.val);
+	}
+};
+} // namespace std
+
+Z7 operator*(Z7 lhs, Z7 rhs) { return {(lhs.val * rhs.val) % 7}; }
+
+template<typename T, typename RandIt>
+auto orbit(T num, RandIt gensbeg, RandIt gensend) {
+	std::unordered_set<T> orbit;
+	std::vector<T> next = {num};
+	while(!next.empty()) {
+		std::vector<T> tmp{};
+		orbit.insert
+	}
+}
 ```
 #### Обсуждение
 • Что вы думаете про правила инвалидации итераторов? Какими они должны быть для unordered maps?
