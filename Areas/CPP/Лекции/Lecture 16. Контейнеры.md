@@ -567,8 +567,19 @@ auto orbit(T num, RandIt gensbeg, RandIt gensend) {
 	std::vector<T> next = {num};
 	while(!next.empty()) {
 		std::vector<T> tmp{};
-		orbit.insert
+		orbit.insert(next.begin(), next.end());
+		for(const auto& elem : next)
+			for(auto igen = gensbeg; igen != gensend; ++igen)
+				if(auto newelem = (*igen) * elem; orbit.count(newelem) == 0) {
+					std::cout << elem << " * " << *igen << " = " << newelem << std::endl;
+					tmp.push_back(newelem);
+				}
+		next.swap(tmp);
 	}
+	return orbit;
+}
+
+int main() {
 }
 ```
 #### Обсуждение
