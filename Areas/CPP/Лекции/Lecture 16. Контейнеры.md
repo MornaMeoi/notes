@@ -374,16 +374,6 @@ size_t operator()(const S& s) const noexcept {
 }
 ```
 • Это работает всегда. Но это boost, его надо затаскивать в проект.
-#### Требования к предикату сравнения
-• Общая концепция называется strict weak ordering.
-• Она включает:
-	• Антисимметричность: $pred(x, y) \Rightarrow \neg pred(y, x)$
-	• Транзитивность: $pred(x, y) \land pred(y, z) \Rightarrow pred(x, z)$
-	• Иррефлексивность: $\neg pred(x, x)$
-	• Транзитивность эквивалентности:
-	$eq(x, y) \equiv \neg pred(x, y) \land \neg pred(y, x) \vdash eq(x, y) \land eq(y, z) \Rightarrow eq(x, z)$
-• Она же распространяется на предикаты в алгоритмах сортировки и т.д.
-• Математическая разминка: пусть $(a + ib < c + id) \Leftrightarrow (a < c) \land (b > d)$ является ли это strict weak ordering для комплексных чисел?
 #### Представление в памяти*
 • О хеш-таблицах можно думать как о массиве корзин (buckets), каждая из которых содержит элементы с одинаковым хешом.
 • Это даёт асимптотически быстрый поиск (индексация по массиву), если load factor хорош.
@@ -659,3 +649,13 @@ for(auto it = itb; it != ite; ++it)
 	std::cout << *it << std::endl;
 ```
 • Это нарушает инвариант контейнера и последствия сложно предсказать.
+#### Требования к предикату сравнения
+• Общая концепция называется strict weak ordering.
+• Она включает:
+	• Антисимметричность: $pred(x, y) \Rightarrow \neg pred(y, x)$
+	• Транзитивность: $pred(x, y) \land pred(y, z) \Rightarrow pred(x, z)$
+	• Иррефлексивность: $\neg pred(x, x)$
+	• Транзитивность эквивалентности:
+	$eq(x, y) \equiv \neg pred(x, y) \land \neg pred(y, x) \vdash eq(x, y) \land eq(y, z) \Rightarrow eq(x, z)$
+• Она же распространяется на предикаты в алгоритмах сортировки и т.д.
+• Математическая разминка: пусть $(a + ib < c + id) \Leftrightarrow (a < c) \land (b > d)$ является ли это strict weak ordering для комплексных чисел?
