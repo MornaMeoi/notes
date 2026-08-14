@@ -726,4 +726,4 @@ if(it != s.end()) {
 • Scott Meyers, Effective Modern C++: 42 Specific Ways to Improve Your Use of C++11 and C++14, 2012
 • Matt Kulukundis "Designing a Fast, Efficient, Cache-friendly Hash Table, Step by Step", CppCon'2017
 • Bindal A., Narang P., Indu S., Map vs. Unordered Map: An Analysis on Large Datasets, International Journal of Computer Applications, Volume 127, №2, oct'2015
-• boost::flat_map and its performance compared to map and unordered ma
+• boost::flat_map and its performance compared to map and unordered map, StackOverflow, https://stackoverflow.com/questions/21166675/boostflat-map-and-its-performance-compared-to-map-and-unordered-map
