@@ -646,3 +646,16 @@ auto itb = s.lower_bound(100);
 auto ite = s.upper_bound(30);
 ```
 • Теперь всё хорошо, но это крайне контринтуитивно.
+• Что если теперь упорядочить по `(<=)`
+```cpp
+std::set<int, std::less_equal<int>> s = {67, 42, 141, 23, 42, 106, 15, 50};
+
+auto itb = s.lower_bound(30);
+auto ite = s.upper_bound(100);
+```
+• Тот же вопрос: валиден ли диапазон?
+```cpp
+for(auto it = itb; it != ite; ++it)
+	std::cout << *it << std::endl;
+```
+• Это нарушает инвариант контейнера и последствия сложно предсказать.
