@@ -680,7 +680,7 @@ for(auto it = s.begin(); it != s.end(); ++it)
 		s.erase(it);
 ```
 • Что тут не так?
-#### Не стреляййте себе в ногу через erase
+#### Не стреляйте себе в ногу через erase
 • Это очень плохая идея.
 ```cpp
 // ....
@@ -694,3 +694,36 @@ for(auto it = s.begin(); it != s.end();)
 	else
 		++it;
 ```
+• В рамках C++11 это делается вот так:
+```cpp
+for(auto it = s.begin(); it != s.end();)
+	if(it->second < max && it->second > min)
+		it = s.erase(it);
+	else
+		++it;
+```
+#### Обсуждение
+• Предложите решение для замены элемента во множестве.
+```cpp
+auto it = s.find(1);
+if(it != s.end())
+	*it = 3; // error: assignment of read-only location
+```
+• Пусть вам всё-таки нужно заменить элемент 1 на 3. Что тогда?
+• Теперь решение очевидно:
+```cpp
+auto it = s.find(1);
+
+if(it != s.end()) {
+	s.erase(it); s.insert(3);
+}
+```
+#### Литература
+• ISO/IEC, "Information technology - Programming languages - C++", ISO/IEC 14882:2017
+• Bjarne Stroustrup, The C++ Programming Language (4th Edition)
+• Nicolai M. Josuttis, The C++ Standard Library - A Tutorial and Reference, 2nd Edition, Addison-Wesley, 2012
+• Scott Meyers, Effective STL, 50 specific ways to improve your use of the standard template library, Addison-Wesley, 2001
+• Scott Meyers, Effective Modern C++: 42 Specific Ways to Improve Your Use of C++11 and C++14, 2012
+• Matt Kulukundis "Designing a Fast, Efficient, Cache-friendly Hash Table, Step by Step", CppCon'2017
+• Bindal A., Narang P., Indu S., Map vs. Unordered Map: An Analysis on Large Datasets, International Journal of Computer Applications, Volume 127, №2, oct'2015
+• boost::flat_map and its performance compared to map and unordered ma
