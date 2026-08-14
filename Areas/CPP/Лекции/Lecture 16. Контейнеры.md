@@ -619,5 +619,30 @@ for(auto elt : s) cout << elt << endl;
 std::set<int> s = {67, 42, 141, 23, 42, 106, 15, 50};
 
 auto itb = s.lower_bound(30);
-auto ite = s./
+auto ite = s.upper_bound(100);
 ```
+• Теперь можно итерировать в интервале `[30, 100)` независимо от того, есть ли во множестве в точности такие элементы.
+```cpp
+for(auto it = itb; it != ite; ++it)
+	std::cout << *it << std::endl;
+```
+• Что на экране?
+• Можно задать любой предикат упорядочения.
+```cpp
+std::set<int, std::greater<int>> s = {67, 42, 141, 23, 42, 106, 15, 50};
+
+auto itb = s.lower_bound(30);
+auto ite = s.upper_bound(100);
+```
+• Задают ли итераторы itb и ite валидный интервал для итерирования?
+• Что будет, например, при таком цикле?
+```cpp
+for(auto it = itb; it != ite; ++it)
+	std::cout << *it << std::endl;
+```
+• Прошлый  интервал был невалиден. Вот исправления:
+```cpp
+auto itb = s.lower_bound(100);
+auto ite = s.upper_bound(30);
+```
+• Теперь всё хорошо, но это крайне контринтуитивно.
