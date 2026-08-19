@@ -74,3 +74,57 @@ int main(int argc, char** argv) {
 auto hi = [argv] { std::cout << argv[0] << "\n"; return 0; };
 hi();
 ```
+<h1 align="center">([](){})();</h1>
+<p align="right">is now legal C++</p>
+#### Обсуждение
+• λ-выражения - это не функции.
+```cpp
+auto t = [z](auto x, auto y) { return x < y * z; };
+```
+• Это, скорее, класс с перегруженным `operator()`.
+```cpp
+struct __closure_type_for_t {
+	int __k;
+	auto operator()(auto x, auto y) const {
+		return x < y * __k;
+	}
+} t{z};
+```
+#### Убираем const
+• Если мы хотим изменять захваченный по значению контекст, мы должны сделать нашу лямбду в явном виде `mutable`.
+```cpp
+auto t = [z](auto x, auto y) mutable { z += 1; return x < y * z; };
+```
+• Обратите внимание, что z изменяется в пределах замыкания.
+```cpp
+auto s = t;
+t(1, 2); // z изменилось внутри t, но не внутри s
+```
+• Замыкания по уполчанию копируемые (если не захвачено ничего со стёртым copy ctor).
+• Глобальные и статические переменные захватывать не надо, они доступны и так.
+#### Виды захвата
+• Захват по значению (по ссылке).
+```cpp
+auto fval = [a, b](int x) { return a + b * x; };
+auto fvalm = [a, b](int x) mutable { a += b * x; return a; };
+auto fref = [&a, &b](int x) { a += b * x; return a; };
+```
+• Захват по ссылке всегда mutable и отслеживает состояние переменной.
+```cpp
+a = 42;
+
+fval(x); // тот же
+fref(x); // использует новое a
+```
+• Разумеется, можно смешивать: `[&a, b, &c, d]`.
+• Захват всего контекста по значению (по ссылке).
+```cpp
+auto faval = [=](int x) { return a + b * x; };
+auto faref = [&](int x) { a += b * x; return a; };
+```
+• Захват всего по значению и частично по ссылке и наоборот.
+```cpp
+auto favalb = [=, &b](int x) { return a + b * x; };
+auto farefa = [&, a](int x) { b += a * x; return b; };
+```
+• Захват с переименованием
