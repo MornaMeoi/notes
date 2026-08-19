@@ -127,4 +127,35 @@ auto faref = [&](int x) { a += b * x; return a; };
 auto favalb = [=, &b](int x) { return a + b * x; };
 auto farefa = [&, a](int x) { b += a * x; return b; };
 ```
-• Захват с переименованием
+• Захват с переименованием.
+```cpp
+auto freval = [la = a](int x) { return la + x; };
+auto freref = [&la = a](int x) { return la += x; return la; };
+```
+• Переименование позволяет захватить правую ссылку.
+```cpp
+std::ostream_iterator<int> os{std::cout, " "};
+std::vector v = {1, 2, 3};
+
+auto out = [w = std::move(v), os] {
+	std::copy(w.begin(), w.end(), os);
+};
+```
+• Теперь вектор передан в состояние замыкания.
+• Передача осуществляется в конструкторе замыкания, т.е. в момент создания функции, а не в момент её вызова.
+#### Захват в теле класса
+```cpp
+struct Foo {
+	int x;
+	void func() {
+		[x] mutable { x += 3; } (); // FAIL
+		[&x] { x += 3; } (); // FAIL
+		
+		[=] { x_ += 3; } (); // OK
+		[&] { x_ += 3; } (); // OK
+		
+		[this] { x_ += 3; } (); // OK
+	}
+};
+```
+• Это работает, поскольку полный захват захватывает `this`.
