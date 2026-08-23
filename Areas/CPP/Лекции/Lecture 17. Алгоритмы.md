@@ -507,4 +507,6 @@ v.erase(std::unique(v.begin(), v.end()), v.end());
 ```cpp
 void rotate(FwIt first, FwIt n_first, FwIt last);
 ```
-• Диапазон от `first` до `last` проворачивается так, чтобы первым 
+• Диапазон от `first` до `last` проворачивается так, чтобы первым элементом стал `n_first`.
+• Менатальная модель `rotate(f, l, p)` - это перенос группы `[f, l)` в позицию перед `p`.
+![[../../../_Meta/attachments/17.8.png]]
