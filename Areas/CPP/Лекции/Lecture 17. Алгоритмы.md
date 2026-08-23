@@ -462,4 +462,19 @@ if(std::none_of(v.begin(), v.end(), p)) // ?
 Результат там true, false, true.
 #### Паттерны в коде: remove
 • Как бы вы написали функцию `remove`?
-• Идея функции: удалит
+• Идея функции: удалить из диапазона все значения `val`.
+```cpp
+template<typename Iter, typename T>
+Iter remove(Iter first, Iter last, const T& val) {
+	// что здесь?
+}
+```
+#### Некоторая засада с remove
+• Правильный ответ: <span style="color: red;">никак</span>. По итератору нечто можно удалить из контейнера толкьо используя `Cont.erase(it)`.
+#### Идиома erase-remove
+• Как же по-настоящему работает `remove`?
+```cpp
+std::vector<int> v = {1, 42, 2, 42, 3, 42, 4};
+
+auto result = std::remove(v.begin(), v.end*)
+```
