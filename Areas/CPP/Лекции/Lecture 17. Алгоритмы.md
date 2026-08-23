@@ -260,3 +260,72 @@ struct Finally {
 FILE* f = fopen("myfile.dat", "r"); assert(f);
 Finally close_f([&f]{ fclose(f); });
 ```
+#### Обсуждение: heap indirection
+• Есть некоторая проблема с таким подходом к `finally`, а именно производительность. Гораздо эффективней иметь `closure`.
+```cpp
+template<typename ActTy> inline auto Finally(ActTy fn) {
+	struct Finally_impl {
+		ActTy act;
+		explicit Finally_impl(ActTy action) : act(std::move(action)) {}
+		~Finally() { act(); }
+	};
+	
+	return Finally_impl(std::move(fn)); // bingo
+}
+```
+• Функция нужна для вывода типов (можно ли сделать deduction hint?).
+Далее лектор приводит пример, где он пытался сделать это с deduction hint, но понял, что даже deduction hint не нужен.
+```cpp
+#include <iostream>
+#include <functional>
+
+namespace V1 {
+struct Finally {
+	std::function<void()> action_;
+	explicit Finally(std::function<void()> action) : action_(std::move(action)) {}
+	~Finally() { action_(); }
+};
+}
+
+namespace V2 {
+template<typename ActTy>
+inline auto Finally(ActTy fn) {
+	struct Finally_impl {
+		ActT act;
+		explicit Finally_impl(ActTy action) : act(std::move(action)) {}
+		~Finally() { act(); }
+	};
+	return Finally_impl(std::move(fn)); // bingo
+}
+}
+
+namespace V3 {
+	template<typename ActTy> struct Finally {
+		ActTy act;
+		explicit Finally(ActTy action) : act(std::move(action)) {}
+		~Finally() { act(); }
+	};
+}
+
+int main() {
+	int x = 0;
+	V1::Finally close_x1{[&] {std::cout << x << std::endl;}};
+	auto close_x2 = V2::Finally([&] {std::cout << x << std::endl;});
+	V3::Finally close_x3{[&] { std::cout << x << std::endl;}};
+	x = 42;
+}
+```
+#### Предостережение
+• У вас может возникнуть соблазн сделать функтор с изменяемым состоянием.
+```cpp
+auto [begin, end] = m.equal_range(i);
+
+int max = 0;
+std::for_each(begin, end, [&max](auto&& elt)) {
+	int n = f(elt.second);
+	if(n > max) max = n;
+};
+
+std::cout << "Answer is: " << max << std::endl;
+```
+• Это не ошибка, но это дурной тон. Чем опасен такой  подход?
