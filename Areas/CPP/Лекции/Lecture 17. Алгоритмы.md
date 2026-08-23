@@ -222,4 +222,41 @@ struct Foo {
 struct Foo f;
 f.xplus1(); // OK
 ```
-  
+#### Информация о конкретном типе
+• Механизм std::function унифицирует типы замыканий.
+• Информация о реальном типе возвращается через `target_type`.
+```cpp
+int f(int);
+
+function<int(int)> fn1 = f,
+									 fn2 = [](int a) { return -a; },
+									 fn3 = [x](int a) { return x - a; };
+cout << fn1.target_type().name() << endl
+		 << fn2.target_type().name() << endl;
+		 << fn3.target_type().name() << endl;
+```
+Вывод:
+```
+PFiiE
+Z4mainEUliE_
+Z4mainEUliE0_
+```
+А через c++filt:
+```
+int (*)(int)
+main::{lambda(int)#1}
+main::{lambda(int)#2}
+```
+#### Case study: finally
+```cpp
+struct Finally {
+	std::function<void()> action_;
+	explicit Finally(std::function<void()> action) : action_(std::move(action)) {}
+	~Finally() { action_(); }
+};
+```
+• Теперь мы можем вот такие фокусы:
+```cpp
+FILE* f = fopen("myfile.dat", "r"); assert(f);
+Finally close_f([&f]{ fclose(f); });
+```
