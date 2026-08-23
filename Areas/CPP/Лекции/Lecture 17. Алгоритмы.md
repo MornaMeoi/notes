@@ -476,5 +476,12 @@ Iter remove(Iter first, Iter last, const T& val) {
 ```cpp
 std::vector<int> v = {1, 42, 2, 42, 3, 42, 4};
 
-auto result = std::remove(v.begin(), v.end*)
+auto result = std::remove(v.begin(), v.end(), 42);
+v.erase(result, v.end());
 ```
+• Или, группируя это в одну фразу:
+```cpp
+v.erase(std::remove(v.begin(), v.end(), 42), v.end());
+```
+• Эта техника называется <span style="color: cyan;">"идиома erase-remove"</span>.
+![[../../../_Meta/attachments/17.6.png]]
