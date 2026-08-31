@@ -513,3 +513,10 @@ void rotate(FwIt first, FwIt n_first, FwIt last);
 #### Групповое перемещение - это rotate
 • `rotate(f, l, p)` - это перенос группы `[f, l)` в позицию перед `p`.
 • Итак, вы бы написали `rotate`?
+#### Небольшая проблема
+• `rotate` работает следующим образом:
+```cpp
+void rotate(FwIt first, FwIt n_first, FwIt last);
+```
+• Но что, если позиция, куда нужно переместить лежит выше f?
+• Тогда `rotate(f, l, p')` не будет работать
