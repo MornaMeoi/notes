@@ -673,3 +673,19 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 		expanded_panels_.insert(expanded_panels_.begin() + i, ref);
 	}
 	<span style="color: gray;">// .... дальше ещё много кода в этой функции ....</span>
+• Третий шаг: убираем бессмысленную проверку.
+void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
+	const int center_x = fixed_panel->cur_panel_center();
+	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
+		Panel* panel = expanded_panels_\[i\].get();
+		if(center_x <= panel->cur_panel_center())
+			break;
+	}
+	<span style="color: green;">// Fix this code: panel is panel found above</span>
+	if(<span style="color: red;">panel</span> != fixed_panel) {
+		ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
+		expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
+		expanded_panels_.insert(expanded_panels_.begin() + i, ref);
+	}
+	<span style="color: gray;">// .... дальше ещё много кода в этой функции ....</span>
+• Теперь подсвеченное - это стандартный алгоритм. Кто узнает, какой?
