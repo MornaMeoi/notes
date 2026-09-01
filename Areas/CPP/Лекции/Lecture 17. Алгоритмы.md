@@ -629,7 +629,7 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 ```
 • Он содержит <span style="color: green;">бессмысленный комментарий</span>, <span style="color: blue;">странные проверки</span>, и он, <span style="color: red;">похоже, квадратичный</span>.
 void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
-	<span style="color: green;">// check if panel has moved to the other side or another panel</span>
+	<span style="color: green;">// check if panel has moved to the other side or another panel</span>.
 	const int center_x = fixed_panel->cur_panel_center();
 	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
 		Panel* panel = expanded_panels_\[i\].get();
@@ -646,7 +646,7 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 		<span style="color: gray;">// .... дальше ещё много кода в этой функции ...</span>.
 • Первый шаг упрощения: `push_back` не лучше чем `insert` в конец контейнера.
 void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
-	<span style="color: green;">// check if panel has moved to the other side or another panel</span>
+	<span style="color: green;">// check if panel has moved to the other side or another panel</span>.
 	const int center_x = fixed_panel->cur_panel_center();
 	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
 		Panel* panel = expanded_panels_\[i\].get();
@@ -666,7 +666,7 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 		if(center_x <= panel->cur_panel_center() ||<span style="color: blue;">i == expanded_panels_.size()-1</span>)
 			break;
 	}
-	<span style="color: green;">// Fix this code: panel is panel found above</span>
+	<span style="color: green;">// Fix this code: panel is panel found above</span>.
 	if(<span style="color: red;">panel</span> != fixed_panel) {
 		ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
 		expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
@@ -681,7 +681,7 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 		<span style="background: yellow">if(center_x &lt= panel->cur_panel_center()</span>)
 			<span style="background: yellow">break</span>;
 }
-	<span style="color: green;">// Fix this code: panel is panel found above</span>
+	<span style="color: green;">// Fix this code: panel is panel found above</span>.
 	if(<span style="color: red;">panel</span> != fixed_panel) {
 		ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
 		expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
@@ -693,10 +693,9 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 	const int center_x = fixed_panel->cur_panel_center();
 	<span style="color: blue;">auto p = std::find_if(begin(expanded_panels_), end(expanded_panels_)</span>,
-		<span style="color: blue;">[&](const ref_ptr<Panel> &e) { return center_x <= e->cur_panel_center(); });
-}
-	<span style="color: green;">// Fix this code: panel is panel found above</span>
-	if(p != fixed_panel) {
+		<span style="color: blue;">[&](const ref_ptr&lt;Panel&gt; &e) { return center_x &lt;= e->cur_panel_center(); })</span>;
+	<span style="color: green;">// Fix this code: panel is panel found above</span>.
+	if(panel != fixed_panel) {
 		ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
 		expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
 		expanded_panels_.insert(p, ref);
@@ -708,11 +707,27 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 	const int center_x = fixed_panel->cur_panel_center();
 	auto p = std::find_if(begin(expanded_panels_), end(expanded_panels_),
 		\[&\](const ref_ptr\<Panel\> &e) { return center_x <= e->cur_panel_center(); });
-}
-	<span style="color: green;">// Fix this code: panel is panel found above</span>
-	if(p != fixed_panel) {
+	<span style="color: green;">// Fix this code: panel is panel found above</span>.
+	if(panel != fixed_panel) {
 		ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
-		expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
-		expanded_panels_.insert(p, ref);
+		<span style="color: blue;">std::rotate(p, f, f + 1)</span>;
 	}
 	<span style="color: gray;">// .... дальше ещё много кода в этой функции ...</span>.
+• Ещё идеи? Может, наконец, сделаем код рабочим, заменив `panel` на `*p`?
+void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
+	const int center_x = fixed_panel->cur_panel_center();
+	auto p = std::find_if(begin(expanded_panels_), end(expanded_panels_),
+		\[&\](const ref_ptr\<Panel\> &e) {
+			return center_x <= e->cur_panel_center();
+		});
+	auto f = begin(expanded_panels_) + fixed_index;
+	<span style="color: blue;">std::rotate(p, f, f + 1)</span>;
+	<span style="color: gray;">// .... дальше ещё много кода в этой функции ...</span>.
+• Это невероятно лучше, чем то, что было. И это эффективнее.
+• Но это может стать ещё эффективнее, если мы уверены, что исходные панели отсортированы по индексу.
+#### Сортировки и недосортировки
+• Задача: получить первые N по величине элементов контейнера `cont` всё равно в каком порядке. После этого вывести их на экран.
+1. `sort(cont.begin(), cont.end());`
+2. `partial_sort(cont.begin(), cont.begin() + N, cont.end());`
+3. `nth_element(cont.begin(), cont.begin() + N, cont.end());`
+• Все три алгоритма решают задачу. Но понятно, что третий вариант требует для этого меньше времени.
