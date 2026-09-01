@@ -556,15 +556,48 @@ gather(f, l, pt, p) ::=
 • Было замечено Шоном Парентом (Principal Scientist в Adobe) на ревью у Маршала Клоу (libc++ maintainer в QualComm).
 • К вопросу о пользе code review даже у людей такого уровня.
 #### Общий обзор
-• Не модифицирующие
-	• all_of, any_of, none_of
-	• for_each (n)
-	• find (if), count (if)
-	• search, find_end, find_first_of
-	• mismatch
-	• adjacent_find
-	• min (element), max (element)
-	• clamp
-	• equal, lexicographical_compare
-• Слияния и кучи
-	• merge, 
+• **Не модифицирующие**
+	• `all_of`, `any_of`, `none_of`
+	• `for_each (n)`
+	• `find (if)`, `count (if)`
+	• `search`, `find_end`, `find_first_of`
+	• `mismatch`
+	• `adjacent_find`
+	• `min (element)`, `max (element)`
+	• `clamp`
+	• `equal`, `lexicographical_compare`
+• **Слияния и кучи**
+	• `merge`, `inplace_merge`
+	• `is_heap (until)`
+	• `make_heap`, `push_heap`, etc....
+	• `set_union`, `set_intersection`, etc....
+• **Модифицирующие**
+	• `copy (if | n | backward)`
+	• `move (backward)`
+	• `swap`, `swap_ranges`
+	• `iter_swap`
+	• `transform`
+	• `replace (copy)(if)`
+	• `fill (n)`, `generate (n)`
+	• `reverse`
+	• `rotate (copy)`
+	• `shuffle`, `sample`
+	• `shift_left (shift_right)`
+• **Структурные**
+	• remove (copy)(if)
+	• unique (copy)
+• **Сортировка и поиск**
+	• partition, stable_partition, partition_point
+	• sort, partial_sort, stable_sort
+	• nth_element
+	• lower_bound, upper_bound, equal_range
+	• binary_search
+• **Численные**
+	• accumulate, reduce, transform_reduce
+	• iota
+	• adjacent_difference
+	• partial_sum, inclusive_scan, exclusive_scan
+	• `transform_(inclusive | exclusive)_scan`
+	• inner_product
+	• is_permutation
+	• next_permutation, prev_permutation
