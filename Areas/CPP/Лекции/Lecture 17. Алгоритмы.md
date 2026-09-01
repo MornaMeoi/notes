@@ -548,5 +548,23 @@ gather(It f, It l, It pt, F pred);
 #### Внезапно stable_partition
 ![[../../../_Meta/attachments/17.12.png]]
 ```cpp
-gather(f, l, pt, p) ::= stable_partition(f, pt)
+gather(f, l, pt, p) ::=
+	stable_partition(f, pt, not(p));
+	stable_partition(pt, l, p);
 ```
+• Это просто открывающая глаза штука.
+• Было замечено Шоном Парентом (Principal Scientist в Adobe) на ревью у Маршала Клоу (libc++ maintainer в QualComm).
+• К вопросу о пользе code review даже у людей такого уровня.
+#### Общий обзор
+• Не модифицирующие
+	• all_of, any_of, none_of
+	• for_each (n)
+	• find (if), count (if)
+	• search, find_end, find_first_of
+	• mismatch
+	• adjacent_find
+	• min (element), max (element)
+	• clamp
+	• equal, lexicographical_compare
+• Слияния и кучи
+	• merge, 
