@@ -783,6 +783,7 @@ auto f = begin(expanded_panels_) + fixed_index;
 rotate(p, f, f + 1);
 ```
 • Кажется, если панели изначально сортированы, то find_if делает чересчур много...
+#### Внезапное переобувание
 ```cpp
 const int center_x = fixed_panel->cur_panel_center();
 auto p = lower_bound(begin(expanded_panels_), end(expanded_panels_), center_x,
@@ -792,4 +793,10 @@ auto p = lower_bound(begin(expanded_panels_), end(expanded_panels_), center_x,
 auto f = begin(expanded_panels_) + fixed_index;
 rotate(p, f, f + 1);
 ```
-• Это очень важное наблюдение: переход к алгоритмам позволяет делать такие изменения "в одну строчку"..
+• Это очень важное наблюдение: переход к алгоритмам позволяет делать такие изменения "в одну строчку".
+#### Обсуждение
+• Алгоритм `find` затрачивает `O(N)`.
+• Алгоритм `equal_range` затрачивает `O(log(N))`, но требует сортированного интервала.
+• Проверка сортированности интервала выполняется через `is_sorted`, который работает за `O(N)`.
+• Есть ли способы как-то гарантировать сортированность?
+## Case study: группы перестановок
