@@ -745,4 +745,51 @@ if(binary_search(v.begin(), v.end(), 37)) {
 ```
 • Надо добавить: мы туда <span style="color: blue;">в лучшем случае</span> не попадём.
 #### Поисковые алгоритмы
-• bom
+• **binary_search** - есть элемент или его нет.
+• **lower_bound** - где мог бы быть элемент, если бы он был (слева).
+• **upped_bound** - где мог бы быть элемент, если бы он был (справа).
+• **equal_range** - есть ли элемент и, если да, то где.
+• Сложность каждого из них логарифмическая.
+![[../../../_Meta/attachments/17.13.png]]
+#### Вернёмся к панелям
+• Вам предлагают использовать изначальную сортированность панелей в следующем коде...
+```cpp
+void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
+	// check if panel has moved to the other side or another panel
+	const int center_x = fixed_panel->cur_panel_center();
+	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
+		Panel* panel = expanded_panels_[i].get();
+		if(center_x <= panel->cur_panel_center() || i == expanded_panels_.size()-1) {
+			if(panel != fixed_panel) {
+				ref_ptr<Panel> ref = expanded_panels_[fixed_index];
+				expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
+				if(i < expanded_panels_.size())
+					expanded_panels_.insert(expanded_panels_.begin() + i, ref);
+				else
+					expanded_panels_.push_back(ref);
+			}
+			break;
+	// .... дальше ещё много кода в этой функции ....
+```
+#### Немного более человечно
+• Ну ладно, допустим вот в этом коде (оптимистичней, правда?):
+```cpp
+const int center_x = fixed_panel->cur_panel_center();
+auto p = find_if(begin(expanded_panels_), end(expanded_panels_),
+	[&](const ref_ptr<Panel> &e) {
+		return center_x <= e->cur_panel_center();
+	});
+auto f = begin(expanded_panels_) + fixed_index;
+rotate(p, f, f + 1);
+```
+• Кажется, если панели изначально сортированы, то find_if делает чересчур много...
+```cpp
+const int center_x = fixed_panel->cur_panel_center();
+auto p = lower_bound(begin(expanded_panels_), end(expanded_panels_), center_x,
+										 [](auto* e, int x) {
+											 return e->cur_panel_center() < x;
+										 });
+auto f = begin(expanded_panels_) + fixed_index;
+rotate(p, f, f + 1);
+```
+• Это очень важное наблюдение: переход к алгоритмам позволяет делать такие изменения "в одну строчку"..
