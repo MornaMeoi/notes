@@ -584,20 +584,46 @@ gather(f, l, pt, p) ::=
 	• `shuffle`, `sample`
 	• `shift_left (shift_right)`
 • **Структурные**
-	• remove (copy)(if)
-	• unique (copy)
+	• `remove (copy)(if)`
+	• `unique (copy)`
 • **Сортировка и поиск**
-	• partition, stable_partition, partition_point
-	• sort, partial_sort, stable_sort
-	• nth_element
-	• lower_bound, upper_bound, equal_range
-	• binary_search
+	• `partition`, `stable_partition`, `partition_point`
+	• `sort`, `partial_sort`, `stable_sort`
+	• `nth_element`
+	• `lower_bound`, `upper_bound`, `equal_range`
+	• `binary_search`
 • **Численные**
-	• accumulate, reduce, transform_reduce
-	• iota
-	• adjacent_difference
-	• partial_sum, inclusive_scan, exclusive_scan
+	• `accumulate`, `reduce`, `transform_reduce`
+	• `iota`
+	• `adjacent_difference`
+	• `partial_sum`, `inclusive_scan`, `exclusive_scan`
 	• `transform_(inclusive | exclusive)_scan`
-	• inner_product
-	• is_permutation
-	• next_permutation, prev_permutation
+	• `inner_product`
+	• `is_permutation`
+	• `next_permutation`, `prev_permutation`
+## No raw loops
+#### Программа Шона Парента
+• Если вы видите необходимость написать в вашей программе цикл, посмотрите, есть ли возможность использовать стандартный алгоритм.
+• Если нет стандартного, придумайте свой, предложите в стандартную библиотеку, опубликуйте статью, прославьтесь.
+• В пределах программы Шона Парента, лучшее, что вы можете сделать для кода - это <span style="color: red;">убрать вспомогательные циклы</span>.
+• Вспомогательный цикл внутри функции - это любой цикл, который делает нечто, не полностью совпадающее с основным предназначением функции.
+#### Пример вспомогательных циклов
+• Следующий фрагмент кода - это часть реального кода Chrome OS.
+```cpp
+void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
+	// check if panel has moved to the other side or another panel
+	const int center_x = fixed_panel->cur_panel_center();
+	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
+		Panel* panel = expanded_panels_[i].get();
+		if(center_x <= panel->cur_panel_center() || i == expanded_panels_.size()-1) {
+			if(panel != fixed_panel) {
+				ref_ptr<Panel> ref = expanded_panels_[fixed_index];
+				expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
+				if(i < expanded_panels_.size())
+					expanded_panels_.insert(expanded_panels_.begin() + i, ref);
+				else
+					expanded_panels_.push_back(ref);
+			}
+			break;
+	// .... дальше ещё много кода в этой функции ....
+```
