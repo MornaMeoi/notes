@@ -627,3 +627,49 @@ void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
 			break;
 	// .... дальше ещё много кода в этой функции ....
 ```
+• Он содержит <span style="color: green;">бессмысленный комментарий</span>, <span style="color: blue;">странные проверки</span>, и он, <span style="color: red;">похоже, квадратичный</span>.
+void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
+	<span style="color: green;">// check if panel has moved to the other side or another panel</span>
+	const int center_x = fixed_panel->cur_panel_center();
+	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
+		Panel* panel = expanded_panels_\[i\].get();
+		if(center_x <= panel->cur_panel_center() ||<span style="color: blue;">i == expanded_panels_.size()-1</span>) {
+			if(panel != fixed_panel) {
+				ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
+				<span style="color: red;">expanded_panels_.erase(expanded_panels_.begin() + fixed_index)</span>;
+				if(<span style="color: blue;">i &lt expanded_panels_.size()</span>)
+					<span style="color: red;">expanded_panels_.insert(expanded_panels_.begin() + i, ref)</span>;
+				else
+					<span style="color: red;">expanded_panels_.push_back(ref)</span>;
+			}
+			break;
+	<span style="color: gray;">// .... дальше ещё много кода в этой функции ....</span>
+• Первый шаг упрощения: `push_back` не лучше чем `insert` в конец контейнера.
+void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
+	<span style="color: green;">// check if panel has moved to the other side or another panel</span>
+	const int center_x = fixed_panel->cur_panel_center();
+	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
+		Panel* panel = expanded_panels_\[i\].get();
+		if(center_x <= panel->cur_panel_center() ||<span style="color: blue;">i == expanded_panels_.size()-1</span>) {
+			if(panel != fixed_panel) {
+				ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
+				<span style="color: red;">expanded_panels_.erase(expanded_panels_.begin() + fixed_index)</span>;
+				<span style="color: red;">expanded_panels_.insert(expanded_panels_.begin() + i, ref)</span>;
+			}
+			break;
+	<span style="color: gray;">// .... дальше ещё много кода в этой функции ....</span>
+• Второй шаг упрощения: условие, которое выполняется единожды, можно вынести вниз из цикла.
+void PanelBar::RepositionExpandedPanels(Panel* fixed_panel, int fixed_index) {
+	const int center_x = fixed_panel->cur_panel_center();
+	for(size_t i = 0; i < expaned_panels_.size(); ++i) {
+		Panel* <span style="color: red;">panel</span> = expanded_panels_\[i\].get();
+		if(center_x <= panel->cur_panel_center() ||<span style="color: blue;">i == expanded_panels_.size()-1</span>)
+			break;
+	}
+	<span style="color: green;">// Fix this code: panel is panel found above</span>
+	if(<span style="color: red;">panel</span> != fixed_panel) {
+		ref_ptr\<Panel\> ref = expanded_panels_\[fixed_index\];
+		expanded_panels_.erase(expanded_panels_.begin() + fixed_index);
+		expanded_panels_.insert(expanded_panels_.begin() + i, ref);
+	}
+	<span style="color: gray;">// .... дальше ещё много кода в этой функции ....</span>
