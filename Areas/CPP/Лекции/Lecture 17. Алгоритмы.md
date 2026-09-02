@@ -908,6 +908,16 @@ void simplify_loops(RandIt tbeg, RandIt tend, OutIt lbeg);
 ```cpp
 template<typename RandIt, typename OutIt>
 void simplify_loops(RandIt tbeg, RandIt tend, OutIt lbeg) {
-	using
+	using T = std::decay_t<decltype(*tbeg)>::value_type;
+	std::vector<T> table(T::fin - T::start + 1, T::start);
+	std::iota(table.begin(), table.end(), T::start);
+	for(auto loopit = std::make_reverse_iterator(tend),
+					 loopend = std::make_reverse_iterator(tbeg);
+			loopit != loopend;
+			++loopit)
+		loopit->apply(table.begin(), table.end());
+	create_loops(table.begin(), table.end(), lbeg);
 }
 ```
+#### Обсуждение
+• Это STL-подобные алгоритмы в максимально далёкой от STL предметной области. Тем не менее, видно, как основные концепции упорядочивают и улучшают код.
