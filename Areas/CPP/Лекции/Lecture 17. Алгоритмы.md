@@ -896,5 +896,11 @@ void PermLoop<T>::apply(RandIt tbeg, RandIt tend) const;
 • Какую сигнатуру должна иметь функция перемножения (упрощения заданного массива) перестановок?
 • Неправильный, но соблазнительный вариант:
 ```cpp
-template<ty
+template<typename T>
+void simplify_loops(vector<PermLoop<T>>& input);
+```
+• Правильный вариант (STL-way):
+```cpp
+template<typename RandIt, typename OutIt>
+void simplify_loops(RandIt tbeg, RandIt tend, OutIt lbeg);
 ```
