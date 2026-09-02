@@ -824,3 +824,26 @@ rotate(p, f, f + 1);
 [9 2 3 1 7 6 8 5 4] → (1 9 4)(2)(3)(5 7 8)(6)
 ```
 • Для начала: какая сигнатура должна быть у этой функции?
+• Предлагаемая сигнатура
+```cpp
+// creates an array of loops from permutation given by table
+// say: a, g, [d, c, e, g, b, f, a]
+// gives: [(a, d, g), (b, c, e), (f)]
+template<typename T>
+void create_loops(T start, T fin, const vector<T>& table,
+									vector<PermLoop<T>>& out);
+```
+• Ваша критика?
+#### Области определения
+• Кодирование области определения как `(T start, T fin)` крайне неуместно.
+• Вместо этого можно взять класс вроде такого.
+```cpp
+template<typename T, T start_, T fin_> struct Idom {
+	T val_;
+	Idom(T val) : val_(val) {} // range check possible
+	operator T() const { return val_; }
+	using type = T;
+	static const T start = start_;
+	static const T fin = fin_;
+};
+```
