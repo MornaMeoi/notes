@@ -881,3 +881,8 @@ template<typename T> T PermLoop<T>::apply(T x) const {
 ```
 • Применим `(1 3)` к `[1 2 3 4 5 6]`, имеем `[3 2 1 4 5 6]`.
 • Какую сигнатуру должен иметь метод `PermLoop<T>::apply` для таблицы?
+```cpp
+template<typename T>
+template<typename RandIt>
+void PermLoop<T>::apply(RandIt tbeg, RandIt tend) const;
+```
