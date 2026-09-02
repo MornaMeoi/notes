@@ -847,3 +847,37 @@ template<typename T, T start_, T fin_> struct Idom {
 	static const T fin = fin_;
 };
 ```
+#### От перестановок к циклической записи
+• Предлагаемая сигнатура:
+```cpp
+// creates an array of loops from permutation given by table
+// say: a, g, [d, c, e, g, b, f, a]
+// gives: [(a, d, g), (b, c, e), (f)]
+template<typename T>
+void create_loops(const vector<T>& table, vector<PermLoop<T>>& out);
+```
+• Теперь параметр  это `domain`, предполагаем, что есть `T::start`, `T::fin`.
+• Ещё критика?
+• Предлагаемая сигнатура:
+```cpp
+// creates an array of loops from permutation given by table
+// say: a, g, [d, c, e, g, b, f, a]
+// gives: [(a, d, g), (b, c, e), (f)]
+template<typename RandIt, typename OutIt>
+void create_loops(RandIt tbeg, RandIt tend, OutIt lbeg);
+```
+• Теперь функция - это обобщённый алгоритм.
+#### Применение перестановок
+• Перестановка может быть применена.
+• Применим `(1 2)` к числу 1, получаем 2.
+```cpp
+template<typename T> T PermLoop<T>::apply(T x) const {
+	auto it = std::find(loop_.begin(), loop_.end(), x);
+	if(it == loop_.end()) return x;
+	auto nxt = std::next(it);
+	if(nxt == loop_.end()) return *loop_.begin();
+	return *nxt;
+}
+```
+• Применим `(1 3)` к `[1 2 3 4 5 6]`, имеем `[3 2 1 4 5 6]`.
+• Какую сигнатуру должен иметь метод `PermLoop<T>::apply` для таблицы?
