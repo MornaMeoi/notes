@@ -904,3 +904,10 @@ void simplify_loops(vector<PermLoop<T>>& input);
 template<typename RandIt, typename OutIt>
 void simplify_loops(RandIt tbeg, RandIt tend, OutIt lbeg);
 ```
+• Можно немного помедитировать над реализацией.
+```cpp
+template<typename RandIt, typename OutIt>
+void simplify_loops(RandIt tbeg, RandIt tend, OutIt lbeg) {
+	using
+}
+```
