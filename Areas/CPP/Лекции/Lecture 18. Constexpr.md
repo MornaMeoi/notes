@@ -67,7 +67,21 @@ int main() { Prime_print<30> a; }
 
 template<int p, int i> struct is_prime {
 	enum {
-		prim = (p == 2) || ((p % i) && is_prime)
+		prim = (p == 2) || ((p % i) && is_prime<(i > 2 ? p : 0), i - 1>::prim)
 	};
 };
+
+template<> struct is_prime<0, 0> {
+	enum { prim = 1 };
+};
+
+template<> struct is_prime<0, 1> {
+	enum { prim = 1 };
+};
+
+template<int i> struct D { D(void *); };
+
+template<int i> struct CondNull { static int const value = i; };
+template<> struct CondNull<0> { static void* value; };
+void* CondNull<0>::value =
 ```
