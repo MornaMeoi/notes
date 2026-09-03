@@ -83,5 +83,34 @@ template<int i> struct D { D(void *); };
 
 template<int i> struct CondNull { static int const value = i; };
 template<> struct CondNull<0> { static void* value; };
-void* CondNull<0>::value =
+void* CondNull<0>::value = 0;
+
+template<int i> struct Prime_print {
+	Prime_print<i - 1> a;
+	enum { prim = is_prime<i, i - 1>::prim };
+	void f() {
+		D<i> d = CondNull < prim ? 1 : 0 > ::value;
+		a.f();
+	}
+};
+
+template<> struct Prime_print<1> {
+	enum { prim = 0 };
+	void f() { D<1> d = 0; };
+};
+
+int main() {
+	Prime_print<70> a;
+	a.f();
+}
 ```
+![[../../../_Meta/attachments/18.1.png]]
+#### Факториал
+• Идея лежит на поверхности: что если развернуть систематическое sfinae от типов на целые числа?
+```cpp
+template<size_t N> struct fact : integral_constant<size_t, N * fact<N - 1>{}> {};
+template<> struct fact<0> : integral_constant<size_t, 1> {};
+std::cout << fact<5>::value << std::endl;
+```
+• Вычисления итогового значения выполняются на этапе компиляции.
+• Наследование играет роль рекурсивного вызова.
