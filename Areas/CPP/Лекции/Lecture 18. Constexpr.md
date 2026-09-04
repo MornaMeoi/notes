@@ -231,4 +231,17 @@ data = *p_latch_reg; // считали значение
 data = *p_latch_reg; // снова считали значение
 ```
 • Этот пример показывает, что `const` означает `readonly`.
-#### Что изме
+#### Что известно на этапе компиляции
+• Литералы `(1, "hello", 'c', 1.0, 1ull)` и члены `enum`.
+• Параметры шаблонов и результаты `sizeof` над типами.
+• <span style="color: blue;">constexpr переменные</span>
+```cpp
+template<typename T> struct my_numeric_limits;
+
+template<> struct my_numeric_limits<char> {
+	static constexpr size_t max() { returnm CHAR_MAX; }
+};
+
+constexpr size_t arrsz = my_numeric_limits<char>::max();
+int arr[arrsz]; // OK
+```
