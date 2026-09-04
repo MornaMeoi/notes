@@ -259,5 +259,10 @@ assert(rt == ct); // ORLY?
 #### CONSTEXPR означает CONST?
 • Следующий случай может быть несколько неочевиден:
 ```cpp
-conste
+constexpr int arr[] = {2, 3, 5, 7, 11};
+constexpr int* x = &arr[3]; // всё хорошо?
 ```
+• Тут зависит от того, к чему относится `constexpr` во второй строчке. Варианта, собственно, два:
+1. `constexpr int* x → const int* x`
+2. `constexpr int* x → int* const x`
+• Обсуждение: давайте проголосуем?
