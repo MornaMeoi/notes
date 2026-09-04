@@ -266,3 +266,49 @@ constexpr int* x = &arr[3]; // всё хорошо?
 1. `constexpr int* x → const int* x`
 2. `constexpr int* x → int* const x`
 • Обсуждение: давайте проголосуем?
+• Второй вариант семантически консистентен: мы объявили constexpr pointer.
+```cpp
+constexpr const int* x = &arr[3]; // теперь всё хорошо
+```
+#### C++17: constexpr control flow
+• Возможность использования выражений времени компиляции делает интересным вопрос переключения по ним.
+```cpp
+if constexpr (b) {
+	// тут много кода
+} else {
+	// эта ветка не участвует в инстанцировании
+}
+```
+• Начиная с C++17 такое ленивое поведение предоставляет `if constexpr`.
+• Обратите внимание: основное использование этой конструкции - это выбрасывание веток инстанцирований.
+Пример:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// Constexpr if application
+//
+//-------------------------------------------------------------------------------
+
+#include <iostream>
+#include <string>
+#include <utility>
+
+template<typename T> auto length(T value) {
+	if constexpr(std::is_integral<T>::value)
+		return sizeof(T);
+	else
+		return value.length();
+}
+
+int main() {
+	int a = 5;
+	std::string b = "foo";
+	std::cout << length(a) << ' ' << length(b) << std::endl;
+}
+```
