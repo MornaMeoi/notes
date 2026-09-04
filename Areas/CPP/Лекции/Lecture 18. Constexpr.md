@@ -367,9 +367,15 @@ template<typename T, typename... Args> void print_all(T first, Args... args) {
 }
 
 int main() {
-	print_all(1, 1.0, )
+	print_all(1, 1.0, 1u);
+	std::cout << std::endl;
 }
 ```
+Компилятор выдаёт
+```
+error: no matching function for call to 'print_all()'
+```
+если не использовать constexpr.
 #### Снова о метапрограммах
 • Простая задача: возведение в квадрат времени компиляции.
 ```cpp
