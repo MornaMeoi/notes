@@ -312,3 +312,33 @@ int main() {
 	std::cout << length(a) << ' ' << length(b) << std::endl;
 }
 ```
+#### Некоторые альтернативы SFINAE
+```cpp
+template<typename T> enable_if_t<(sizeof(T) > 4)>
+foo(T x) { /* сделать что-то с x */ }
+
+template<typename T> enable_if_t<(sizeof(T) <= 4)>
+foo(T x) { /* сделать что-то ещё с x */ }
+```
+• Кажется, теперь появился иной вариант.
+```cpp
+template<typename T>
+void foo(T x) {
+	if constexpr(sizeof(T) > 4) { /* сделать что-то с x */ }
+	else { /* сделать что-то ещё с x */ }
+}
+```
+• Но это выглядит немного интрузивно. Скоро мы увидим ещё лучшие опции.
+#### If constexpr для вариабельных шаблонов
+• В случае вариабельных шаблонов тоже можно избежать специализаций.
+```cpp
+template<typename Head, typename... Tail>
+void print(Head head, Tail... tail) {
+	std::cout << head;
+	if constexpr(sizeof...(tail) > 0) {
+		std::cout << ", ";
+		print(tail...);
+	}
+}
+```
+• Вы понимаете, почему это работает?
