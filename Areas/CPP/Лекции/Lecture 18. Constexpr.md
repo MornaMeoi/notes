@@ -405,3 +405,24 @@ int arr[square(5)]; // ok, arr[25]
 • Операции с `undefined behaviour`
 • Инлайн ассемблер во всех разновидностях
 • Большая часть операций с `this`
+#### Пример: целочисленный логарифм
+```cpp
+constexpr size_t int_log(size_t N) {
+	size_t pos = sizeof(size_t) * CHAR_BIT, mask = 0;
+	
+	// throw idiom
+	if(N == 0) throw "N == 0 not supported";
+	
+	do {
+		pos -= 1;
+		mask = 1ull << pos;
+	} while((N & mask) != mask)
+	
+	if(N != mask)
+		pos += 1;
+	
+	return pos;
+}
+```
+#### Не всегда constexpr
+• Логичный вопрос: можно ли перегрузить функцию gj 
