@@ -164,3 +164,29 @@ int isqrt(int N, int lo = 1, int hi = N) {
 	}
 }
 ```
+#### Условный тип
+• Вспомним уже известный нам условный тип:
+```cpp
+template<bool B, typename T, typename F>
+struct conditional { using type = T; }
+
+template<typename T, typename F>
+struct conditional<false, T, F> { using type = F; }
+
+template<bool B, typename T, typename F>
+using conditional_t = typename conditional<B, T, F>::type;
+```
+• Это отображение `{true, false}` на `{T, F}`.
+#### Целочисленный квадратный корень
+• Здесь `std::conditional_t` вполне сработает в качестве `meta-if`.
+```cpp
+template<int N, int L = 1, int H = N, int mid = (L + H + 1) / 2>
+struct Sqrt : std::integral_constant<int,
+								std::conditional_t<(N < mid * mid),
+																	 Sqrt<N, L, mid - 1>,
+																	 Sqrt<N, mid, H>>{}> {};
+	
+template<int N, int S> struct Sqrt <N, S, S, S> :
+	std::integral_constant<int, S> {};
+```
+• Домашняя наработка: попробуйте найти N-е простое число на этапе компиляции.
