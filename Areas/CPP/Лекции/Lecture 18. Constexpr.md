@@ -114,3 +114,53 @@ std::cout << fact<5>::value << std::endl;
 ```
 • Вычисления итогового значения выполняются на этапе компиляции.
 • Наследование играет роль рекурсивного вызова.
+Далее лектор показывает ассемблер этой программы и в файле видно, что 120 уже посчитано.
+#### Числа Фибоначчи
+• С той же лёгкостью можно вычислять на этапе компиляции числа Фибоначчи.
+```cpp
+template<int N> struct fibonacci :
+	std::integral_constant<int, fibonacci<N - 1>{} + fibonacci<N - 2>{}> {};
+template<> struct fibonacci<1> : std::integral_constant<int, 1> {};
+template<> struct fibonacci<0> : std::integral_constant<int, 0> {};
+```
+• Не смущает ли нас здесь двойная "рекурсия"?
+#### Две модели вычислений
+• "Императивная":
+```cpp
+int fact(int x) {
+	int i = 2, res = 1;
+	for(; i <= x; ++i)
+		res *= i;
+	return res;
+}
+```
+• Временные переменные
+• Циклы
+• Изменяемая память
+• "Функциональная":
+```cpp
+int fact(const int x) {
+	if(x <= 2)
+		return x;
+	else
+		return x * fact(x - 1);
+}
+```
+• Вызовы функций
+• Рекурсия
+• "Чистые" вычисления
+#### Целочисленный квадратный корень
+• Чтобы делать такие сложные вещи на шаблонах, полезно сначала просто написать программу в функциональном стиле.
+```cpp
+int isqrt(int N, int lo = 1, int hi = N) {
+	int mid = (lo + hi + 1) / 2;
+	if(lo == hi) // это похоже на специализацию
+		return lo;
+	else {
+		if(N < mid * mid) // как организовать if?
+			return isqrt(N, lo, mid - 1);
+		else
+			return isqrt(N, mid, hi);
+	}
+}
+```
