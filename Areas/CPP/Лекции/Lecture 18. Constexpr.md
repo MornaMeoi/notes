@@ -342,3 +342,44 @@ void print(Head head, Tail... tail) {
 }
 ```
 • Вы понимаете, почему это работает?
+Далее пример от лектора:
+```cpp
+//-------------------------------------------------------------------------------
+//
+// Source code for MIPT ILab
+// Slides: https://sourceforge.net/projects/cpp-lects-rus/files/cpp-graduate/
+// Licensed after GNU GPL v3
+//
+//-------------------------------------------------------------------------------
+//
+// print all, constexpr if edition
+//
+//-------------------------------------------------------------------------------
+
+#include <iostream>
+
+template<typename T, typename... Args> void print_all(T first, Args... args) {
+	std::cout << first;
+	if /* constexpr */ (sizeof...(args) > 0) {
+		std::cout << ", ";
+		print_all(args...);
+	}
+}
+
+int main() {
+	print_all(1, 1.0, )
+}
+```
+#### Снова о метапрограммах
+• Простая задача: возведение в квадрат времени компиляции.
+```cpp
+template<size_t n> struct square : integral_constant<size_t, n * n>;
+int arr[square<5>{}]; // arr[25]
+```
+• Тут угадать, что `square` на самом деле функтор - довольно сложно.
+```cpp
+constexpr int square(int x) { return x * x; }
+int arr[square(5)]; // ok, arr[25]
+```
+• Теперь очевидно, что мы вызываем функцию времени компиляции.
+• Стандарт накладывает некоторые ограничения на тела таких функций.
