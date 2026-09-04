@@ -245,3 +245,19 @@ template<> struct my_numeric_limits<char> {
 constexpr size_t arrsz = my_numeric_limits<char>::max();
 int arr[arrsz]; // OK
 ```
+#### Ограничение на constexpr переменные
+• `constexpr` переменная должна иметь литеральный тип.
+• Использовать `constexprs` с плавающей точкой можно, но не рекомендуется.
+```cpp
+constexpr float ct = 1.0f / 3.0f;
+
+assert(x == 1.0f && y == 3.0f);
+float rt = x / y;
+
+assert(rt == ct); // ORLY?
+```
+#### CONSTEXPR означает CONST?
+• Следующий случай может быть несколько неочевиден:
+```cpp
+conste
+```
