@@ -699,3 +699,44 @@ template<typename T, typename U,
 bool check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
 ```
 • Какие проблемы вы здесь видите?
+• Используется шаблонный параметр, которого на самом деле не существует.
+```cpp
+check_eq<int, std::string, void>(1, "1"); // oops, 157 err lines
+```
+• В случае проблемы будет выдано сообщение, что нет такой функции, но не будет ничего почти ничего сказано о том, <span style="color: red;">почему</span> её нет.
+#### Интересная идея
+• Заслуживает внимания идея `if constexpr + static assert`.
+```cpp
+template<typename T, typename U>
+bool check_eq(T&& lhs, U&& rhs) {
+	if constexpr(!is_equality_comparable<T, U>::value) {
+		static_assert(0 && "equality comparable expected");
+	}
+	return (lhs == rhs);
+}
+```
+• Стало лучше?
+• Но мне не нравится эта идея. Почему?
+• Перенося проверку корректности из контекста подстановки в тело функции, мы меняем SFINAE-out на ошибку. Но часто мы хотим именно SFINAE-out.
+#### Загадочный distance
+• Вспомним наши мучения с самописным итератором, где мы нечто забыли...
+```cpp
+int main() {
+	int arr[10];
+	junk_iter_t fst(arr), snd(arr + 3);
+	auto dist = std::distance(fst, snd);
+}
+```
+• Он выдаёт ошибку
+<span style="color: brown;">error</span>**: no matching function for call to 'distance(junk_iter_t&, junk_iter_t&'**
+• Вы помните с лекции по итераторам, в чём тут было дело?
+#### Констрейнты
+• Констрейнты были введены, чтобы сделать статические интерфейсы явными.
+```cpp
+template<typename T, typename U> bool
+	requires is_equality_comparable<T, U>::value
+check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
+```
+• Больше нет мусорного параметра шаблона. Языковые средства используются для того, для чего должны.
+• Сообщение об ошибке куда как лучше.
+'is_equality_comparable<T, U, void>::value' evaluated to false
