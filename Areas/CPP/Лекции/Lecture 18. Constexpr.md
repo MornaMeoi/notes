@@ -803,6 +803,51 @@ requires requires(T t, U u) { t == u; }
 check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
 ```
 • Да, `requires-requires` может смущать. Но вспомните `noexcept-clause` и `noexcept-expression`.
+#### Ещё лучше диагностика
+```cpp
+template<typename T, typename U> bool
+	requires requires(T t, U u) { t == u; }
+check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
+```
+• Выражение
+```cpp
+check_eq(std::string{"1"}, 1);
+```
+• Даёт
+<span style="color: brown;">note: the required expression '(t == u)' would be ill-formed</span>
+• Здесь сказано не только название констрейнта, но ещё и конкретный `ill-formed expression` в нём.
+#### Главное отличие сложных ограничений
+• Простые ограничения вычисляются на этапе компиляции.
+```cpp
+template<typename T> constexpr int somepred() { return 14; }
+
+template<typename T> requires (somepred<T>() == 42)
+bool foo(T&& lhs, U&& rhs);
+```
+• В сложных ограничениях проверяется синтаксическая валидность выражения.
+```cpp
+template<typename T> requires requires(T t) { somepred<T>() == 42; }
+bool bar(T&& lhs, U&& rhs);
+```
+• В итоге, вызов `foo` будет ошибкой, а вызов `bar` - нет.
+#### Что проверяют сложные ограничения
+• Сложные ограничения могут проверять валидность выражений.
+```cpp
+requires requires(T a, T b) { a + b; }
+```
+• Либо они могут проверять существование типов.
+```cpp
+requires requires() { typename T::inner; }
+```
+• Есть специальный синтаксис для `noexcept`.
+```cpp
+requires requires(T t) {
+	{ ++t } noexcept;
+}
+```
+• Они могут комбинироваться друг с другом и с простыми ограничениями.
+#### Пример: convertible_to
+• Чтобы выделять системы ограничений, в C++20 введено специ
 #### Литература
 • Information technology - Programming languages - C++, ISO/IEC 14882, 2017
 • Bjarne Stroustrup - The C++ Programming Language (4th Edition)
