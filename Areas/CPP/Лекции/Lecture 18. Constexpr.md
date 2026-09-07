@@ -761,10 +761,11 @@ void foo(T x) { /* сделать что-то ещё с x*/ }
 #### Недостатки sfinae-constraints
 • Увы, SFINAE определители не упорядочены в отношении ограниченности.
 ```cpp
-template<typename It>
-struct is_input_iterator : std::is_base_of<
-	std::input_iterator_tag,
-	typename std::iterator_traits<It>::iterator_catergory>{};
+template<typename Iter> requires is_input_iterator<Iter>::value
+int my_distance(Iter first, Iter last) {
+	int n = 0;
+	while(first != last)
+}
 	
 template<typename It>
 struct is_random_iterator : std::is_base_of<
