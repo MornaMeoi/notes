@@ -582,5 +582,10 @@ template<char... Chars> constexpr int operator "" _binary() {
 #### Case study: замена vector на array
 • Попробуем перейти от
 ```cpp
-te
+template<typename T> class PermLoop {
+	std::vector<T> loop_;
+// ....
+	PermLoop(std::initializer_list<T> ls) : loop_(ls) { reroll(); }
+};
 ```
+• К чему-то вроде
