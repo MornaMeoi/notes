@@ -465,4 +465,65 @@ constexpr size_t ilist_sz(std::initializer_list<T> init) {
 	return init_sz;
 }
 ```
-• Это ошибка. Компилятор тут не может дать гарантию константности для перемен
+• Это ошибка. Компилятор тут не может дать <span style="color: red;">гарантию</span> константности для переменной (хотя сама функция и `constexpr`).
+Ошибка:
+```
+error: constexpr variable 'init_sz' must be initialized by a constant expression
+```
+• Как вы думаете, изменится ли ситуация, если я заменю на `consteval`?
+• А если я уберу отмеченное красным (выделен `constexpr`-модификатор для переменной)?
+#### Обсуждение
+• Имеют ли смысл нестатические `constexpr` методы в классах?
+## Мета-ООП
+#### Пользовательские литеральные типы
+• Чтобы сделать пользовательский тип литеральным, ему нужен <span style="color: blue;">constexpr конструктор</span>.
+```cpp
+struct Complex {
+	constexpr Complex(double r, double i) : re(r), im(i) {}
+	constexpr double real() const { return re; }
+	constexpr double imag() const { return im; }
+private
+	double re, im;
+};
+
+constexpr Complex c{0.0, 1.0}; // это литеральное значение
+```
+#### Арифметика
+• Для таких объектов становится возможной арифметика времени компиляции.
+```cpp
+constexpr Complex Complex::operator+=(Complex rhs) {
+	re += rhs.re;
+	im += rhs.im;
+	return *this;
+}
+
+constexpr Complex operator+(Complex lhs, Complex rhs) {
+	lhs += rhs;
+	return lhs;
+}
+```
+• Использование:
+```cpp
+constexpr Complex c{0.0, 1.0}, d{1.0, 2.0};
+constexpr Complex e = c + d;
+```
+#### Обсуждение
+• Литералы такого класса выглядят как `Complex{1.0, 1.0}`.
+• Хотелось бы более привычной формы `1.0 + 1.0_i`.
+• Для сложения у нас есть выход, но как приделать суффикс?
+• Удивительно, но для этого мы тоже используем перегрузку очень специального оператора.
+#### Пользовательский суффикс
+• И этот оператор - это оператор кавычки.
+```cpp
+struct Complex {
+	constexpr Complex(double r, double i) : re(r), im(i) {}
+	// и так далее
+};
+
+constexpr Complex operator "" _i(long double arg) {
+	return Complex{0,0, arg};
+}
+
+constexpr Complex c = 0.0 + 1.0_i; // ok, arg_i -> ""_i(arg)
+```
+• Здесь суффикс определён с параметром типа `double`.
