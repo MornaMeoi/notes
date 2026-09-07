@@ -444,3 +444,25 @@ constexpr int logval = int_val(5);
 int t = logval;
 ```
 • Теперь мы уверены, что вызов состоялся на этапе компиляции.
+#### C++20, введение consteval и constinit
+• Функции, помеченные `consteval` обязаны быть выполнены именно и конкретно на этапе компиляции.
+```cpp
+consteval int crsqr(int n) { return n * n; }
+constexpr int r = crsqr(100); // OK
+int x = 100; int r2 = ctsqr(x); // Ошибка: не ct const
+```
+• Для того, чтобы гарантировать только константную инициализацию `constexpr` - наоборот слишком сильная гарантия и достаточно `constinit`.
+```cpp
+constinit int x = 1000; // запрещено для локальных переменных
+++x; // OK
+```
+#### Не везде constexpr
+• Двойная природа `constexpr` функций имеет обратную сторону.
+```cpp
+template<typename T>
+constexpr size_t ilist_sz(std::initializer_list<T> init) {
+	constexpr size_t init_sz = init.size();
+	return init_sz;
+}
+```
+• Это ошибка. Компилятор тут не может дать гарантию константности для перемен
