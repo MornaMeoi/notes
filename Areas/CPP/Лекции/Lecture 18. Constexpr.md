@@ -847,7 +847,36 @@ requires requires(T t) {
 ```
 • Они могут комбинироваться друг с другом и с простыми ограничениями.
 #### Пример: convertible_to
-• Чтобы выделять системы ограничений, в C++20 введено специ
+• Чтобы выделять системы ограничений, в C++20 введено специальное ключевое слово `concept`.
+• Простейший концепт, который определён в хедере `concepts` и часто используется как вспомогательный
+```cpp
+template<class From, class To>
+concept convertible_to =
+	std::is_convertible<From, To> &&
+	requires(From (&f)()) { static_cast<To>(f()); };
+```
+• Он состоит из старых SFINAE определителей и из новых концептов.
+#### Синтаксический сахар
+• Чтобы немного проще записывать одновременное требование к выражению и типу:
+```cpp
+requires requires(T x) {
+	*x;
+	requires convertible_to<decltype(*x), typename T::inner>
+}
+```
+• Существует более приятная форма записи со стрелочкой.
+```cpp
+requires requires(T x) {
+	{*x} -> convertible_to<typename T::inner>;
+}
+```
+#### Концепты
+• На основе простых концептов можно строить более сложные.
+```cpp
+template<typename T, typename U>
+concept WeaklyEqualityComparableWith =
+	requires(const std::remove_reference_t<T>& t)
+```
 #### Литература
 • Information technology - Programming languages - C++, ISO/IEC 14882, 2017
 • Bjarne Stroustrup - The C++ Programming Language (4th Edition)
