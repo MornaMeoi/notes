@@ -588,4 +588,16 @@ template<typename T> class PermLoop {
 	PermLoop(std::initializer_list<T> ls) : loop_(ls) { reroll(); }
 };
 ```
-• К чему-то вроде
+• К чему-то вроде (в таком виде это работать не будет)
+```cpp
+template<typename T, size_t N> class PermLoop {
+	std::array<T, N> loop_;
+// ....
+	constexpr PermLoop(std::initializer_list<T> ls) : loop_(ls) { // ....
+};
+```
+Ошибка:
+```
+error: no matching constructor for initialization of 'std::array<int, 5>'
+```
+
