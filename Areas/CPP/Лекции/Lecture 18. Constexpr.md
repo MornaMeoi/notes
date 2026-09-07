@@ -668,3 +668,34 @@ int main() {
 • Хорошо ли, что они неявные?
 • Должны ли они быть неявными?
 • Что, если взять пример попроще и, находясь в реалиях C++17, попробовать сформулировать явный интерфейс в терминах типов?
+#### Пример: проверка равенства
+• В следующей функции неявный контракт состоит из одного пункта: равенство.
+```cpp
+template<typename T, typename U>
+bool check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
+```
+• Разумеется, это требование можно <span style="color: blue;">сформулировать</span> явно.
+```cpp
+template<typename T, typename U, typename = void>
+struct is_equality_comparable : false_type {};
+
+template<typename T, typename U>
+struct is_equality_comparable<T, U,
+	void_t<decltype(declval<T>() == declval<U>())>> : true_type {};
+```
+• Вопрос в том, как его лучше всего <span style="color: blue;">проверить</span>?
+• Опция по умолчанию в таких случаях - это `enable_if`.
+```cpp
+template<typename T, typename U,
+	typename = enable_if_t<is_equality_comparable<T, U>:: value>>
+bool check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
+```
+• Теперь сообщение будет выглядеть как-то так:
+<span style="color: brown;">error</span>**: no matching function for call to 'check_eq'**
+#### Обсуждение
+```cpp
+template<typename T, typename U,
+	typename = enable_if_t<is_equality_comparable<T, U>::value>>
+bool check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
+```
+• Какие проблемы вы здесь видите?
