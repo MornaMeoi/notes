@@ -761,11 +761,10 @@ void foo(T x) { /* сделать что-то ещё с x*/ }
 #### Недостатки sfinae-constraints
 • Увы, SFINAE определители не упорядочены в отношении ограниченности.
 ```cpp
-template<typename Iter> requires is_input_iterator<Iter>::value
-int my_distance(Iter first, Iter last) {
-	int n = 0;
-	while(first != last)
-}
+template<typename It>
+struct is_input_iterator : std::is_base_of<
+	std::input_iterator_tag,
+	typename std::iterator_traits<It>::iterator_catergory>{};
 	
 template<typename It>
 struct is_random_iterator : std::is_base_of<
@@ -773,6 +772,37 @@ struct is_random_iterator : std::is_base_of<
 	typename std::iterator_traits<It>::iterator_category>{};
 ```
 • Это просто два разных шаблона. И это приводит к проблемам, когда мы пытаемся исправить `distance`.
+```cpp
+template<typename Iter> requires is_input_iterator<Iter>::value
+int my_distance(Iter first, Iter last) {
+	int n = 0;
+	while(first != last) {
+		++n;
+		++first;
+	}
+	return n;
+}
+	
+template<typename Iter> requires is_random_iterator<Iter>::value
+int my_distance(Iter first, Iter last) {
+	return last - first;
+}
+```
+• При реальном использовании здесь будет неоднозначность для `std::vector`.
+#### Сложные ограничения
+• Вернёмся к простому примеру.
+```cpp
+template<typename T, typename U> bool
+requires is_equality_comparable<T, U>::value
+check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
+```
+• То же самое можно записать через `requires-expression`.
+```cpp
+template<typename T, typename U> bool
+requires requires(T t, U u) { t == u; }
+check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
+```
+• Да, `requires-requires` может смущать. Но вспомните `noexcept-clause` и `noexcept-expression`.
 #### Литература
 • Information technology - Programming languages - C++, ISO/IEC 14882, 2017
 • Bjarne Stroustrup - The C++ Programming Language (4th Edition)
