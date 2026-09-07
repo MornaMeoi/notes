@@ -527,3 +527,51 @@ constexpr Complex operator "" _i(long double arg) {
 constexpr Complex c = 0.0 + 1.0_i; // ok, arg_i -> ""_i(arg)
 ```
 • Здесь суффикс определён с параметром типа `double`.
+#### Внезапная проблема
+• Допустим, хочется переопределить суффикс `_binary` для бинарных констант.
+• Но уже даже довольно маленькая константа: `1010101010101_binary` не влазит в `unsigned long long` параметр.
+• Решение: синтаксис с вариабельным суффиксом.
+```cpp
+template<char... Chars>
+constexpr unsigned long long operator "" _binary() {
+	// и что мы напишем здесь?
+}
+```
+#### Небольшая метапрограмма
+```cpp
+template<int Sum, char... Chars> struct binparser;
+
+template<int Sum, char... Rest> struct binparser<Sum, '0', Rest...> {
+	static constexpr int value = binparser<Sum * 2, Rest...>::value;
+};
+
+template<int Sum, char... Rest> struct binparser<Sum, '1', Rest...> {
+	static constexpr int value = binparser<Sum * 2 + 1, Rest...>::value;
+};
+
+template<int Sum, struct binparser<Sum> {
+	static constexpr int value = Sum;
+};
+
+template<char... Chars> constexpr int operator "" _binary() {
+	return binparser<0, Chars...>::value;
+}
+```
+#### Ладно, это была шутка
+```cpp
+template<char... Chars> constexpr int operator "" _binary() {
+	std::array<int, sizeof...(Chars)> arr { Chars... };
+	int sum = 0;
+	for(auto c : arr)
+		switch(c) {
+			case '0': sum = sum * 2; break;
+			case '1': sum = sum * 2 + 1; break;
+			default: throw "Unexpected symbol";
+		}
+	return sum;
+}
+```
+• Но как мы использовали в программе времени компиляции `std::array`?
+#### Constexpr all the things!
+• После их появления, `constexpr-ctors` начали торжественно раползаться по стандартной библиотеке.
+• Очевидно, сроазу
