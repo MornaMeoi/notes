@@ -739,4 +739,45 @@ check_eq(T&& lhs, U&& rhs) { return (lhs == rhs); }
 ```
 • Больше нет мусорного параметра шаблона. Языковые средства используются для того, для чего должны.
 • Сообщение об ошибке куда как лучше.
-'is_equality_comparable<T, U, void>::value' evaluated to false
+<span style="color: brown;">'is_equality_comparable&lt;T, U, void>::value'</span> **evaluated to false**
+• Внутри `requires` может быть что угодно, вычисляемое на этапе компиляции.
+#### Полное покрытие
+• Все помнят, почему не работает очевидный SFINAE подход к разграничению?
+```cpp
+template<typename T, typename = enable_if_t<(sizeof(T) > 4)>>
+void foo(T x) { /* сделать что-то с x*/ }
+
+template<typename T, typename = enable_if_t<(sizeof(T) <= 4)>>
+void foo(T x) { /* сделать что-то ещё с x*/ }
+```
+• Очевидный подход через констрейнты вполне работает.
+```cpp
+template<typename T> requires (sizeof(T) > 4)
+void foo(T x) { /* сделать что-то с x*/ }
+
+template<typename T> requires (sizeof(T) <= 4)
+void foo(T x) { /* сделать что-то ещё с x*/ }
+```
+#### Недостатки sfinae-constraints
+• Увы, SFINAE определители не упорядочены в отношении ограниченности.
+```cpp
+template<typename It>
+struct is_input_iterator : std::is_base_of<
+	std::input_iterator_tag,
+	typename std::iterator_traits<It>::iterator_catergory>{};
+	
+template<typename It>
+struct is_random_iterator : std::is_base_of<
+	std::random_access_iterator_tag,
+	typename std::iterator_traits<It>::iterator_category>{};
+```
+• Это просто два разных шаблона. И это приводит к проблемам, когда мы пытаемся исправить `distance`.
+#### Литература
+• Information technology - Programming languages - C++, ISO/IEC 14882, 2017
+• Bjarne Stroustrup - The C++ Programming Language (4th Edition)
+• Davide Vandevoorde, Nicolai M. Josuttis - C++ Templates. The Complete Guide, 2nd edition, Addison-Wesley Professional, 2017
+• Scott Shurr, "Constexpr Introduction" and "Constexpr Applications", CppCon'15
+• Dietmar Kuhl, "Constant fun", CppCon'16
+• Ben Deane, Jason Terner, "Constexpr all the things", CppCon'17
+• Arne Mertz, "Constexpr Additions in C++17", 2017
+• Andrew Sutton - Concepts in 60: everything you need to know about concepts, CppCon'18
