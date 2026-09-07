@@ -972,5 +972,41 @@ UnaryFunc for_each(InputIt first, InputIt last, UnaryFunc f) { // ....
 #### Концепт range: итератор и ограничитель
 • Рассмотрим его подробнее
 ```cpp
-template<t
+template<typename T> concept Range = requires(T&& t) {
+	ranges::begin(t);
+	ranges::end(t);
+};
+```
+• Действуют два стандартных функтора
+```cpp
+template<typename T>
+using iterator_t = decltype(ranges::begin(declval<T&>()));
+
+template<typename T>
+using sentinel_t = decltype(ranges::end(declval<T&>()));
+```
+#### Унаследованные концепты
+• Точно так же, как категории итераторов, категории диапазонов определяются иерархически.
+```cpp
+template<class T> concept input_range =
+	range<T> && input_iterator<iterator_t<T>>;
+	
+template<class T> concept forward_range =
+	range<T> && forward_iterator<iterator_t<T>>;
+```
+• И так далее.
+• Дополнительно есть интересный спецконцепт `contiguous_range` для непрерывного диапазона.
+#### Концепт view: вид на диапазон
+• В стандарте `view` прописан как (я немного упрощаю):
+```cpp
+template<typename T> concept view = range<T>
+	&& movable<T>
+	&& default_initializable<T>
+	&& derived_from<T, view_base>;
+```
+• Базовый пример для `view` - это `ref_view`, являющийся аналогом `string_view` для всего, а не только `string`.
+```cpp
+std::vector v = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+auto vv = ranges::views::all(v);
+vv[0] = 2; // now v[0] == 2
 ```
