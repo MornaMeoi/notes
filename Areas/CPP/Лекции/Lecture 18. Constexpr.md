@@ -875,7 +875,38 @@ requires requires(T x) {
 ```cpp
 template<typename T, typename U>
 concept WeaklyEqualityComparableWith =
-	requires(const std::remove_reference_t<T>& t)
+	requires(const std::remove_reference_t<T>& t,
+					 const std::remove_reference_t<U>& u) {
+		{ t == u } -> convertible_to<bool>;
+		{ t != u } -> convertible_to<bool>;
+		{ u == t } -> convertible_to<bool>;
+		{ u != t } -> convertible_to<bool>;
+	};
+```
+• Концепт - это предикат, выполняющийся на этапе компиляции.
+• Теперь, при наличии концепта, довольно легко ограничить функцию.
+```cpp
+template<typename T, typename U>
+	requires WeaklyEqualityComparableWith<T, U>
+bool foo(T x, U y);
+```
+• Это также просто как использовать обычный предикат времени компиляции.
+• Можно определять одни концепты в терминах других.
+```cpp
+template<typename T>
+concept EqualityComparable = WeakEqualityComparableWith<T, T>;
+```
+#### Отношение subsumes
+• Сложные концепты можно написать так, чтобы они участвовали в отношениях большей или меньшей ограниченности.
+<span style="color: brown;">P subsumes Q if it can be proven that P implies Q</span>
+• Если в концепте P присутствуют все атомарные ограничения из Q, в таких же логических связях, то между ними есть это отношение.
+• Самое простое - это прямое включение.
+```cpp
+template<typename T>
+concept P = Q<T> && R<T>; // P subsumes Q and R
+
+template<typename T>
+concept P = Q<T> || sizeof(T) == 4; // P not subsumes Q
 ```
 #### Литература
 • Information technology - Programming languages - C++, ISO/IEC 14882, 2017
