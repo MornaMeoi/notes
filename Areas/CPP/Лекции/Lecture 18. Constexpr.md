@@ -908,6 +908,24 @@ concept P = Q<T> && R<T>; // P subsumes Q and R
 template<typename T>
 concept P = Q<T> || sizeof(T) == 4; // P not subsumes Q
 ```
+#### Теперь перегрузка работает
+```cpp
+template<std::input_iterator Iter>
+int my_distance(Iter first, Iter last) {
+	int n = 0;
+	while(first != last) {
+		++first;
+		++n;
+	}
+	return n;
+}
+
+template<std::random_access_iterator Iter>
+int my_distance(Iter first, Iter last) {
+	return last - first;
+}
+```
+• Благодаря тому, что `InputIterator` является менее общим (он входит как подусловие в `RandomAccessIterator`) тут нет неоднозначности.
 #### Литература
 • Information technology - Programming languages - C++, ISO/IEC 14882, 2017
 • Bjarne Stroustrup - The C++ Programming Language (4th Edition)
@@ -917,3 +935,42 @@ concept P = Q<T> || sizeof(T) == 4; // P not subsumes Q
 • Ben Deane, Jason Terner, "Constexpr all the things", CppCon'17
 • Arne Mertz, "Constexpr Additions in C++17", 2017
 • Andrew Sutton - Concepts in 60: everything you need to know about concepts, CppCon'18
+
+---
+<h1 align="center">СЕКРЕТНЫЙ УРОВЕНЬ</h1>
+
+---
+<p align="center">Диапазоны и отображения в свете concepts</p>
+#### Внезапно for_each
+• В стандартной библиотеке этот алгоритм определён как-то так:
+```cpp
+template<typename InputIt, typename UnaryFunc>
+UnaryFunc for_each(InputIt first, InputIt last, UnaryFunc f) {
+	for(; first != last; ++first) {
+		f(*first);
+	}
+	return f;
+}
+```
+• Почему шаблонные параметры названы `InputIt` и `UnaryFunc`?
+• Приглядимся к шаблонным параметрам.
+• В отсутствие концептов название подсказывало пользователю концепт.
+• Но разве для `last` требуется, чтобы он был `InputIterator`?
+#### Первое наблюдение: не требуется
+• Рассмотрим, например, сингулярные итераторы.
+```cpp
+for_each(istream_iterator<int>{is},
+				 istream_iterator<int>{},
+				 [](int d) { if (d < 5) os << d * 2 << " "; });
+```
+• Главная проблема в таком `std::for_each`, что вообще-то хм...
+```cpp
+template<typename InputIt, typename UnaryFunc>
+UnaryFunc for_each(InputIt first, InputIt last, UnaryFunc f) { // ....
+```
+• Но сингулярный итератор - это никогда не `InputIterator`, его разыменование - это вообще UB.
+#### Концепт range: итератор и ограничитель
+• Рассмотрим его подробнее
+```cpp
+template<t
+```
