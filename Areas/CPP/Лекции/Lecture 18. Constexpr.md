@@ -600,4 +600,62 @@ template<typename T, size_t N> class PermLoop {
 ```
 error: no matching constructor for initialization of 'std::array<int, 5>'
 ```
+#### Обсуждение
+```cpp
+template<typename T, size_t N> class PermLoop {
+	std::array<T, N> loop_;
+// ....
+	constexpr PermLoop(std::initializer_list<T> ls) : loop_(ls) {
+};
+```
+• Что будем делать?
+#### Index sequences
+• Удивительно полезный класс integer_sequence:
+```cpp
+template<class T, T... Ints> class integer_sequence;
+```
+• Его синоним, если нам нужны индексы:
+```cpp
+template<size_t... Ints>
+using index_sequence = std::integer_sequence<size_t, Ints...>;
+```
+• Мы можем писать `std::make_index_sequence<3>`.
+• Типом этого выражения является `integer_sequence<size_t, 0, 1, 2>`.
+• Теперь у нас есть инструменты, чтобы подступиться к созданию `array`.
+#### Переход от вектора к массиву
+```cpp
+template<typename T, size_t N, size_t... Ns>
+constexpr std::array<T, N>
+make_array_impl(std::initializer_list<T> t, std::index_sequence<Ns...>) {
+	return std::array<T, N>{*(t.begin() + Ns)...};
+}
 
+template<typename T, size_t N>
+constexpr std::array<T, N> make_array(std::initializer_list<T> t) {
+	return make_array_impl<T, N>(t, std::make_index_sequence<N>());
+}
+```
+#### C++20: constexpr vector и string!
+• Казалось бы, мучений с заменой на `array` больше не надо?
+```cpp
+struct S {
+	std::vector<int> arr;
+	constexpr S(std::initializer_list<int> il) : arr(il) {}
+};
+```
+• Увы, это (пока?) не работает даже с последним клангом: `non-constexpr constructor 'vector' cannot be used in a constant expression`.
+• Интересно, конечно, как это гипотетически должно работать...
+#### Core constant expression...
+• Всё, что касается `constexpr`, полно сложных и странных сюрпризов.
+```cpp
+struct S {
+	int n_;
+	S(int n) : n_(n) {} // non-constexpr ctor!
+	constexpr int get() { return 42; }
+};
+
+int main() {
+	S s{2};
+	constexpr int k = s.get();
+}
+```
