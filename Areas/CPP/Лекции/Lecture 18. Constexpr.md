@@ -1010,3 +1010,28 @@ std::vector v = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 auto vv = ranges::views::all(v);
 vv[0] = 2; // now v[0] == 2
 ```
+#### Снова о квадратных отверстиях
+```cpp
+for_each(istream_iterator<int>{is},
+				 istream_iterator<int>{},
+				 [](int d){ if (d < 5) os << d * 2 << " "l });
+```
+• Разумеется, это не `for_each`, тут происходит `transform_copy_if`.
+• Вот только никакого `transform_copy_if` или даже `transform_if` в стандартной библиотеке нет.
+• Рецепт от Шона Парента: напишите свой, опубликуйте статью, прославьтесь!
+• Давайте сделаем попытку прославиться....
+#### Попытка прославиться
+• Сигнатура:
+```cpp
+template<typename InputIt, typename OutputIt,
+				 typename UnaryPred, typename UnaryFunc>
+OutputIt transform_copy_if(InputIt first, InputIt last,
+	OutputIt d_first, UnaryPred pred, UnaryFunc func);
+```
+• Использование:
+```cpp
+transform_copy_if(istream_iterator<int>{is},
+	istream_iterator<int>{}, ostream_iterator<int>{os, " "},
+	[](int n) { return n < 5; }), [](int n) { return n * 2; };
+```
+• Резюме: вряд ли прославимся.
