@@ -1,19 +1,20 @@
 ---
-date: {{date:YYYY-MM-DD}}
 tags: [cpp, lecture]
+course: 
 lecturer: Владимиров
-course: C++
-status: draft
+lecture: 
+title: ""
+status: todo
+reread: 
+concepts: []
 ---
-# Лекция {{title}}
+<h1 align="center">НАЗВАНИЕ</h1>
 
-## Что разобрали
-- 
+---
+<p align="center">Подзаголовок: о чём лекция.</p>
 
-## Ключевые концепты
-- [[]]
-
-## Код
+## Раздел
+#### Подраздел
+• 
 ```cpp
 ```
-
