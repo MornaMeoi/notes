@@ -1035,3 +1035,21 @@ transform_copy_if(istream_iterator<int>{is},
 	[](int n) { return n < 5; }), [](int n) { return n * 2; };
 ```
 • Резюме: вряд ли прославимся.
+#### Нам мешает энергичность
+• Проблемы, если вдуматься, следуют из энергичности работы библиотеки.
+```cpp
+std::vector<int> v;
+istream_iterator<int> start{is}, fin{};
+ostream_iterator<int>{os, " "};
+
+std::copy_if(start, fi, std::back_inserter(v), [](int i){ return n < 5; });
+std::transform(v.begin(), v.end(), d_start, [](int n){ return n * 2; });
+```
+• Лишний контейнер, чтобы сложить туда результаты.
+• Два прохода по диапазону вместо одного.
+#### Но виды не слишком энергичны
+• Мы можем комбинировать разные типы видов.
+```cpp
+auto v = ranges::views::transform(
+	ranges)
+```
