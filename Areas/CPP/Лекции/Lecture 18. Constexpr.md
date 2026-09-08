@@ -1051,5 +1051,25 @@ std::transform(v.begin(), v.end(), d_start, [](int n){ return n * 2; });
 • Мы можем комбинировать разные типы видов.
 ```cpp
 auto v = ranges::views::transform(
-	ranges)
+	ranges::views::filter(
+		ranges::istream_view<int>(is),
+		[](int n){ return n < 5; }),
+	[](int n){ return n * 2; });
 ```
+• Выглядит немного сложно, но...
+```cpp
+auto v = ranges::istream_view<int>(is)
+			 | ranges::views::filter([](int n){ return n < 5; })
+			 | ranges::views::transform([](int n){ return n * 2; });
+```
+• Так куда лучше!
+#### Обсуждение
+• Тут, кажется, есть одна засада.... такое чувство, что `std::transform_view` владеет данными. Иначе, где он их хранит?
+• Тогда вопрос, не является ли наш синтаксис лишь пожеланием ленивости, а на деле маскировкой последовательных энергичных операций?
+#### Для заинтересовавшихся (про литературу)
+• Eric Niebler - "Ranges for the Standard Library", CppCon 2015
+• Tristan Brindle - "An Overview of Standard Ranges", CppCon 2019
+• Chris Di Bella - "What a View! Building Your Own (Lazy) Range Adaptors", CppCon 2019
+• Tristan Brindle - "C++20 Ranges in Practise", CppCon 2020
+• Tristan Brindle - "Conquering C++20 Ranges", CppCon 2021
+• Library range-v3 on github: https://github.com/ericniebler/range-v3/
